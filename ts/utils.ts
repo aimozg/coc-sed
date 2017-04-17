@@ -44,3 +44,13 @@ function randomChoice() {
 function capitalize(s: string): string {
 	return s.slice(0, 1).toUpperCase() + s.slice(1);
 }
+const NUMBER_WORDS_NORMAL     = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+const NUMBER_WORDS_CAPITAL    = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+const NUMBER_WORDS_POSITIONAL = ["zeroth", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
+function num2Text(n: number): String {
+	if (n >= 0 && n <= 10) return NUMBER_WORDS_NORMAL[n];
+	return n.toString();
+}
+function todo(what: string) {
+	console.warn("TODO properly implement " + what);
+}

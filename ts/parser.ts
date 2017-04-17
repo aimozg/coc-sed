@@ -967,7 +967,7 @@ class Parser {
 
 		let ret: string;
 		// Run through the parser
-		contents = contents.replace(/\\n/g, "\n");
+		contents = contents.replace(/\\\n/g, '').replace(/\\n/g, "\n");
 		ret      = this.recParser(contents, 0);
 		if (this.printIntermediateParseStateDebug) trace("WARNING: Parser intermediate contents = ", ret);
 		// Currently, not parsing text as markdown by default because it's fucking with the line-endings.
