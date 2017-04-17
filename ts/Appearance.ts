@@ -277,6 +277,105 @@ namespace Appearance {
 		}
 	}
 
+	export function biggestBreastSizeDescript(creature: Creature): string {
+		let choice: number;
+		let descript: string = "";
+		let row              = creature.breastRows[creature.biggestTitRow()];
+		if (row.breastRating < 1) return "flat breasts";
+		//50% of the time size-descript them
+		if (rand(2) == 0) descript += this.breastSize(row.breastRating);
+		//Nouns!
+		choice = rand(10);
+		switch (choice) {
+			case 0:
+				descript += "breasts";
+				break;
+
+			case 1:
+				if (row.lactationMultiplier > 2) descript += "milk-udders";
+				else descript += "breasts";
+
+				break;
+
+			case 2:
+				if (row.lactationMultiplier > 1.5) descript += "milky ";
+				if (row.breastRating > 4) descript += "tits";
+				else descript += "breasts";
+
+				break;
+
+			case 3:
+				//if (creature.breastRows[temp142].breastRating > 6) descript += "rack";
+				descript += "breasts";
+
+				break;
+
+			case 4:
+				descript += "tits";
+				break;
+
+			case 5:
+				descript += "tits";
+				break;
+
+			case 6:
+				descript += "tits";
+				break;
+
+			case 7:
+				if (row.lactationMultiplier >= 1 && row.lactationMultiplier < 2.5) descript += "milk jugs";
+				if (row.lactationMultiplier >= 2.5) descript += "udders";
+				if (row.lactationMultiplier < 1) descript += "jugs";
+
+				break;
+
+			case 8:
+				if (row.breastRating > 6) descript += "love-pillows";
+				else descript += "boobs";
+
+				break;
+
+			case 9:
+				if (row.breastRating > 6) descript += "tits";
+				else descript += "breasts";
+
+				break;
+		}
+		return descript;
+	}
+
+	export function breastSize(val: number): string {
+		let descript: string = "";
+		//Catch all for dudes.
+		if (val < 1) return "manly ";
+		if (val <= 2) {
+			//Small - A->B
+			descript += randomChoice("palmable ", "tight ", "perky ", "baseball-sized ");
+		} else if (val <= 4) {
+			//C-D
+			descript += randomChoice("nice ", "hand-filling ", "well-rounded ", "supple ", "softball-sized ");
+		} else if (val < 11) {
+			//DD->big EE
+			descript += randomChoice("big ", "large ", "pillowy ", "jiggly ", "volleyball-sized ");
+		} else if (val < 15) {
+			//F->big FF
+			descript += randomChoice("soccerball-sized ", "hand-overflowing ", "generous ", "jiggling ");
+		} else if (val < 24) {
+			//G -> HHH
+			descript += randomChoice("basketball-sized ", "whorish ", "cushiony ", "wobbling ");
+		} else if (val < 35) {
+			//I -> KK
+			descript += randomChoice("massive motherly ", "luscious ", "smothering ", "prodigious ");
+		} else if (val < 100) {
+			//K- > MMM+
+			descript += randomChoice("mountainous ", "monumental ", "back-breaking ", "exercise-ball-sized ", "immense ");
+		} else {
+			//Hyper sizes
+			descript += randomChoice("ludicrously-sized ", "hideously large ", "absurdly large ", "back-breaking ", "colossal ", "immense ");
+		}
+		return descript;
+	}
+
 	export function assholeDescript(i_creature: Creature, forceDesc: boolean = false): string {
 		let description: string = "";
 

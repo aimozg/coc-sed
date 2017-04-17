@@ -13,6 +13,10 @@ class AssClass {
 	analWetness: number   = 0;
 	analLooseness: number = 0;
 }
+class BreastRowClass {
+	breastRating: number        = 0;
+	lactationMultiplier: number = 1;
+}
 class Creature {
 	short: string = "creature";
 
@@ -50,11 +54,12 @@ class Creature {
 
 	skinType: SkinTypeEnum = SkinTypeEnum.PLAIN;
 
-	balls: number      = 0;
+	balls: number                = 0;
 	pregnancyIncubation: number;
 	buttPregnancyIncubation: number;
-	cocks: CockClass[] = [];
-	ass: AssClass      = new AssClass();
+	cocks: CockClass[]           = [];
+	ass: AssClass                = new AssClass();
+	breastRows: BreastRowClass[] = [new BreastRowClass()];
 
 	mf<T>(m: T, f: T): T {
 		todo("mf");
@@ -118,7 +123,8 @@ class Creature {
 	}
 
 	chestDesc(): string {
-		todo("chestDesc");
+		if (this.biggestTitSize() < 1) return "chest";
+		return Appearance.biggestBreastSizeDescript(this);
 	}
 
 	allChestDesc(): string {
@@ -305,8 +311,16 @@ class Creature {
 		todo("bRows");
 	}
 
+	biggestTitRow(): number {
+		let i = 0;
+		for (let j = 1; j < this.breastRows.length; j++) {
+			if (this.breastRows[j].breastRating > this.breastRows[i].breastRating) i = j;
+		}
+		return i;
+	}
+
 	biggestTitSize(): number {
-		todo("biggestTitSize");
+		return this.breastRows[this.biggestTitRow()].breastRating;
 	}
 
 	isTaur(): boolean {
