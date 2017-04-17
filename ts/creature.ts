@@ -89,7 +89,7 @@ class CreatureData {
 	wingType  = WING_TYPE_NONE;
 	wingDesc  = "non-existant";
 	gillType  = GILLS_NONE;
-	antennae  = 0;
+	antennae  = ANTENNAE_NONE;
 	_furColor = "no";
 
 	nipplesPierced = 0;

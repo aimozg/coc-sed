@@ -1,13 +1,13 @@
 ///<reference path="appearanceDefs.ts"/>
 
 namespace Appearance {
-	export const DEFAULT_GENDER_NAMES                                = _.object(
+	export const DEFAULT_GENDER_NAMES                                = _.object([
 		[GENDER_NONE, "genderless"],
 		[GENDER_MALE, "male"],
 		[GENDER_FEMALE, "female"],
 		[GENDER_HERM, "hermaphrodite"]
-	) as Dictionary<string>;
-	export const DEFAULT_SKIN_NAMES                                  = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_SKIN_NAMES                                  = _.object([
 		[SKIN_TYPE_PLAIN, "skin"],
 		[SKIN_TYPE_FUR, "fur"],
 		[SKIN_TYPE_LIZARD_SCALES, "scales"],
@@ -15,8 +15,8 @@ namespace Appearance {
 		[SKIN_TYPE_UNDEFINED, "undefined flesh"],
 		[SKIN_TYPE_DRAGON_SCALES, "scales"],
 		[SKIN_TYPE_FISH_SCALES, "scales"],
-	) as Dictionary<string>;
-	export const DEFAULT_SKIN_DESCS                                  = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_SKIN_DESCS                                  = _.object([
 		[SKIN_TYPE_PLAIN, "skin"],
 		[SKIN_TYPE_FUR, "fur"],
 		[SKIN_TYPE_LIZARD_SCALES, "scales"],
@@ -24,8 +24,8 @@ namespace Appearance {
 		[SKIN_TYPE_UNDEFINED, "skin"],
 		[SKIN_TYPE_DRAGON_SCALES, "scales"],
 		[SKIN_TYPE_FISH_SCALES, "scales"],
-	) as Dictionary<string>;
-	export const DEFAULT_HAIR_NAMES                                  = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_HAIR_NAMES                                  = _.object([
 		[HAIR_NORMAL, "normal"],
 		[HAIR_FEATHER, "feather"],
 		[HAIR_GHOST, "transparent"],
@@ -34,14 +34,14 @@ namespace Appearance {
 		[HAIR_QUILL, "quill"],
 		[HAIR_BASILISK_SPINES, "spiny basilisk"],
 		[HAIR_BASILISK_PLUME, "feathery plume"],
-	) as Dictionary<string>;
-	export const DEFAULT_BEARD_NAMES                                 = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_BEARD_NAMES                                 = _.object([
 		[BEARD_NORMAL, "normal"],
 		[BEARD_GOATEE, "goatee"],
 		[BEARD_CLEANCUT, "clean-cut"],
 		[BEARD_MOUNTAINMAN, "mountain-man"]
-	) as Dictionary<string>;
-	export const DEFAULT_FACE_NAMES                                  = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_FACE_NAMES                                  = _.object([
 		[FACE_HUMAN, "human"],
 		[FACE_HORSE, "horse"],
 		[FACE_DOG, "dog"],
@@ -66,24 +66,24 @@ namespace Appearance {
 		[FACE_RHINO, "rhino"],
 		[FACE_ECHIDNA, "echidna"],
 		[FACE_DEER, "deer"]
-	) as Dictionary<string>;
-	export const DEFAULT_TONGUE_NAMES                                = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_TONGUE_NAMES                                = _.object([
 		[TONGUE_HUMAN, "human"],
 		[TONGUE_SNAKE, "serpentine"],
 		[TONGUE_DEMONIC, "demonic"],
 		[TONGUE_DRACONIC, "draconic"],
 		[TONGUE_ECHIDNA, "echidna"],
 		[TONGUE_LIZARD, "lizard"],
-	) as Dictionary<string>;
-	export const DEFAULT_EYES_NAMES                                  = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_EYES_NAMES                                  = _.object([
 		[EYES_HUMAN, "human"],
 		[EYES_FOUR_SPIDER_EYES, "4 spider"],
 		[EYES_BLACK_EYES_SAND_TRAP, "sandtrap black"],
 		[EYES_LIZARD, "lizard"],
 		[EYES_DRAGON, "dragon"],
 		[EYES_BASILISK, "basilisk"],
-	) as Dictionary<string>;
-	export const DEFAULT_EARS_NAMES                                  = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_EARS_NAMES                                  = _.object([
 		[EARS_HUMAN, "human"],
 		[EARS_HORSE, "horse"],
 		[EARS_DOG, "dog"],
@@ -102,8 +102,8 @@ namespace Appearance {
 		[EARS_RHINO, "rhino"],
 		[EARS_ECHIDNA, "echidna"],
 		[EARS_DEER, "deer"]
-	) as Dictionary<string>;
-	export const DEFAULT_HORNS_NAMES                                 = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_HORNS_NAMES                                 = _.object([
 		[HORNS_NONE, "non-existant"],
 		[HORNS_DEMON, "demon"],
 		[HORNS_COW_MINOTAUR, "cow"],
@@ -112,19 +112,19 @@ namespace Appearance {
 		[HORNS_ANTLERS, "deer"],
 		[HORNS_GOAT, "goat"],
 		[HORNS_RHINO, "rhino"]
-	) as Dictionary<string>;
-	export const DEFAULT_ANTENNAE_NAMES                              = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_ANTENNAE_NAMES                              = _.object([
 		[ANTENNAE_NONE, "non-existant"],
 		[ANTENNAE_BEE, "bee"]
-	) as Dictionary<string>;
-	export const DEFAULT_ARM_NAMES                                   = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_ARM_NAMES                                   = _.object([
 		[ARM_TYPE_HUMAN, "human"],
 		[ARM_TYPE_HARPY, "harpy"],
 		[ARM_TYPE_SPIDER, "spider"],
 		[ARM_TYPE_PREDATOR, "predator"],
 		[ARM_TYPE_SALAMANDER, "salamander"]
-	) as Dictionary<string>;
-	export const DEFAULT_TAIL_NAMES                                  = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_TAIL_NAMES                                  = _.object([
 		[TAIL_TYPE_NONE, "non-existant"],
 		[TAIL_TYPE_HORSE, "horse"],
 		[TAIL_TYPE_DOG, "dog"],
@@ -150,8 +150,8 @@ namespace Appearance {
 		[TAIL_TYPE_ECHIDNA, "echidna"],
 		[TAIL_TYPE_DEER, "deer"],
 		[TAIL_TYPE_SALAMANDER, "salamander"]
-	) as Dictionary<string>;
-	export const DEFAULT_WING_NAMES                                  = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_WING_NAMES                                  = _.object([
 		[WING_TYPE_NONE, "non-existant"],
 		[WING_TYPE_BEE_LIKE_SMALL, "small bee-like"],
 		[WING_TYPE_BEE_LIKE_LARGE, "large bee-like"],
@@ -165,8 +165,8 @@ namespace Appearance {
 		[WING_TYPE_DRACONIC_SMALL, "small draconic"],
 		[WING_TYPE_DRACONIC_LARGE, "large draconic"],
 		[WING_TYPE_GIANT_DRAGONFLY, "giant dragonfly"]
-	) as Dictionary<string>;
-	export const DEFAULT_WING_DESCS                                  = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_WING_DESCS                                  = _.object([
 		[WING_TYPE_NONE, "non-existant"],
 		[WING_TYPE_BEE_LIKE_SMALL, "small bee-like"],
 		[WING_TYPE_BEE_LIKE_LARGE, "large bee-like"],
@@ -180,8 +180,8 @@ namespace Appearance {
 		[WING_TYPE_DRACONIC_SMALL, "small, draconic"],
 		[WING_TYPE_DRACONIC_LARGE, "large, draconic"],
 		[WING_TYPE_GIANT_DRAGONFLY, "giant dragonfly"]
-	) as Dictionary<string>;
-	export const DEFAULT_LOWER_BODY_NAMES                            = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_LOWER_BODY_NAMES                            = _.object([
 		[LOWER_BODY_TYPE_HUMAN, "human"],
 		[LOWER_BODY_TYPE_HOOFED, "hoofed"],
 		[LOWER_BODY_TYPE_DOG, "dog"],
@@ -207,20 +207,20 @@ namespace Appearance {
 		[LOWER_BODY_TYPE_ECHIDNA, "echidna"],
 		[LOWER_BODY_TYPE_ECHIDNA, "deertaur"],
 		[LOWER_BODY_TYPE_SALAMANDER, "salamander"]
-	) as Dictionary<string>;
-	export const DEFAULT_PIERCING_NAMES                              = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_PIERCING_NAMES                              = _.object([
 		[PIERCING_TYPE_NONE, "none"],
 		[PIERCING_TYPE_STUD, "stud"],
 		[PIERCING_TYPE_RING, "ring"],
 		[PIERCING_TYPE_LADDER, "ladder"],
 		[PIERCING_TYPE_HOOP, "hoop"],
 		[PIERCING_TYPE_CHAIN, "chain"]
-	) as Dictionary<string>;
-	export const DEFAULT_VAGINA_TYPE_NAMES                           = _.object(
+	]) as Dictionary<string>;
+	export const DEFAULT_VAGINA_TYPE_NAMES                           = _.object([
 		[VAGINA_TYPE_HUMAN, "human"],
 		[VAGINA_TYPE_EQUINE, "equine"],
 		[VAGINA_TYPE_BLACK_SAND_TRAP, "black sandtrap"]
-	) as Dictionary<string>;
+	]) as Dictionary<string>;
 	export const DEFAULT_VAGINA_WETNESS_SCALES: [number, string][]   = [
 		[VAGINA_WETNESS_DRY, "dry"],
 		[VAGINA_WETNESS_NORMAL, "normal"],
@@ -699,6 +699,7 @@ namespace Appearance {
 		}
 		return descript + "breasts";
 	}
+
 	export function assholeDescript(i_creature: Creature, forceDesc: boolean = false): string {
 		let description: string = "";
 

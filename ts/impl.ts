@@ -1,5 +1,6 @@
 ///<reference path="Appearance.ts"/>
 ///<reference path="player.ts"/>
+///<reference path="kFLAGS.ts"/>
 
 class Measurements {
 	constructor(readonly game: CoC) {
@@ -54,6 +55,10 @@ class CoC {
 	readonly flags: {
 		[index: number]: (string | number);
 	}                     = {};
+
+	constructor() {
+		this.flags[kFLAGS.AKBAL_TIMES_BITCHED] = 69;
+	}
 
 	get kFLAGS_REF(): any {
 		return kFLAGS

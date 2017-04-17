@@ -1614,15 +1614,20 @@ function regenOne(preview) {
 		Rng.state = (preview.seed = preview.ui.seed.val() | 0);
 		for (var _i = 0, _a = preview.ui.attrs.toArray(); _i < _a.length; _i++) {
 			var a = _a[_i];
-			attrSet(preview.game, a.name, a.value);
+			var v = a.value;
+			var type = a.dataset.type;
+			if (type == 'boolean')
+				v = v === 'true';
+			attrSet(preview.game, a.name, v);
 		}
 		kGAMECLASS = preview.game;
 		var t0 = new Date();
 		var s = preview.parser.recursiveParser(src);
-		var t1 = new Date();
-		preview.ui.status.text("done in " + (t1.getTime() - t0.getTime()).toFixed() + "ms");
+		preview.ui.status.text("almost there");
 		_.defer(function () {
 			preview.ui.content.html(s);
+			var t1 = new Date();
+			preview.ui.status.text("done in " + (t1.getTime() - t0.getTime()).toFixed() + "ms");
 		});
 	});
 }
@@ -1646,7 +1651,7 @@ function setupPreview(container, game) {
 		game: game,
 		seed: Rng.gen_state()
 	};
-	var updater = _.debounce(_.partial(regenOne, p), 1000);
+	var updater = _.debounce(_.partial(regenOne, p), 300);
 	p.ui.seed.val(p.seed).on("input", updater);
 	p.ui.attrs.on("input", updater);
 	for (var _i = 0, _a = p.ui.attrs.toArray(); _i < _a.length; _i++) {
@@ -1731,7 +1736,7 @@ $(function () {
 			regenOne(preview);
 		}
 	}
-	textarea.on("input change", _.debounce(regen, 1000));
+	textarea.on("input change", _.debounce(regen, 300));
 	regen();
 });
 var CockTypesEnum;
@@ -2217,24 +2222,226 @@ var BREAST_CUP_JACQUES00 = 199; // <-- Jacques00-cup
 ///<reference path="appearanceDefs.ts"/>
 var Appearance;
 (function (Appearance) {
-	Appearance.DEFAULT_GENDER_NAMES = _.object([GENDER_NONE, "genderless"], [GENDER_MALE, "male"], [GENDER_FEMALE, "female"], [GENDER_HERM, "hermaphrodite"]);
-	Appearance.DEFAULT_SKIN_NAMES = _.object([SKIN_TYPE_PLAIN, "skin"], [SKIN_TYPE_FUR, "fur"], [SKIN_TYPE_LIZARD_SCALES, "scales"], [SKIN_TYPE_GOO, "goo"], [SKIN_TYPE_UNDEFINED, "undefined flesh"], [SKIN_TYPE_DRAGON_SCALES, "scales"], [SKIN_TYPE_FISH_SCALES, "scales"]);
-	Appearance.DEFAULT_SKIN_DESCS = _.object([SKIN_TYPE_PLAIN, "skin"], [SKIN_TYPE_FUR, "fur"], [SKIN_TYPE_LIZARD_SCALES, "scales"], [SKIN_TYPE_GOO, "skin"], [SKIN_TYPE_UNDEFINED, "skin"], [SKIN_TYPE_DRAGON_SCALES, "scales"], [SKIN_TYPE_FISH_SCALES, "scales"]);
-	Appearance.DEFAULT_HAIR_NAMES = _.object([HAIR_NORMAL, "normal"], [HAIR_FEATHER, "feather"], [HAIR_GHOST, "transparent"], [HAIR_GOO, "goopy"], [HAIR_ANEMONE, "tentacle"], [HAIR_QUILL, "quill"], [HAIR_BASILISK_SPINES, "spiny basilisk"], [HAIR_BASILISK_PLUME, "feathery plume"]);
-	Appearance.DEFAULT_BEARD_NAMES = _.object([BEARD_NORMAL, "normal"], [BEARD_GOATEE, "goatee"], [BEARD_CLEANCUT, "clean-cut"], [BEARD_MOUNTAINMAN, "mountain-man"]);
-	Appearance.DEFAULT_FACE_NAMES = _.object([FACE_HUMAN, "human"], [FACE_HORSE, "horse"], [FACE_DOG, "dog"], [FACE_COW_MINOTAUR, "cow"], [FACE_SHARK_TEETH, "shark"], [FACE_SNAKE_FANGS, "snake"], [FACE_CAT, "cat"], [FACE_LIZARD, "lizard"], [FACE_BUNNY, "bunny"], [FACE_KANGAROO, "kangaroo"], [FACE_SPIDER_FANGS, "spider"], [FACE_FOX, "fox"], [FACE_DRAGON, "dragon"], [FACE_RACCOON_MASK, "raccoon mask"], [FACE_RACCOON, "racoon"], [FACE_BUCKTEETH, "buckteeth"], [FACE_MOUSE, "mouse"], [FACE_FERRET_MASK, "ferret mask"], [FACE_FERRET, "ferret"], [FACE_PIG, "pig"], [FACE_BOAR, "boar"], [FACE_RHINO, "rhino"], [FACE_ECHIDNA, "echidna"], [FACE_DEER, "deer"]);
-	Appearance.DEFAULT_TONGUE_NAMES = _.object([TONGUE_HUMAN, "human"], [TONGUE_SNAKE, "serpentine"], [TONGUE_DEMONIC, "demonic"], [TONGUE_DRACONIC, "draconic"], [TONGUE_ECHIDNA, "echidna"], [TONGUE_LIZARD, "lizard"]);
-	Appearance.DEFAULT_EYES_NAMES = _.object([EYES_HUMAN, "human"], [EYES_FOUR_SPIDER_EYES, "4 spider"], [EYES_BLACK_EYES_SAND_TRAP, "sandtrap black"], [EYES_LIZARD, "lizard"], [EYES_DRAGON, "dragon"], [EYES_BASILISK, "basilisk"]);
-	Appearance.DEFAULT_EARS_NAMES = _.object([EARS_HUMAN, "human"], [EARS_HORSE, "horse"], [EARS_DOG, "dog"], [EARS_COW, "cow"], [EARS_ELFIN, "elfin"], [EARS_CAT, "cat"], [EARS_LIZARD, "lizard"], [EARS_BUNNY, "bunny"], [EARS_KANGAROO, "kangaroo"], [EARS_FOX, "fox"], [EARS_DRAGON, "dragon"], [EARS_RACCOON, "raccoon"], [EARS_MOUSE, "mouse"], [EARS_FERRET, "ferret"], [EARS_PIG, "pig"], [EARS_RHINO, "rhino"], [EARS_ECHIDNA, "echidna"], [EARS_DEER, "deer"]);
-	Appearance.DEFAULT_HORNS_NAMES = _.object([HORNS_NONE, "non-existant"], [HORNS_DEMON, "demon"], [HORNS_COW_MINOTAUR, "cow"], [HORNS_DRACONIC_X2, "2 draconic"], [HORNS_DRACONIC_X4_12_INCH_LONG, "four 12\" long draconic"], [HORNS_ANTLERS, "deer"], [HORNS_GOAT, "goat"], [HORNS_RHINO, "rhino"]);
-	Appearance.DEFAULT_ANTENNAE_NAMES = _.object([ANTENNAE_NONE, "non-existant"], [ANTENNAE_BEE, "bee"]);
-	Appearance.DEFAULT_ARM_NAMES = _.object([ARM_TYPE_HUMAN, "human"], [ARM_TYPE_HARPY, "harpy"], [ARM_TYPE_SPIDER, "spider"], [ARM_TYPE_PREDATOR, "predator"], [ARM_TYPE_SALAMANDER, "salamander"]);
-	Appearance.DEFAULT_TAIL_NAMES = _.object([TAIL_TYPE_NONE, "non-existant"], [TAIL_TYPE_HORSE, "horse"], [TAIL_TYPE_DOG, "dog"], [TAIL_TYPE_DEMONIC, "demonic"], [TAIL_TYPE_COW, "cow"], [TAIL_TYPE_SPIDER_ADBOMEN, "spider abdomen"], [TAIL_TYPE_BEE_ABDOMEN, "bee abdomen"], [TAIL_TYPE_SHARK, "shark"], [TAIL_TYPE_CAT, "cat"], [TAIL_TYPE_LIZARD, "lizard"], [TAIL_TYPE_RABBIT, "rabbit"], [TAIL_TYPE_HARPY, "harpy"], [TAIL_TYPE_KANGAROO, "kangaroo"], [TAIL_TYPE_FOX, "fox"], [TAIL_TYPE_DRACONIC, "draconic"], [TAIL_TYPE_RACCOON, "raccoon"], [TAIL_TYPE_MOUSE, "mouse"], [TAIL_TYPE_BEHEMOTH, "behemoth"], [TAIL_TYPE_PIG, "pig"], [TAIL_TYPE_SCORPION, "scorpion"], [TAIL_TYPE_GOAT, "goat"], [TAIL_TYPE_RHINO, "rhino"], [TAIL_TYPE_ECHIDNA, "echidna"], [TAIL_TYPE_DEER, "deer"], [TAIL_TYPE_SALAMANDER, "salamander"]);
-	Appearance.DEFAULT_WING_NAMES = _.object([WING_TYPE_NONE, "non-existant"], [WING_TYPE_BEE_LIKE_SMALL, "small bee-like"], [WING_TYPE_BEE_LIKE_LARGE, "large bee-like"], [WING_TYPE_HARPY, "harpy"], [WING_TYPE_IMP, "imp"], [WING_TYPE_IMP_LARGE, "large imp"], [WING_TYPE_BAT_LIKE_TINY, "tiny bat-like"], [WING_TYPE_BAT_LIKE_LARGE, "large bat-like"], [WING_TYPE_SHARK_FIN, "shark fin"], [WING_TYPE_FEATHERED_LARGE, "large feathered"], [WING_TYPE_DRACONIC_SMALL, "small draconic"], [WING_TYPE_DRACONIC_LARGE, "large draconic"], [WING_TYPE_GIANT_DRAGONFLY, "giant dragonfly"]);
-	Appearance.DEFAULT_WING_DESCS = _.object([WING_TYPE_NONE, "non-existant"], [WING_TYPE_BEE_LIKE_SMALL, "small bee-like"], [WING_TYPE_BEE_LIKE_LARGE, "large bee-like"], [WING_TYPE_HARPY, "large feathery"], [WING_TYPE_IMP, "small"], [WING_TYPE_IMP_LARGE, "large"], [WING_TYPE_BAT_LIKE_TINY, "tiny, bat-like"], [WING_TYPE_BAT_LIKE_LARGE, "large, bat-like"], [WING_TYPE_SHARK_FIN, ""], [WING_TYPE_FEATHERED_LARGE, "large, feathered"], [WING_TYPE_DRACONIC_SMALL, "small, draconic"], [WING_TYPE_DRACONIC_LARGE, "large, draconic"], [WING_TYPE_GIANT_DRAGONFLY, "giant dragonfly"]);
-	Appearance.DEFAULT_LOWER_BODY_NAMES = _.object([LOWER_BODY_TYPE_HUMAN, "human"], [LOWER_BODY_TYPE_HOOFED, "hoofed"], [LOWER_BODY_TYPE_DOG, "dog"], [LOWER_BODY_TYPE_NAGA, "naga"], [LOWER_BODY_TYPE_CENTAUR, "centaur"], [LOWER_BODY_TYPE_DEMONIC_HIGH_HEELS, "demonic high-heels"], [LOWER_BODY_TYPE_DEMONIC_CLAWS, "demonic claws"], [LOWER_BODY_TYPE_BEE, "bee"], [LOWER_BODY_TYPE_GOO, "goo"], [LOWER_BODY_TYPE_CAT, "cat"], [LOWER_BODY_TYPE_LIZARD, "lizard"], [LOWER_BODY_TYPE_PONY, "pony"], [LOWER_BODY_TYPE_BUNNY, "bunny"], [LOWER_BODY_TYPE_HARPY, "harpy"], [LOWER_BODY_TYPE_KANGAROO, "kangaroo"], [LOWER_BODY_TYPE_CHITINOUS_SPIDER_LEGS, "chitinous spider legs"], [LOWER_BODY_TYPE_DRIDER_LOWER_BODY, "drider"], [LOWER_BODY_TYPE_FOX, "fox"], [LOWER_BODY_TYPE_DRAGON, "dragon"], [LOWER_BODY_TYPE_RACCOON, "raccoon"], [LOWER_BODY_TYPE_FERRET, "ferret"], [LOWER_BODY_TYPE_CLOVEN_HOOFED, "cloven-hoofed"], [LOWER_BODY_TYPE_ECHIDNA, "echidna"], [LOWER_BODY_TYPE_ECHIDNA, "deertaur"], [LOWER_BODY_TYPE_SALAMANDER, "salamander"]);
-	Appearance.DEFAULT_PIERCING_NAMES = _.object([PIERCING_TYPE_NONE, "none"], [PIERCING_TYPE_STUD, "stud"], [PIERCING_TYPE_RING, "ring"], [PIERCING_TYPE_LADDER, "ladder"], [PIERCING_TYPE_HOOP, "hoop"], [PIERCING_TYPE_CHAIN, "chain"]);
-	Appearance.DEFAULT_VAGINA_TYPE_NAMES = _.object([VAGINA_TYPE_HUMAN, "human"], [VAGINA_TYPE_EQUINE, "equine"], [VAGINA_TYPE_BLACK_SAND_TRAP, "black sandtrap"]);
+	Appearance.DEFAULT_GENDER_NAMES = _.object([
+		[GENDER_NONE, "genderless"],
+		[GENDER_MALE, "male"],
+		[GENDER_FEMALE, "female"],
+		[GENDER_HERM, "hermaphrodite"]
+	]);
+	Appearance.DEFAULT_SKIN_NAMES = _.object([
+		[SKIN_TYPE_PLAIN, "skin"],
+		[SKIN_TYPE_FUR, "fur"],
+		[SKIN_TYPE_LIZARD_SCALES, "scales"],
+		[SKIN_TYPE_GOO, "goo"],
+		[SKIN_TYPE_UNDEFINED, "undefined flesh"],
+		[SKIN_TYPE_DRAGON_SCALES, "scales"],
+		[SKIN_TYPE_FISH_SCALES, "scales"],
+	]);
+	Appearance.DEFAULT_SKIN_DESCS = _.object([
+		[SKIN_TYPE_PLAIN, "skin"],
+		[SKIN_TYPE_FUR, "fur"],
+		[SKIN_TYPE_LIZARD_SCALES, "scales"],
+		[SKIN_TYPE_GOO, "skin"],
+		[SKIN_TYPE_UNDEFINED, "skin"],
+		[SKIN_TYPE_DRAGON_SCALES, "scales"],
+		[SKIN_TYPE_FISH_SCALES, "scales"],
+	]);
+	Appearance.DEFAULT_HAIR_NAMES = _.object([
+		[HAIR_NORMAL, "normal"],
+		[HAIR_FEATHER, "feather"],
+		[HAIR_GHOST, "transparent"],
+		[HAIR_GOO, "goopy"],
+		[HAIR_ANEMONE, "tentacle"],
+		[HAIR_QUILL, "quill"],
+		[HAIR_BASILISK_SPINES, "spiny basilisk"],
+		[HAIR_BASILISK_PLUME, "feathery plume"],
+	]);
+	Appearance.DEFAULT_BEARD_NAMES = _.object([
+		[BEARD_NORMAL, "normal"],
+		[BEARD_GOATEE, "goatee"],
+		[BEARD_CLEANCUT, "clean-cut"],
+		[BEARD_MOUNTAINMAN, "mountain-man"]
+	]);
+	Appearance.DEFAULT_FACE_NAMES = _.object([
+		[FACE_HUMAN, "human"],
+		[FACE_HORSE, "horse"],
+		[FACE_DOG, "dog"],
+		[FACE_COW_MINOTAUR, "cow"],
+		[FACE_SHARK_TEETH, "shark"],
+		[FACE_SNAKE_FANGS, "snake"],
+		[FACE_CAT, "cat"],
+		[FACE_LIZARD, "lizard"],
+		[FACE_BUNNY, "bunny"],
+		[FACE_KANGAROO, "kangaroo"],
+		[FACE_SPIDER_FANGS, "spider"],
+		[FACE_FOX, "fox"],
+		[FACE_DRAGON, "dragon"],
+		[FACE_RACCOON_MASK, "raccoon mask"],
+		[FACE_RACCOON, "racoon"],
+		[FACE_BUCKTEETH, "buckteeth"],
+		[FACE_MOUSE, "mouse"],
+		[FACE_FERRET_MASK, "ferret mask"],
+		[FACE_FERRET, "ferret"],
+		[FACE_PIG, "pig"],
+		[FACE_BOAR, "boar"],
+		[FACE_RHINO, "rhino"],
+		[FACE_ECHIDNA, "echidna"],
+		[FACE_DEER, "deer"]
+	]);
+	Appearance.DEFAULT_TONGUE_NAMES = _.object([
+		[TONGUE_HUMAN, "human"],
+		[TONGUE_SNAKE, "serpentine"],
+		[TONGUE_DEMONIC, "demonic"],
+		[TONGUE_DRACONIC, "draconic"],
+		[TONGUE_ECHIDNA, "echidna"],
+		[TONGUE_LIZARD, "lizard"],
+	]);
+	Appearance.DEFAULT_EYES_NAMES = _.object([
+		[EYES_HUMAN, "human"],
+		[EYES_FOUR_SPIDER_EYES, "4 spider"],
+		[EYES_BLACK_EYES_SAND_TRAP, "sandtrap black"],
+		[EYES_LIZARD, "lizard"],
+		[EYES_DRAGON, "dragon"],
+		[EYES_BASILISK, "basilisk"],
+	]);
+	Appearance.DEFAULT_EARS_NAMES = _.object([
+		[EARS_HUMAN, "human"],
+		[EARS_HORSE, "horse"],
+		[EARS_DOG, "dog"],
+		[EARS_COW, "cow"],
+		[EARS_ELFIN, "elfin"],
+		[EARS_CAT, "cat"],
+		[EARS_LIZARD, "lizard"],
+		[EARS_BUNNY, "bunny"],
+		[EARS_KANGAROO, "kangaroo"],
+		[EARS_FOX, "fox"],
+		[EARS_DRAGON, "dragon"],
+		[EARS_RACCOON, "raccoon"],
+		[EARS_MOUSE, "mouse"],
+		[EARS_FERRET, "ferret"],
+		[EARS_PIG, "pig"],
+		[EARS_RHINO, "rhino"],
+		[EARS_ECHIDNA, "echidna"],
+		[EARS_DEER, "deer"]
+	]);
+	Appearance.DEFAULT_HORNS_NAMES = _.object([
+		[HORNS_NONE, "non-existant"],
+		[HORNS_DEMON, "demon"],
+		[HORNS_COW_MINOTAUR, "cow"],
+		[HORNS_DRACONIC_X2, "2 draconic"],
+		[HORNS_DRACONIC_X4_12_INCH_LONG, "four 12\" long draconic"],
+		[HORNS_ANTLERS, "deer"],
+		[HORNS_GOAT, "goat"],
+		[HORNS_RHINO, "rhino"]
+	]);
+	Appearance.DEFAULT_ANTENNAE_NAMES = _.object([
+		[ANTENNAE_NONE, "non-existant"],
+		[ANTENNAE_BEE, "bee"]
+	]);
+	Appearance.DEFAULT_ARM_NAMES = _.object([
+		[ARM_TYPE_HUMAN, "human"],
+		[ARM_TYPE_HARPY, "harpy"],
+		[ARM_TYPE_SPIDER, "spider"],
+		[ARM_TYPE_PREDATOR, "predator"],
+		[ARM_TYPE_SALAMANDER, "salamander"]
+	]);
+	Appearance.DEFAULT_TAIL_NAMES = _.object([
+		[TAIL_TYPE_NONE, "non-existant"],
+		[TAIL_TYPE_HORSE, "horse"],
+		[TAIL_TYPE_DOG, "dog"],
+		[TAIL_TYPE_DEMONIC, "demonic"],
+		[TAIL_TYPE_COW, "cow"],
+		[TAIL_TYPE_SPIDER_ADBOMEN, "spider abdomen"],
+		[TAIL_TYPE_BEE_ABDOMEN, "bee abdomen"],
+		[TAIL_TYPE_SHARK, "shark"],
+		[TAIL_TYPE_CAT, "cat"],
+		[TAIL_TYPE_LIZARD, "lizard"],
+		[TAIL_TYPE_RABBIT, "rabbit"],
+		[TAIL_TYPE_HARPY, "harpy"],
+		[TAIL_TYPE_KANGAROO, "kangaroo"],
+		[TAIL_TYPE_FOX, "fox"],
+		[TAIL_TYPE_DRACONIC, "draconic"],
+		[TAIL_TYPE_RACCOON, "raccoon"],
+		[TAIL_TYPE_MOUSE, "mouse"],
+		[TAIL_TYPE_BEHEMOTH, "behemoth"],
+		[TAIL_TYPE_PIG, "pig"],
+		[TAIL_TYPE_SCORPION, "scorpion"],
+		[TAIL_TYPE_GOAT, "goat"],
+		[TAIL_TYPE_RHINO, "rhino"],
+		[TAIL_TYPE_ECHIDNA, "echidna"],
+		[TAIL_TYPE_DEER, "deer"],
+		[TAIL_TYPE_SALAMANDER, "salamander"]
+	]);
+	Appearance.DEFAULT_WING_NAMES = _.object([
+		[WING_TYPE_NONE, "non-existant"],
+		[WING_TYPE_BEE_LIKE_SMALL, "small bee-like"],
+		[WING_TYPE_BEE_LIKE_LARGE, "large bee-like"],
+		[WING_TYPE_HARPY, "harpy"],
+		[WING_TYPE_IMP, "imp"],
+		[WING_TYPE_IMP_LARGE, "large imp"],
+		[WING_TYPE_BAT_LIKE_TINY, "tiny bat-like"],
+		[WING_TYPE_BAT_LIKE_LARGE, "large bat-like"],
+		[WING_TYPE_SHARK_FIN, "shark fin"],
+		[WING_TYPE_FEATHERED_LARGE, "large feathered"],
+		[WING_TYPE_DRACONIC_SMALL, "small draconic"],
+		[WING_TYPE_DRACONIC_LARGE, "large draconic"],
+		[WING_TYPE_GIANT_DRAGONFLY, "giant dragonfly"]
+	]);
+	Appearance.DEFAULT_WING_DESCS = _.object([
+		[WING_TYPE_NONE, "non-existant"],
+		[WING_TYPE_BEE_LIKE_SMALL, "small bee-like"],
+		[WING_TYPE_BEE_LIKE_LARGE, "large bee-like"],
+		[WING_TYPE_HARPY, "large feathery"],
+		[WING_TYPE_IMP, "small"],
+		[WING_TYPE_IMP_LARGE, "large"],
+		[WING_TYPE_BAT_LIKE_TINY, "tiny, bat-like"],
+		[WING_TYPE_BAT_LIKE_LARGE, "large, bat-like"],
+		[WING_TYPE_SHARK_FIN, ""],
+		[WING_TYPE_FEATHERED_LARGE, "large, feathered"],
+		[WING_TYPE_DRACONIC_SMALL, "small, draconic"],
+		[WING_TYPE_DRACONIC_LARGE, "large, draconic"],
+		[WING_TYPE_GIANT_DRAGONFLY, "giant dragonfly"]
+	]);
+	Appearance.DEFAULT_LOWER_BODY_NAMES = _.object([
+		[LOWER_BODY_TYPE_HUMAN, "human"],
+		[LOWER_BODY_TYPE_HOOFED, "hoofed"],
+		[LOWER_BODY_TYPE_DOG, "dog"],
+		[LOWER_BODY_TYPE_NAGA, "naga"],
+		[LOWER_BODY_TYPE_CENTAUR, "centaur"],
+		[LOWER_BODY_TYPE_DEMONIC_HIGH_HEELS, "demonic high-heels"],
+		[LOWER_BODY_TYPE_DEMONIC_CLAWS, "demonic claws"],
+		[LOWER_BODY_TYPE_BEE, "bee"],
+		[LOWER_BODY_TYPE_GOO, "goo"],
+		[LOWER_BODY_TYPE_CAT, "cat"],
+		[LOWER_BODY_TYPE_LIZARD, "lizard"],
+		[LOWER_BODY_TYPE_PONY, "pony"],
+		[LOWER_BODY_TYPE_BUNNY, "bunny"],
+		[LOWER_BODY_TYPE_HARPY, "harpy"],
+		[LOWER_BODY_TYPE_KANGAROO, "kangaroo"],
+		[LOWER_BODY_TYPE_CHITINOUS_SPIDER_LEGS, "chitinous spider legs"],
+		[LOWER_BODY_TYPE_DRIDER_LOWER_BODY, "drider"],
+		[LOWER_BODY_TYPE_FOX, "fox"],
+		[LOWER_BODY_TYPE_DRAGON, "dragon"],
+		[LOWER_BODY_TYPE_RACCOON, "raccoon"],
+		[LOWER_BODY_TYPE_FERRET, "ferret"],
+		[LOWER_BODY_TYPE_CLOVEN_HOOFED, "cloven-hoofed"],
+		[LOWER_BODY_TYPE_ECHIDNA, "echidna"],
+		[LOWER_BODY_TYPE_ECHIDNA, "deertaur"],
+		[LOWER_BODY_TYPE_SALAMANDER, "salamander"]
+	]);
+	Appearance.DEFAULT_PIERCING_NAMES = _.object([
+		[PIERCING_TYPE_NONE, "none"],
+		[PIERCING_TYPE_STUD, "stud"],
+		[PIERCING_TYPE_RING, "ring"],
+		[PIERCING_TYPE_LADDER, "ladder"],
+		[PIERCING_TYPE_HOOP, "hoop"],
+		[PIERCING_TYPE_CHAIN, "chain"]
+	]);
+	Appearance.DEFAULT_VAGINA_TYPE_NAMES = _.object([
+		[VAGINA_TYPE_HUMAN, "human"],
+		[VAGINA_TYPE_EQUINE, "equine"],
+		[VAGINA_TYPE_BLACK_SAND_TRAP, "black sandtrap"]
+	]);
 	Appearance.DEFAULT_VAGINA_WETNESS_SCALES = [
 		[VAGINA_WETNESS_DRY, "dry"],
 		[VAGINA_WETNESS_NORMAL, "normal"],
@@ -3863,7 +4070,7 @@ var CreatureData = (function () {
 		this.wingType = WING_TYPE_NONE;
 		this.wingDesc = "non-existant";
 		this.gillType = GILLS_NONE;
-		this.antennae = 0;
+		this.antennae = ANTENNAE_NONE;
 		this._furColor = "no";
 		this.nipplesPierced = 0;
 		this.nipplesPShort = "";
@@ -5959,156 +6166,6 @@ var Player = (function (_super) {
 	};
 	return Player;
 }(Creature));
-///<reference path="Appearance.ts"/>
-///<reference path="player.ts"/>
-var Measurements = (function () {
-	function Measurements(game) {
-		this.game = game;
-	}
-
-	Measurements.prototype.footInchOrMetres = function (inches, precision) {
-		if (precision === void 0) {
-			precision = 2;
-		}
-		if (this.game.flags[kFLAGS.USE_METRICS])
-			return (Math.round(inches * 2.54) / Math.pow(10, precision)).toFixed(precision) + " metres";
-		return Math.floor(inches / 12) + " foot " + inches % 12 + " inch";
-	};
-	Measurements.prototype.numInchesOrCentimetres = function (inches) {
-		if (inches < 1)
-			return this.inchesOrCentimetres(inches);
-		var value = Math.round(inches);
-		if (this.game.flags[kFLAGS.USE_METRICS]) {
-			value = Math.round(inches * 2.54);
-			return num2Text(value) + (value == 1 ? " centimetre" : " centimetres");
-		}
-		if (inches % 12 == 0)
-			return (inches == 12 ? "a foot" : num2Text(inches / 12) + " feet");
-		return num2Text(value) + (value == 1 ? " inch" : " inches");
-	};
-	Measurements.prototype.inchesOrCentimetres = function (inches, precision) {
-		if (precision === void 0) {
-			precision = 1;
-		}
-		var value = Math.round(this.inchToCm(inches) * Math.pow(10, precision)) / Math.pow(10, precision);
-		var text = value + (this.game.flags[kFLAGS.USE_METRICS] ? " centimetre" : " inch");
-		if (value == 1)
-			return text;
-		return text + (this.game.flags[kFLAGS.USE_METRICS] ? "s" : "es");
-	};
-	Measurements.prototype.shortSuffix = function (inches, precision) {
-		if (precision === void 0) {
-			precision = 1;
-		}
-		var value = Math.round(this.inchToCm(inches) * Math.pow(10, precision)) / Math.pow(10, precision);
-		return value + (this.game.flags[kFLAGS.USE_METRICS] ? "-cm" : "-inch");
-	};
-	Measurements.prototype.inchToCm = function (inches) {
-		return this.game.flags[kFLAGS.USE_METRICS] ? inches * 2.54 : inches;
-	};
-	return Measurements;
-}());
-var CoC = (function () {
-	function CoC() {
-		this.player = new Player();
-		this.player2 = new Player();
-		this.measurements = new Measurements(this);
-		this.flags = {};
-	}
-
-	Object.defineProperty(CoC.prototype, "kFLAGS_REF", {
-		get: function () {
-			return kFLAGS;
-		},
-		enumerable: true,
-		configurable: true
-	});
-	;
-	return CoC;
-}());
-function attrGet(game, attr) {
-	try {
-		return eval("game." + attr);
-	}
-	catch (e) {
-		console.error("On evaluating " + attr);
-		console.error(e);
-		return "/!\\ JavaScript Error";
-	}
-}
-function attrSet(game, attr, value) {
-	try {
-		eval("(function(game,value){game." + attr + "=value;})")(game, value);
-	}
-	catch (e) {
-		console.error("On evaluating " + attr);
-		console.error(e);
-	}
-}
-var kGAMECLASS = new CoC();
-var Rng;
-(function (Rng) {
-	var MAXINT = 0x7fffffff;
-	var MININT = 0xffffffff;
-
-	function xorshift32(x) {
-		x = x | 0;
-		x = ((x << 13) ^ x) | 0;
-		x = ((x >>> 17) ^ x) | 0;
-		x = ((x << 5) ^ x) | 0;
-		return x | 0;
-	}
-
-	Rng.xorshift32 = xorshift32;
-	function gen_state() {
-		return (Math.random() * MININT) | 0;
-	}
-
-	Rng.gen_state = gen_state;
-	Rng.state = gen_state();
-	function rnd_int() {
-		return (Rng.state = xorshift32(Rng.state));
-	}
-
-	Rng.rnd_int = rnd_int;
-	function rnd_uint() {
-		return (Rng.state = xorshift32(Rng.state)) & MAXINT;
-	}
-
-	Rng.rnd_uint = rnd_uint;
-	function random() {
-		return rnd_uint() / MAXINT;
-	}
-
-	Rng.random = random;
-	function rand(i) {
-		return rnd_uint() % (i | 0);
-	}
-
-	Rng.rand = rand;
-})(Rng || (Rng = {}));
-function rand(i) {
-	return Rng.rand(i);
-}
-function randomChoice() {
-	if (arguments.length == 1 && Array.isArray(arguments[0]))
-		return arguments[0][rand(arguments[0].length)];
-	return arguments[rand(arguments.length)];
-}
-function capitalize(s) {
-	return s.slice(0, 1).toUpperCase() + s.slice(1);
-}
-var NUMBER_WORDS_NORMAL = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
-var NUMBER_WORDS_CAPITAL = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
-var NUMBER_WORDS_POSITIONAL = ["zeroth", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
-function num2Text(n) {
-	if (n >= 0 && n <= 10)
-		return NUMBER_WORDS_NORMAL[n];
-	return n.toString();
-}
-function todo(what) {
-	console.warn("TODO properly implement " + what);
-}
 var kFLAGS;
 (function (kFLAGS) {
 	kFLAGS.UNKNOWN_FLAG_NUMBER_00000 = 0;
@@ -9114,6 +9171,158 @@ var kFLAGS;
 	kFLAGS.HYPER_HAPPY = 2998;
 	kFLAGS.GRIMDARK_MODE = 2999; // Grimdark CoC! Do you wanna have a bad time?
 })(kFLAGS || (kFLAGS = {}));
+///<reference path="Appearance.ts"/>
+///<reference path="player.ts"/>
+///<reference path="kFLAGS.ts"/>
+var Measurements = (function () {
+	function Measurements(game) {
+		this.game = game;
+	}
+
+	Measurements.prototype.footInchOrMetres = function (inches, precision) {
+		if (precision === void 0) {
+			precision = 2;
+		}
+		if (this.game.flags[kFLAGS.USE_METRICS])
+			return (Math.round(inches * 2.54) / Math.pow(10, precision)).toFixed(precision) + " metres";
+		return Math.floor(inches / 12) + " foot " + inches % 12 + " inch";
+	};
+	Measurements.prototype.numInchesOrCentimetres = function (inches) {
+		if (inches < 1)
+			return this.inchesOrCentimetres(inches);
+		var value = Math.round(inches);
+		if (this.game.flags[kFLAGS.USE_METRICS]) {
+			value = Math.round(inches * 2.54);
+			return num2Text(value) + (value == 1 ? " centimetre" : " centimetres");
+		}
+		if (inches % 12 == 0)
+			return (inches == 12 ? "a foot" : num2Text(inches / 12) + " feet");
+		return num2Text(value) + (value == 1 ? " inch" : " inches");
+	};
+	Measurements.prototype.inchesOrCentimetres = function (inches, precision) {
+		if (precision === void 0) {
+			precision = 1;
+		}
+		var value = Math.round(this.inchToCm(inches) * Math.pow(10, precision)) / Math.pow(10, precision);
+		var text = value + (this.game.flags[kFLAGS.USE_METRICS] ? " centimetre" : " inch");
+		if (value == 1)
+			return text;
+		return text + (this.game.flags[kFLAGS.USE_METRICS] ? "s" : "es");
+	};
+	Measurements.prototype.shortSuffix = function (inches, precision) {
+		if (precision === void 0) {
+			precision = 1;
+		}
+		var value = Math.round(this.inchToCm(inches) * Math.pow(10, precision)) / Math.pow(10, precision);
+		return value + (this.game.flags[kFLAGS.USE_METRICS] ? "-cm" : "-inch");
+	};
+	Measurements.prototype.inchToCm = function (inches) {
+		return this.game.flags[kFLAGS.USE_METRICS] ? inches * 2.54 : inches;
+	};
+	return Measurements;
+}());
+var CoC = (function () {
+	function CoC() {
+		this.player = new Player();
+		this.player2 = new Player();
+		this.measurements = new Measurements(this);
+		this.flags = {};
+		this.flags[kFLAGS.AKBAL_TIMES_BITCHED] = 69;
+	}
+
+	Object.defineProperty(CoC.prototype, "kFLAGS_REF", {
+		get: function () {
+			return kFLAGS;
+		},
+		enumerable: true,
+		configurable: true
+	});
+	;
+	return CoC;
+}());
+function attrGet(game, attr) {
+	try {
+		return eval("game." + attr);
+	}
+	catch (e) {
+		console.error("On evaluating " + attr);
+		console.error(e);
+		return "/!\\ JavaScript Error";
+	}
+}
+function attrSet(game, attr, value) {
+	try {
+		eval("(function(game,value){game." + attr + "=value;})")(game, value);
+	}
+	catch (e) {
+		console.error("On evaluating " + attr);
+		console.error(e);
+	}
+}
+var kGAMECLASS = new CoC();
+var Rng;
+(function (Rng) {
+	var MAXINT = 0x7fffffff;
+	var MININT = 0xffffffff;
+
+	function xorshift32(x) {
+		x = x | 0;
+		x = ((x << 13) ^ x) | 0;
+		x = ((x >>> 17) ^ x) | 0;
+		x = ((x << 5) ^ x) | 0;
+		return x | 0;
+	}
+
+	Rng.xorshift32 = xorshift32;
+	function gen_state() {
+		return (Math.random() * MININT) | 0;
+	}
+
+	Rng.gen_state = gen_state;
+	Rng.state = gen_state();
+	function rnd_int() {
+		return (Rng.state = xorshift32(Rng.state));
+	}
+
+	Rng.rnd_int = rnd_int;
+	function rnd_uint() {
+		return (Rng.state = xorshift32(Rng.state)) & MAXINT;
+	}
+
+	Rng.rnd_uint = rnd_uint;
+	function random() {
+		return rnd_uint() / MAXINT;
+	}
+
+	Rng.random = random;
+	function rand(i) {
+		return rnd_uint() % (i | 0);
+	}
+
+	Rng.rand = rand;
+})(Rng || (Rng = {}));
+function rand(i) {
+	return Rng.rand(i);
+}
+function randomChoice() {
+	if (arguments.length == 1 && Array.isArray(arguments[0]))
+		return arguments[0][rand(arguments[0].length)];
+	return arguments[rand(arguments.length)];
+}
+function capitalize(s) {
+	return s.slice(0, 1).toUpperCase() + s.slice(1);
+}
+var NUMBER_WORDS_NORMAL = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+var NUMBER_WORDS_CAPITAL = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+var NUMBER_WORDS_POSITIONAL = ["zeroth", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
+function num2Text(n) {
+	if (n >= 0 && n <= 10)
+		return NUMBER_WORDS_NORMAL[n];
+	return n.toString();
+}
+function todo(what) {
+	console.warn("TODO properly implement " + what);
+}
 var KitsuneScene;
 (function (KitsuneScene) {
 	KitsuneScene.basicKitsuneFur = ["orange and white", "black", "black and white", "red", "red and white", "white"];
@@ -9138,4 +9347,11 @@ var FetishManager;
 	FetishManager.FETISH_J = 1 << 12; //00010000 00000000 = 4,096
 	FetishManager.FETISH_K = 1 << 13; //00100000 00000000 = 8,192
 })(FetishManager || (FetishManager = {}));
+function tab2(target, group) {
+	var j = $(target).parents(target.dataset.tabgroup);
+	j.find('[data-role=tab-content].active').removeClass('active');
+	j.find('[data-target=' + target.dataset.target + ']').addClass('active');
+	j.find('[role=tab].active').removeClass('active');
+	target.classList.add('active');
+}
 //# sourceMappingURL=tsout.js.map

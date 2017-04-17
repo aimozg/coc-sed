@@ -22,15 +22,19 @@ function regenOne(preview) {
 	_.defer(() => {
 		Rng.state = (preview.seed = preview.ui.seed.val() | 0);
 		for (let a of preview.ui.attrs.toArray() as HTMLInputElement[]) {
-			attrSet(preview.game, a.name, a.value);
+			let v: any = a.value;
+			let type   = a.dataset.type;
+			if (type == 'boolean') v = v === 'true';
+			attrSet(preview.game, a.name, v);
 		}
 		kGAMECLASS = preview.game;
 		let t0     = new Date();
 		let s      = preview.parser.recursiveParser(src);
-		let t1     = new Date();
-		preview.ui.status.text("done in " + (t1.getTime() - t0.getTime()).toFixed() + "ms");
+		preview.ui.status.text("almost there");
 		_.defer(() => {
 			preview.ui.content.html(s);
+			let t1 = new Date();
+			preview.ui.status.text("done in " + (t1.getTime() - t0.getTime()).toFixed() + "ms");
 		})
 	})
 }
@@ -51,7 +55,7 @@ function setupPreview(container: JQuery, game: CoC = new CoC()): Preview {
 		game  : game,
 		seed  : Rng.gen_state()
 	} as Preview;
-	let updater = _.debounce(_.partial(regenOne, p), 1000);
+	let updater = _.debounce(_.partial(regenOne, p), 300);
 	p.ui.seed.val(p.seed).on("input", updater);
 	p.ui.attrs.on("input", updater);
 	for (let a of p.ui.attrs.toArray() as HTMLInputElement[]) {
@@ -133,6 +137,6 @@ $(() => {
 			regenOne(preview);
 		}
 	}
-	textarea.on("input change", _.debounce(regen, 1000));
+	textarea.on("input change", _.debounce(regen, 300));
 	regen();
 });

@@ -30,8 +30,16 @@
 
 		.input-group {
 			align-items: baseline;
+			margin-top: .25rem;
+			margin-bottom: .25rem;
+			padding-left: .25rem !important;
+			padding-right: .25rem !important;
 		}
 
+		.input-group > .form-control-label, .input-group > .form-control {
+			margin-left: .25rem;
+			margin-right: .25rem;
+		}
 		body {
 			min-height: 100vh;
 		}
@@ -40,20 +48,31 @@
 			font-family: "Times New Roman", serif;
 		}
 
+		[data-role=tab-content]:not(.active) {
+			display: none;
+		}
+
+		.bg-eval, .bg-group {
+			border: 2px solid transparent;
+		}
+
 		.bg-eval-depth-1, .bg-group-depth-1 {
 			background: #ddf;
 		}
 
 		.bg-eval-depth-2, .bg-group-depth-2 {
 			background: #fdf;
+			border-color: #ddf;
 		}
 
 		.bg-eval-depth-3, .bg-group-depth-3 {
 			background: #fdd;
+			border-color: #fdf;
 		}
 
 		.bg-eval-depth-4, .bg-group-depth-4 {
 			background: #fed;
+			border-color: #fdd;
 		}
 
 		.bg-eval-depth-5, .bg-group-depth-5 {
@@ -77,35 +96,35 @@
 		}
 
 		.bg-eval-depth-1 {
-			color: #44f;
+			color: #228;
 		}
 
 		.bg-eval-depth-2 {
-			color: #f4f;
+			color: #828;
 		}
 
 		.bg-eval-depth-3 {
-			color: #f44;
+			color: #822;
 		}
 
 		.bg-eval-depth-4 {
-			color: #f84;
+			color: #862;
 		}
 
 		.bg-eval-depth-5 {
-			color: #ff4;
+			color: #882;
 		}
 
 		.bg-eval-depth-6 {
-			color: #4f4;
+			color: #282;
 		}
 
 		.bg-eval-depth-7 {
-			color: #4ff;
+			color: #288;
 		}
 
 		.bg-eval-depth-8 {
-			color: #444;
+			color: #222;
 		}
 
 		.bg-eval-depth-9 {
@@ -117,7 +136,7 @@
 <div class="container-fluid">
 	<h1>CoC Scene Editor</h1>
 	<div class="row">
-		<div class="col-4 d-flex flex-column">
+		<div class="col-lg-4 col-md-6 d-flex flex-column">
 			<div class="form-inline">
 				<label for="sourceformat" class="form-control-label mx-2">Parse as:</label>
 				<select class="form-control" name="sourceformat" id="sourceformat">
@@ -255,8 +274,8 @@ The minotaur's broad tongue licks and laps at your [butthole] as you writhe and 
 ]\
 * Generic function calls will be cast to string
 * \[player.cumQ\] - [player.cumQ]
-* `\[kFLAGS_REF.ARIAN_COCK_SIZE\]` - [kFLAGS_REF.ARIAN_COCK_SIZE]
-* `\[flags kFLAGS_REF.ARIAN_COCK_SIZE\]` - [flags kFLAGS_REF.ARIAN_COCK_SIZE]
+* `\[kFLAGS_REF.AKBAL_TIMES_BITCHED\]` - [kFLAGS_REF.AKBAL_TIMES_BITCHED]
+* `\[flags kFLAGS_REF.AKBAL_TIMES_BITCHED\]` - [flags kFLAGS_REF.AKBAL_TIMES_BITCHED]
 
 <h5>Gender tests</h5>\
 * \[he\]  - [he], \[his\]  - [his], \[him\]  - [him],\
@@ -277,92 +296,363 @@ The minotaur's broad tongue licks and laps at your [butthole] as you writhe and 
 Apostrophes: It's a herm!
 Double quotes: "derp a herp"</textarea>
 		</div>
-		<div class="col-4" id="preview-1">
+		<div class="col-lg-4 col-md-6" id="preview-1">
 			<div class="card">
 				<div class="card-header form-inline">
-					<ul class="nav nav-tabs card-header-tabs">
+					<ul class="nav nav-tabs card-header-tabs flex-wrap" role="tablist">
 						<li class="nav-item">
-							<a class="nav-link active" data-toggle="tab" href="#" role="tab" data-target="input-core">Core</a>
+							<a class="nav-link" data-toggle="tab" href="#" role="tab"
+							   data-target="input-cocks" data-tabgroup=".card" onclick="tab2(this)">8==D</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" data-toggle="tab" href="#" role="tab"
-							   data-target="input-combat">Combat</a>
+							   data-target="input-tits" data-tabgroup=".card" onclick="tab2(this)">(&nbsp;.&nbsp;)(&nbsp;.&nbsp;)</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" data-toggle="tab" href="#" role="tab" data-target="input-sfw">SFW
-								parts</a>
+							<a class="nav-link" data-toggle="tab" href="#" role="tab"
+							   data-target="input-pussy" data-tabgroup=".card" onclick="tab2(this)">(&nbsp;Y&nbsp;)</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#" role="tab"
+							   data-target="input-ass" data-tabgroup=".card"
+							   onclick="tab2(this)">(&nbsp;&times;&nbsp;)</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link active" data-toggle="tab" href="#" role="tab" data-target="input-core"
+							   data-tabgroup=".card" onclick="tab2(this)">Core</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#" role="tab" data-target="input-body"
+							   data-tabgroup=".card" onclick="tab2(this)">Body (I)</a>
+						</li>
+						<!--<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#" role="tab"
+							   data-target="input-basic" data-tabgroup=".card" onclick="tab2(this)">Features: basic</a>
+						</li>-->
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#" role="tab"
+							   data-target="input-nonhuman" data-tabgroup=".card" onclick="tab2(this)">Body (II)</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#" role="tab"
+							   data-target="input-stats" data-tabgroup=".card" onclick="tab2(this)">Stats</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#" role="tab"
+							   data-target="input-piercings" data-tabgroup=".card" onclick="tab2(this)">Piercings</a>
 						</li>
 					</ul>
 				</div>
-				<div class="card-header" data-role="input-core">
+				<div class="card-header active" data-target="input-core" data-role="tab-content">
 					<div class="row">
-						<div class="input-group col-12 my-1">
+						<div class="input-group col-12">
 							<label class="form-control-label mx-2">Name:</label>
 							<input type="text" name="player.short" class="form-control form-control-sm"
 							       data-role="attr">
 						</div>
-						<div class="input-group col-3 my-1">
-							<label class="form-control-label mx-2">LIB:</label>
-							<input type="number" name="player.lib" class="form-control form-control-sm"
-							       data-role="attr">
-						</div>
-						<div class="input-group col-3 my-1">
-							<label class="form-control-label mx-2">SENS:</label>
-							<input type="number" name="player.sens" class="form-control form-control-sm"
-							       data-role="attr">
-						</div>
-						<div class="input-group col-3 my-1">
-							<label class="form-control-label mx-2">COR:</label>
-							<input type="number" name="player.cor" class="form-control form-control-sm"
-							       data-role="attr">
-						</div>
 					</div>
 				</div>
-				<div class="card-header" data-role="input-combat">
+				<div class="card-header" data-target="input-stats" data-role="tab-content">
 					<div class="row">
-						<div class="input-group col-3 my-1">
-							<label class="form-control-label mx-2">STR:</label>
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">STR:</label>
 							<input type="number" name="player.str" class="form-control form-control-sm"
 							       data-role="attr">
 						</div>
-						<div class="input-group col-3 my-1">
-							<label class="form-control-label mx-2">TOU:</label>
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">TOU:</label>
 							<input type="number" name="player.tou" class="form-control form-control-sm"
 							       data-role="attr">
 						</div>
-						<div class="input-group col-3 my-1">
-							<label class="form-control-label mx-2">SPE:</label>
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">SPE:</label>
 							<input type="number" name="player.spe" class="form-control form-control-sm"
 							       data-role="attr">
 						</div>
-						<div class="input-group col-3 my-1">
-							<label class="form-control-label mx-2">INT:</label>
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">INT:</label>
 							<input type="number" name="player.inte" class="form-control form-control-sm"
 							       data-role="attr">
 						</div>
 					</div>
-				</div>
-				<div class="card-header" data-role="input-sfw">
 					<div class="row">
-						<div class="input-group col-12 my-1">
-							<label class="form-control-label mx-1">Hair:</label>
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">LIB:</label>
+							<input type="number" name="player.lib" class="form-control form-control-sm"
+							       data-role="attr">
+						</div>
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">SENS:</label>
+							<input type="number" name="player.sens" class="form-control form-control-sm"
+							       data-role="attr">
+						</div>
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">COR:</label>
+							<input type="number" name="player.cor" class="form-control form-control-sm"
+							       data-role="attr">
+						</div>
+					</div>
+					<div class="row">
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">Fatigue:</label>
+							<input type="number" name="player.fatigue" class="form-control form-control-sm"
+							       data-role="attr">
+						</div>
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">Lust:</label>
+							<input type="number" name="player.lust" class="form-control form-control-sm"
+							       data-role="attr">
+						</div>
+						<div class="input-group col-3">
+							<label class="form-control-label mr-2">HP:</label>
+							<input type="number" name="player.HP" class="form-control form-control-sm"
+							       data-role="attr">
+						</div>
+					</div>
+				</div>
+				<div class="card-header" data-target="input-body" data-role="tab-content">
+					<div class="row">
+						<div class="input-group col-4">
+							<label class="form-control-label">Height:</label>
+							<input type="number" data-role="attr" name="player.tallness"
+							       class="form-control form-control-sm">
+						</div>
+						<div class="input-group col-4">
+							<label class="form-control-label">Thick:</label>
+							<input type="number" data-role="attr" name="player.thickness"
+							       class="form-control form-control-sm">
+						</div>
+						<div class="input-group col-4">
+							<label class="form-control-label">Tone:</label>
+							<input type="number" data-role="attr" name="player.tone"
+							       class="form-control form-control-sm">
+						</div>
+						<div class="input-group col-4">
+							<label class="form-control-label">Fem:</label>
+							<input type="number" data-role="attr" name="player.femininity"
+							       class="form-control form-control-sm">
+						</div>
+						<div class="input-group col-4">
+							<label class="form-control-label">Hips:</label>
+							<input type="number" data-role="attr" name="player.hipRating"
+							       class="form-control form-control-sm">
+						</div>
+						<div class="input-group col-4">
+							<label class="form-control-label">Butt:</label>
+							<input type="number" data-role="attr" name="player.buttRating"
+							       class="form-control form-control-sm">
+						</div>
+					</div>
+					<div class="row">
+						<div class="input-group col-12">
+							<label class="form-control-label">Hair:</label>
 							<input type="text" data-role="attr" name="player.hairColor"
-							       class="form-control form-control-sm mx-1">
+							       class="form-control form-control-sm">
 							<input type="number" data-role="attr" name="player.hairLength"
-							       class="form-control form-control-sm mx-1">
-							<select data-role="attr" name="player.hairType" class="form-control form-control-sm mx-1">
-								<option value="0">HAIR_NORMAL</option>
-								<option value="1">HAIR_FEATHER</option>
-								<option value="2">HAIR_GHOST</option>
-								<option value="3">HAIR_GOO</option>
-								<option value="4">HAIR_ANEMONE</option>
-								<option value="5">HAIR_QUILL</option>
-								<option value="6">HAIR_BASILISK_SPINES</option>
-								<option value="7">HAIR_BASILISK_PLUME</option>
+							       class="form-control form-control-sm">
+							<select data-role="attr" name="player.hairType" class="form-control form-control-sm">
+								<option value="0">NORMAL (0)</option>
+								<option value="1">FEATHER (1)</option>
+								<option value="2">GHOST (2)</option>
+								<option value="3">GOO (3)</option>
+								<option value="4">ANEMONE (4)</option>
+								<option value="5">QUILL (5)</option>
+								<option value="6">BASILISK_SPINES (6)</option>
+								<option value="7">BASILISK_PLUME (7)</option>
+							</select>
+						</div>
+						<div class="input-group col-12">
+							<label class="form-control-label">Skin: adj =</label>
+							<input type="text" data-role="attr" name="player.skinAdj"
+							       class="form-control form-control-sm">
+							<label class="form-control-label">desc =</label>
+							<input type="text" data-role="attr" name="player.skinTone"
+							       class="form-control form-control-sm">
+							<label class="form-control-label">tone =</label>
+							<input type="text" data-role="attr" name="player.skinDesc"
+							       class="form-control form-control-sm">
+							<select name="player.skinType" data-role="attr" class="form-control form-control-sm">
+								<option value="0">PLAIN (0)</option>
+								<option value="1">FUR (1)</option>
+								<option value="2">LIZARD_SCALES (2)</option>
+								<option value="3">GOO (3)</option>
+								<option value="4">&mdash; (4)</option>
+								<option value="5">DRAGON_SCALES (5)</option>
+								<option value="6">FISH_SCALES (6)</option>
 							</select>
 						</div>
 					</div>
 				</div>
+				<div class="card-header" data-target="input-nonhuman" data-role="tab-content">
+					<div class="row">
+						<div class="input-group col-12">
+							<label class="form-control-label">Claws: tone =</label>
+							<input type="text" name="player.clawTone" data-role="attr"
+							       class="form-control form-control-sm">
+							<select name="player.clawType" data-role="attr" class="form-control form-control-sm">
+								<option value="0">NORMAL (0)</option>
+								<option value="1">LIZARD (1)</option>
+								<option value="2">DRAGON (2)</option>
+								<option value="3">SALAMANDER (3)</option>
+								<option value="4">CAT (4)</option>
+								<option value="5">DOG (5)</option>
+								<option value="6">RAPTOR (6)</option>
+								<option value="7">MANTIS (7)</option>
+							</select>
+						</div>
+						<div class="input-group col-12">
+							<label class="form-control-label">Horns:</label>
+							<select name="player.hornType" data-role="attr" class="form-control form-control-sm">
+								<option value="0">NONE (0)</option>
+								<option value="1">DEMON (1)</option>
+								<option value="2">COW_MINOTAUR (2)</option>
+								<option value="3">DRACONIC_X2 (3)</option>
+								<option value="4">DRACONIC_X4_12_INCH_LONG (4)</option>
+								<option value="5">ANTLERS (5)</option>
+								<option value="6">GOAT (6)</option>
+								<option value="7">UNICORN (7)</option>
+								<option value="8">RHINO (8)</option>
+							</select>
+							<label class="form-control-label">count =</label>
+							<input type="number" name="player.horns" data-role="attr"
+							       class="form-control form-control-sm">
+						</div>
+						<div class="input-group col-12">
+							<label class="form-control-label">Tail:</label>
+							<select name="player.tailType" data-role="attr" class="form-control form-control-sm">
+								<option value="0">NONE (0)</option>
+								<option value="1">HORSE (1)</option>
+								<option value="2">DOG (2)</option>
+								<option value="3">DEMONIC (3)</option>
+								<option value="4">COW (4)</option>
+								<option value="5">SPIDER_ADBOMEN (5)</option>
+								<option value="6">BEE_ABDOMEN (6)</option>
+								<option value="7">SHARK (7)</option>
+								<option value="8">CAT (8)</option>
+								<option value="9">LIZARD (9)</option>
+								<option value="10">RABBIT (10)</option>
+								<option value="11">HARPY (11)</option>
+								<option value="12">KANGAROO (12)</option>
+								<option value="13">FOX (13)</option>
+								<option value="14">DRACONIC (14)</option>
+								<option value="15">RACCOON (15)</option>
+								<option value="16">MOUSE (16)</option>
+								<option value="17">FERRET (17)</option>
+								<option value="18">BEHEMOTH (18)</option>
+								<option value="19">PIG (19)</option>
+								<option value="20">SCORPION (20)</option>
+								<option value="21">GOAT (21)</option>
+								<option value="22">RHINO (22)</option>
+								<option value="23">ECHIDNA (23)</option>
+								<option value="24">DEER (24)</option>
+								<option value="25">SALAMANDER (25)</option>
+							</select>
+							<label class="form-control-label">venom/count=</label>
+							<input type="number" data-role="attr" name="player.tailVenom"
+							       class="form-control form-control-sm">
+						</div>
+						<div class="input-group col-12">
+							<label class="form-control-label">Wings: desc=</label>
+							<input type="text" data-role="attr" name="player.wingDesc"
+							       class="form-control form-control-sm">
+							<select name="player.wingType" data-role="attr" class="form-control form-control-sm">
+								<option value="0">NONE (0)</option>
+								<option value="1">BEE_LIKE_SMALL (1)</option>
+								<option value="2">BEE_LIKE_LARGE (2)</option>
+								<option value="4">HARPY (4)</option>
+								<option value="5">IMP (5)</option>
+								<option value="6">BAT_LIKE_TINY (6)</option>
+								<option value="7">BAT_LIKE_LARGE (7)</option>
+								<option value="8">SHARK_FIN (8)</option>
+								<option value="9">FEATHERED_LARGE (9)</option>
+								<option value="0">DRACONIC_SMALL (0)</option>
+								<option value="1">DRACONIC_LARGE (1)</option>
+								<option value="2">GIANT_DRAGONFLY (2)</option>
+								<option value="3">IMP_LARGE (3)</option>
+							</select>
+						</div>
+						<div class="input-group col-6">
+							<label class="form-control-label">Gills:</label>
+							<select data-role="attr" name="player.gillType" class="form-control form-control-sm">
+								<option value="0">NONE (0)</option>
+								<option value="1">ANEMONE (1)</option>
+								<option value="2">FISH (2)</option>
+							</select>
+						</div>
+						<div class="input-group col-6">
+							<label class="form-control-label">Antennae:</label>
+							<select data-role="attr" name="player.antennae" class="form-control form-control-sm">
+								<option value="0">NONE (0)</option>
+								<option value="2">BEE (2)</option>
+							</select>
+						</div>
+						<div class="input-group col-6">
+							<label class="form-control-label">Fur color:</label>
+							<input type="text" data-role="attr" name="player._furColor"
+							       class="form-control form-control-sm">
+						</div>
+					</div>
+				</div>
+				<div class="card-header" data-target="input-cocks" data-role="tab-content">
+					<div class="row">
+						<div class="input-group col-12">
+							<label class="form-control-label">Balls: count=</label>
+							<input type="number" data-role="attr" name="player.balls"
+							       class="form-control form-control-sm">
+							<label class="form-control-label">size=</label>
+							<input type="number" data-role="attr" name="player.ballSize"
+							       class="form-control form-control-sm">
+						</div>
+					</div>
+					<div class="alert alert-warning">TODO</div>
+				</div>
+				<div class="card-header" data-target="input-tits" data-role="tab-content">
+					<!--<div class="row">
+						<div class="input-group col-6">
+							<label class="form-control-label"></label>
+							<input type="text" data-role="attr" name="" class="form-control form-control-sm">
+							<select data-role="attr" name="" class="form-control form-control-sm">
+
+							</select>
+						</div>
+					</div>-->
+					<div class="alert alert-warning">TODO</div>
+				</div>
+				<div class="card-header" data-target="input-pussy" data-role="tab-content">
+					<div class="row">
+						<div class="input-group col-6">
+							<label class="form-control-label">Wetness:</label>
+							<input type="number" data-role="attr" name="player.vaginas[0].vaginalWetness"
+							       class="form-control form-control-sm">
+						</div>
+						<div class="input-group col-6">
+							<label class="form-control-label">Looseness:</label>
+							<input type="number" data-role="attr" name="player.vaginas[0].vaginalLooseness"
+							       class="form-control form-control-sm">
+						</div>
+						<div class="input-group col-6">
+							<label class="form-control-label">Virgin:</label>
+							<select data-role="attr" data-type="boolean" name="player.vaginas[0].virgin"
+							        class="form-control form-control-sm">
+								<option value="true">yes</option>
+								<option value="false">no</option>
+							</select>
+						</div>
+						<div class="alert alert-warning">TODO</div>
+					</div>
+				</div>
+				<!--<div class="card-header" data-target="input-" data-role="tab-content">
+					<div class="row">
+						<div class="input-group col-6">
+							<label class="form-control-label"></label>
+							<input type="text" data-role="attr" name="" class="form-control form-control-sm">
+							<select data-role="attr" name="" class="form-control form-control-sm">
+
+							</select>
+						</div>
+
+					</div>
+				</div>-->
 				<div class="card-block" data-role="content"></div>
 				<div class="card-footer form-inline">
 					<label class="form-control-label mx-2">Random:</label>
@@ -371,7 +661,7 @@ Double quotes: "derp a herp"</textarea>
 				</div>
 			</div>
 		</div>
-		<div class="col-4" id="preview-2">
+		<div class="col-lg-4 col-md-6" id="preview-2">
 		</div>
 	</div>
 </div>
