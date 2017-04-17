@@ -54,6 +54,10 @@ class CoC {
 	readonly flags: {
 		[index: number]: (string | number);
 	}                     = {};
+
+	get kFLAGS_REF(): any {
+		return kFLAGS
+	};
 	readonly prison: PrisonClass;
 }
 function attrGet(game: CoC, attr: string): any {

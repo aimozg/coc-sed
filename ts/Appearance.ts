@@ -556,7 +556,7 @@ namespace Appearance {
 		let row              = creature.breastRows[creature.biggestTitRow()];
 		if (row.breastRating < 1) return "flat breasts";
 		//50% of the time size-descript them
-		if (rand(2) == 0) descript += this.breastSize(row.breastRating);
+		if (rand(2) == 0) descript += breastSize(row.breastRating);
 		//Nouns!
 		choice = rand(10);
 		switch (choice) {

@@ -127,6 +127,9 @@ class CreatureData {
 	statusEffects: string[] = [];
 }
 class Creature extends CreatureData {
+	get flags() {
+		return kGAMECLASS.flags;
+	}
 
 	createPerk(name: string) {
 		this.perks.push(name);

@@ -126,8 +126,12 @@ $(() => {
 	for (let i = 0; i < StartChars.length; i++) {
 		let game = new CoC();
 		StartChars[i](game.player, game);
-		previews.push(setupPreview($("#preview-" + (i + 1)), game));
-
+		let preview = setupPreview($("#preview-" + (i + 1)), game);
+		previews.push(preview);
+		if (i == -1) {
+			preview.parser.debug = true;
+			regenOne(preview);
+		}
 	}
 	textarea.on("input change", _.debounce(regen, 1000));
 	regen();

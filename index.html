@@ -39,6 +39,78 @@
 		[data-role=content] {
 			font-family: "Times New Roman", serif;
 		}
+
+		.bg-eval-depth-1, .bg-group-depth-1 {
+			background: #ddf;
+		}
+
+		.bg-eval-depth-2, .bg-group-depth-2 {
+			background: #fdf;
+		}
+
+		.bg-eval-depth-3, .bg-group-depth-3 {
+			background: #fdd;
+		}
+
+		.bg-eval-depth-4, .bg-group-depth-4 {
+			background: #fed;
+		}
+
+		.bg-eval-depth-5, .bg-group-depth-5 {
+			background: #ffd;
+		}
+
+		.bg-eval-depth-6, .bg-group-depth-6 {
+			background: #dfd;
+		}
+
+		.bg-eval-depth-7, .bg-group-depth-7 {
+			background: #dff;
+		}
+
+		.bg-eval-depth-8, .bg-group-depth-8 {
+			background: #ddd;
+		}
+
+		.bg-eval-depth-9, .bg-group-depth-9 {
+			background: #eee;
+		}
+
+		.bg-eval-depth-1 {
+			color: #44f;
+		}
+
+		.bg-eval-depth-2 {
+			color: #f4f;
+		}
+
+		.bg-eval-depth-3 {
+			color: #f44;
+		}
+
+		.bg-eval-depth-4 {
+			color: #f84;
+		}
+
+		.bg-eval-depth-5 {
+			color: #ff4;
+		}
+
+		.bg-eval-depth-6 {
+			color: #4f4;
+		}
+
+		.bg-eval-depth-7 {
+			color: #4ff;
+		}
+
+		.bg-eval-depth-8 {
+			color: #444;
+		}
+
+		.bg-eval-depth-9 {
+			color: #888;
+		}
 	</style>
 </head>
 <body>
@@ -65,7 +137,7 @@ The minotaur's broad tongue licks and laps at your [butthole] as you writhe and 
 <h4>Parser Tests!</h4>\
 
 <h5>Bracket escaping!</h5>\
-* \\[cock\\] to \[cock\] to [cock]
+* \\\[name\\\] to \\[name\\] to \[name\] to [name]
 
 <h5>Single word nouns</h5>\
 * \[name\] - [name]
@@ -75,7 +147,9 @@ The minotaur's broad tongue licks and laps at your [butthole] as you writhe and 
 * \[skin\] - [skin], \[skinFurScales\] - [skinFurScales], \[bodyType\] - [bodyType],
 * \[hips\] - [hips], \[butt\] - [butt], \[ass\] - [ass],
 * \[chest\] - [chest], \[fullchest\] - [fullchest], \[nipple\] - [nipple], \[nipples\] - [nipples]
+[if (hasCock) \
 * \[cock\] - [cock], \[cocks\] - [cocks], \[eachcock\] - [eachcock], \[onecock\] - [onecock], \[cockhead\] - [cockhead]
+]\
 * \[asshole\] - [asshole], \[butthole\] - [butthole], \[pussy\] - [pussy], \[vagina\] - [vagina], \[vag\] - [vag], \
 \[vagorass\] - [vagorass], \[clit\] - [clit], \[sack\] - [sack], \[balls\] - [balls], \[sheath\] - [sheath]
 * \[evade\] - [evade], \[misdirection\] - [misdirection], \[agility\] - [agility]
@@ -91,6 +165,7 @@ The minotaur's broad tongue licks and laps at your [butthole] as you writhe and 
 * \[chestDesc\] - [chestDesc]
 
 <h5>Two word nouns</h5>\
+[if (hasCock) \
 * \[cock all\] - [cock all]
 * \[cock each\] - [cock each]
 * \[cock one\] - [cock one]
@@ -110,6 +185,7 @@ The minotaur's broad tongue licks and laps at your [butthole] as you writhe and 
 * \[cockHead 0\] - [cockHead 0]  (This should always error)
 * \[cockHead 1\] - [cockHead 1]
 * \[cockHead 2\] - [cockHead 2]
+]\
 
 <h5>Boolean tests</h5>\
 * 1 \[if (4==4) HERP|DERP\]
@@ -170,11 +246,13 @@ The minotaur's broad tongue licks and laps at your [butthole] as you writhe and 
 * 27 [if (player.isBipd) IS A BIPEDDDDD | not a biped. Wat?]
 
 <h5>Arbitrary function calls</h5>\
+[if (hasCock)
 * \[eCockDescript 0\] - [eCockDescript 0]
 * \[eCockDescript\] - [eCockDescript]
 
 * \[cockDescript 0\] - [cockDescript 0]
 * \[cockDescript\] - [cockDescript]
+]\
 * Generic function calls will be cast to string
 * \[player.cumQ\] - [player.cumQ]
 * `\[kFLAGS_REF.ARIAN_COCK_SIZE\]` - [kFLAGS_REF.ARIAN_COCK_SIZE]
@@ -185,9 +263,11 @@ The minotaur's broad tongue licks and laps at your [butthole] as you writhe and 
 \[He\]  - [He], \[His\]  - [His], \[Him\]  - [Him]
 
 <h5>Typical Noun usages</h5>\
+[if (hasCock) \
 * [cock] stiffening [cock biggest] and [vagina] starting to burn with need
 * [cock all] stiffening [cock each] and [cock 1] starting to burn with need
 * [cockhead biggest] stiffening [cockhead smallest] and [cockhead longest] and [cockhead 1] starting to burn with need
+]\
 
 <h5>Complex IF Statement thing</h5>\
 \[if (hasCock = true) \[cock\] stiffening IFSTUFF \[if (hasVagina = true) \[vagina\] starting to burn with need\] IFSTUFFDONE\]\[if (isHerm = true) and \]\[if (hasVagina = true) \[vagina\] starting to burn with need\]
