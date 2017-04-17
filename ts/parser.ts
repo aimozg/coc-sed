@@ -1,6 +1,4 @@
 ///<reference path="conditionalConverters.ts"/>
-///<reference path="conditionalConverters.ts"/>
-///<reference path="conditionalConverters.ts"/>
 function trace(...argz: any[]) {
 	console.debug.apply(console, argz);
 }
@@ -108,7 +106,7 @@ class Parser {
 			if (obj == null)		// Completely bad tag
 			{
 				if (this.lookupParserDebug || this.logErrors) trace("WARNING: Unknown subject in " + arg);
-				return this.errstr("!Unknown subject in \"" + arg + "\"!");
+				return Parser.errstr("!Unknown subject in \"" + arg + "\"!");
 			}
 			if (obj.hasOwnProperty("getDescription") && arg.indexOf(".") > 0) {
 				return obj.getDescription(descriptorArray[1], "");
@@ -129,7 +127,7 @@ class Parser {
 				}
 			} else {
 				if (this.lookupParserDebug || this.logErrors) trace("WARNING: No lookup found for", arg, " search result is: ", obj);
-				return this.errstr("!Unknown tag \"" + arg + "\"!");
+				return Parser.errstr("!Unknown tag \"" + arg + "\"!");
 			}
 		}
 
@@ -144,7 +142,7 @@ class Parser {
 		const argTemp: string[] = inputArg.split(" ");
 		if (argTemp.length != 2) {
 			if (this.logErrors) trace("WARNING: Not actually a two word tag! " + inputArg);
-			return this.errstr("!Not actually a two-word tag!\"" + inputArg + "\"!")
+			return Parser.errstr("!Not actually a two-word tag!\"" + inputArg + "\"!")
 		}
 		const subject: string      = argTemp[0];
 		let aspect: any            = argTemp[1];
@@ -183,7 +181,7 @@ class Parser {
 			}
 			else {
 				if (this.logErrors) trace("WARNING: Unknown aspect in two-word tag. Arg: " + inputArg + " Aspect: " + aspectLower);
-				return this.errstr("!Unknown aspect in two-word tag \"" + inputArg + "\"! ASCII Aspect = \"" + aspectLower + "\"");
+				return Parser.errstr("!Unknown aspect in two-word tag \"" + inputArg + "\"! ASCII Aspect = \"" + aspectLower + "\"");
 			}
 
 		}
@@ -202,7 +200,7 @@ class Parser {
 		if (thing == null)		// Completely bad tag
 		{
 			if (this.logErrors) trace("WARNING: Unknown subject in " + inputArg);
-			return this.errstr("!Unknown subject in \"" + inputArg + "\"!");
+			return Parser.errstr("!Unknown subject in \"" + inputArg + "\"!");
 		}
 		if (thing.hasOwnProperty("getDescription") && subject.indexOf(".") > 0) {
 			if (argTemp.length > 1) {
@@ -228,7 +226,7 @@ class Parser {
 				const indice: number = +aspectLower;
 				if (isNaN(indice)) {
 					if (this.logErrors) trace("WARNING: Cannot use non-number as indice to Array. Arg " + inputArg + " Subject: " + subject + " Aspect: " + aspect);
-					return this.errstr("Cannot use non-number as indice to Array \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
+					return Parser.errstr("Cannot use non-number as indice to Array \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
 				}
 				else
 					return thing[indice]
@@ -243,7 +241,7 @@ class Parser {
 					return thing[aspect];
 				else {
 					if (this.logErrors) trace("WARNING: Object does not have aspect as a member. Arg: " + inputArg + " Subject: " + subject + " Aspect:" + aspect + " or " + aspectLookup);
-					return this.errstr("Object does not have aspect as a member \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + " or " + aspectLookup + "\"");
+					return Parser.errstr("Object does not have aspect as a member \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + " or " + aspectLookup + "\"");
 				}
 			}
 			else {
@@ -256,8 +254,8 @@ class Parser {
 
 
 		if (this.lookupParserDebug || this.logErrors) trace("WARNING: No lookup found for", inputArg, " search result is: ", thing);
-		return this.errstr("!Unknown subject in two-word tag \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
-		// return this.errstr("!Unknown tag \"" + arg + "\"!");
+		return Parser.errstr("!Unknown subject in two-word tag \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
+		// return Parser.errstr("!Unknown tag \"" + arg + "\"!");
 	}
 
 
@@ -426,8 +424,8 @@ class Parser {
 						if (section == 1)  // barf if we hit a second "|" that's not in brackets
 						{
 							if (this.settingsClass.haltOnErrors) throw new Error("Nested IF statements still a WIP");
-							ret = [this.errstr("Error! Too many options in if statement!"),
-								this.errstr("Error! Too many options in if statement!")];
+							ret = [Parser.errstr("Error! Too many options in if statement!"),
+								Parser.errstr("Error! Too many options in if statement!")];
 						}
 						else {
 							ret[section] = textCtnt.substring(sectionStart, i);
@@ -539,7 +537,7 @@ class Parser {
 		}
 		else {
 			if (this.settingsClass.haltOnErrors) throw "Invalid if statement! " + textCtnt;
-			return this.errstr("Invalid IF Statement " + textCtnt);
+			return Parser.errstr("Invalid IF Statement " + textCtnt);
 		}
 		return "";
 	}
@@ -557,7 +555,13 @@ class Parser {
 	private getObjectFromString(localThis: Object, inStr: string): any {
 		if (inStr in localThis) {
 			if (this.lookupParserDebug) trace("WARNING: item: ", inStr, " in: ", localThis);
-			return localThis[inStr];
+			let ret = localThis[inStr];
+			if (ret instanceof Function) {
+				return function () {
+					ret.apply(localThis, arguments)
+				}
+			}
+			return ret;
 		}
 
 		if (inStr.indexOf('.') > 0) // *should* be > -1, but if the string starts with a dot, it can't be a valid reference to a nested class anyways.
@@ -598,7 +602,7 @@ class Parser {
 
 		const argTemp = inputArg.split(" ");
 		if (argTemp.length != 2) {
-			return this.errstr("!Not actually a valid insertSection tag:!\"" + inputArg + "\"!");
+			return Parser.errstr("!Not actually a valid insertSection tag:!\"" + inputArg + "\"!");
 		}
 		const callName: string      = argTemp[0];
 		const sceneName: any        = argTemp[1];
@@ -797,33 +801,33 @@ class Parser {
 
 		if (textCtnt.toLowerCase().indexOf("insertsection") == 0) {
 			if (this.sceneParserDebug) trace("WARNING: It's a scene section insert tag!");
-			retStr = this.tostr(this.getSceneSectionToInsert(textCtnt))
+			retStr = Parser.tostr(this.getSceneSectionToInsert(textCtnt))
 		}
 		else if (singleWordTagRegExp.exec(textCtnt)) {
 			if (this.mainParserDebug) trace("WARNING: It's a single word!");
-			retStr += this.tostr(this.convertSingleArg(textCtnt));
+			retStr += Parser.tostr(this.convertSingleArg(textCtnt));
 		}
 		else if (doubleWordTagRegExp.exec(textCtnt)) {
 			if (this.mainParserDebug) trace("WARNING: Two-word tag!");
-			retStr += this.tostr(this.convertDoubleArg(textCtnt));
+			retStr += Parser.tostr(this.convertDoubleArg(textCtnt));
 		}
 		else {
 			if (this.mainParserDebug) trace("WARNING: Cannot parse content. What?", textCtnt);
-			retStr += this.errstr("!Unknown multi-word tag \"" + retStr + "\"!");
+			retStr += Parser.errstr("!Unknown multi-word tag \"" + retStr + "\"!");
 		}
 
 		return retStr;
 	}
 
-	tostr(s: any): string {
+	public static tostr(s: any): string {
 		if (s === null || s === undefined) {
-			return this.errstr(s);
+			return Parser.errstr(s);
 		} else {
 			return "" + s;
 		}
 	}
 
-	errstr(s: any): string {
+	public static errstr(s: any): string {
 		return "<span class='bg-danger text-white'>" + s + "</span>";
 	}
 
@@ -831,123 +835,127 @@ class Parser {
 // textCtnt is the text you want parsed, depth is a number that reflects the current recursion depth
 // You pass in the string you want parsed, and the parsed result is returned as a string.
 	private recParser(textCtnt: string, depth: number): string {
-		if (this.mainParserDebug) trace("WARNING: Recursion call", depth, "---------------------------------------------+++++++++++++++++++++");
-		if (this.printIntermediateParseStateDebug) trace("WARNING: Parsing contents = ", textCtnt);
-		// Depth tracks our recursion depth
-		// Basically, we need to handle things differently on the first execution, so we don't mistake single-word print-statements for
-		// a tag. Therefore, every call of this.recParser increments depth by 1
-
-		depth += 1;
-		if (textCtnt.length == 0)	// Short circuit if we've been passed an empty string
-			return "";
-
-		let i: number = 0;
-
-		let bracketCnt: number = 0;
-
-		let lastBracket: number = -1;
-
 		let retStr: string = "";
+		try {
+			if (this.mainParserDebug) trace("WARNING: Recursion call", depth, "---------------------------------------------+++++++++++++++++++++");
+			if (this.printIntermediateParseStateDebug) trace("WARNING: Parsing contents = ", textCtnt);
+			// Depth tracks our recursion depth
+			// Basically, we need to handle things differently on the first execution, so we don't mistake single-word print-statements for
+			// a tag. Therefore, every call of this.recParser increments depth by 1
 
-		do
-		{
-			lastBracket = textCtnt.indexOf("[", lastBracket + 1);
-			if (textCtnt.charAt(lastBracket - 1) == "\\") {
-				// trace("WARNING: bracket is escaped 1", lastBracket);
-			}
-			else if (lastBracket != -1) {
-				// trace("WARNING: need to parse bracket", lastBracket);
-				break;
-			}
+			depth += 1;
+			if (textCtnt.length == 0)	// Short circuit if we've been passed an empty string
+				return "";
 
-		} while (lastBracket != -1);
+			let i: number = 0;
+
+			let bracketCnt: number = 0;
+
+			let lastBracket: number = -1;
 
 
-		if (lastBracket != -1)		// If we have any open brackets
-		{
-			for (i = lastBracket; i < textCtnt.length; i += 1) {
-				if (textCtnt.charAt(i) == "[") {
-					if (textCtnt.charAt(i - 1) != "\\") {
-						//trace("WARNING: bracket is not escaped - 2");
-						bracketCnt += 1;
+			do
+			{
+				lastBracket = textCtnt.indexOf("[", lastBracket + 1);
+				if (textCtnt.charAt(lastBracket - 1) == "\\") {
+					// trace("WARNING: bracket is escaped 1", lastBracket);
+				}
+				else if (lastBracket != -1) {
+					// trace("WARNING: need to parse bracket", lastBracket);
+					break;
+				}
+
+			} while (lastBracket != -1);
+
+
+			if (lastBracket != -1)		// If we have any open brackets
+			{
+				for (i = lastBracket; i < textCtnt.length; i += 1) {
+					if (textCtnt.charAt(i) == "[") {
+						if (textCtnt.charAt(i - 1) != "\\") {
+							//trace("WARNING: bracket is not escaped - 2");
+							bracketCnt += 1;
+						}
+					}
+					else if (textCtnt.charAt(i) == "]") {
+						if (textCtnt.charAt(i - 1) != "\\") {
+							//trace("WARNING: bracket is not escaped - 3");
+							bracketCnt -= 1;
+						}
+					}
+					if (bracketCnt == 0)	// We've found the matching closing bracket for the opening bracket at textCtnt[lastBracket]
+					{
+						let prefixTmp: string, postfixTmp: string;
+
+						// Only prepend the prefix if it actually has content.
+						prefixTmp = textCtnt.substring(0, lastBracket);
+						if (this.mainParserDebug) trace("WARNING: prefix content = ", prefixTmp);
+						if (prefixTmp)
+							retStr += prefixTmp;
+						// We know there aren't any brackets in the section before the first opening bracket.
+						// therefore, we just add it to the returned string
+
+
+						let tmpStr: string = textCtnt.substring(lastBracket + 1, i);
+						tmpStr             = this.evalForSceneControls(tmpStr);
+						// this.evalForSceneControls swallows scene controls, so they won't get parsed further now.
+						// therefore, you could *theoretically* have nested scene pages, though I don't know WHY you'd ever want that.
+
+						if (this.isIfStatement(tmpStr)) {
+							if (this.conditionalDebug) trace("WARNING: early eval as if");
+							retStr += this.parseConditional(tmpStr, depth);
+							if (this.conditionalDebug) trace("WARNING: ------------------0000000000000000000000000000000000000000000000000000000000000000-----------------------")
+							//trace("WARNING: Parsed Ccnditional - ", retStr)
+						}
+						else if (tmpStr) {
+
+							if (this.printCcntentDebug) trace("WARNING: Parsing bracket contents = ", tmpStr);
+							retStr += this.parseNonIfStatement(this.recParser(tmpStr, depth), depth);
+
+						}
+
+						// First parse into the text in the brackets (to resolve any nested brackets)
+						// then, eval their contents, in case they're an if-statement or other control-flow thing
+						// I haven't implemented yet
+
+						// Only parse the trailing string if it has brackets in it.
+						// if not, we need to just return the string as-is.
+						// Parsing the trailing string if it doesn't have brackets could lead to it being
+						// incorrectly interpreted as a multi-word tag (and shit would asplode and shit)
+
+						postfixTmp = textCtnt.substring(i + 1, textCtnt.length);
+						if (postfixTmp.indexOf("[") != -1) {
+							if (this.printCcntentDebug) trace("WARNING: Need to parse trailing text", postfixTmp);
+							retStr += this.recParser(postfixTmp, depth);	// Parse the trailing text (if any)
+							// Note: This leads to LOTS of recursion. Since we basically call this.recParser once per
+							// tag, it means that if a body of text has 30 tags, we'll end up recursing at least
+							// 29 times before finishing.
+							// Making this tail-call reursive, or just parsing it flatly may be a much better option in
+							// the future, if this does become an issue.
+						}
+						else {
+							if (this.printCcntentDebug) trace("WARNING: No brackets in trailing text", postfixTmp);
+							retStr += postfixTmp;
+						}
+
+						return retStr;
+						// and return the parsed string
 					}
 				}
-				else if (textCtnt.charAt(i) == "]") {
-					if (textCtnt.charAt(i - 1) != "\\") {
-						//trace("WARNING: bracket is not escaped - 3");
-						bracketCnt -= 1;
-					}
-				}
-				if (bracketCnt == 0)	// We've found the matching closing bracket for the opening bracket at textCtnt[lastBracket]
-				{
-					let prefixTmp: string, postfixTmp: string;
-
-					// Only prepend the prefix if it actually has content.
-					prefixTmp = textCtnt.substring(0, lastBracket);
-					if (this.mainParserDebug) trace("WARNING: prefix content = ", prefixTmp);
-					if (prefixTmp)
-						retStr += prefixTmp;
-					// We know there aren't any brackets in the section before the first opening bracket.
-					// therefore, we just add it to the returned string
-
-
-					let tmpStr: string = textCtnt.substring(lastBracket + 1, i);
-					tmpStr             = this.evalForSceneControls(tmpStr);
-					// this.evalForSceneControls swallows scene controls, so they won't get parsed further now.
-					// therefore, you could *theoretically* have nested scene pages, though I don't know WHY you'd ever want that.
-
-					if (this.isIfStatement(tmpStr)) {
-						if (this.conditionalDebug) trace("WARNING: early eval as if");
-						retStr += this.parseConditional(tmpStr, depth);
-						if (this.conditionalDebug) trace("WARNING: ------------------0000000000000000000000000000000000000000000000000000000000000000-----------------------")
-						//trace("WARNING: Parsed Ccnditional - ", retStr)
-					}
-					else if (tmpStr) {
-
-						if (this.printCcntentDebug) trace("WARNING: Parsing bracket contents = ", tmpStr);
-						retStr += this.parseNonIfStatement(this.recParser(tmpStr, depth), depth);
-
-					}
-
-					// First parse into the text in the brackets (to resolve any nested brackets)
-					// then, eval their contents, in case they're an if-statement or other control-flow thing
-					// I haven't implemented yet
-
-					// Only parse the trailing string if it has brackets in it.
-					// if not, we need to just return the string as-is.
-					// Parsing the trailing string if it doesn't have brackets could lead to it being
-					// incorrectly interpreted as a multi-word tag (and shit would asplode and shit)
-
-					postfixTmp = textCtnt.substring(i + 1, textCtnt.length);
-					if (postfixTmp.indexOf("[") != -1) {
-						if (this.printCcntentDebug) trace("WARNING: Need to parse trailing text", postfixTmp);
-						retStr += this.recParser(postfixTmp, depth);	// Parse the trailing text (if any)
-						// Note: This leads to LOTS of recursion. Since we basically call this.recParser once per
-						// tag, it means that if a body of text has 30 tags, we'll end up recursing at least
-						// 29 times before finishing.
-						// Making this tail-call reursive, or just parsing it flatly may be a much better option in
-						// the future, if this does become an issue.
-					}
-					else {
-						if (this.printCcntentDebug) trace("WARNING: No brackets in trailing text", postfixTmp);
-						retStr += postfixTmp;
-					}
-
-					return retStr;
-					// and return the parsed string
-				}
 			}
+			else {
+				// DERP. We should never have brackets around something that ISN'T a tag intended to be parsed. Therefore, we just need
+				// to determine what type of parsing should be done do the tag.
+				if (this.printCcntentDebug) trace("WARNING: No brackets present in text passed to recParse", textCtnt);
+
+
+				retStr += textCtnt;
+
+			}
+		} catch (e) {
+			console.error(e);
+			retStr = Parser.errstr("" + e);
 		}
-		else {
-			// DERP. We should never have brackets around something that ISN'T a tag intended to be parsed. Therefore, we just need
-			// to determine what type of parsing should be done do the tag.
-			if (this.printCcntentDebug) trace("WARNING: No brackets present in text passed to recParse", textCtnt);
-
-
-			retStr += textCtnt;
-
-		}
-
 		return retStr;
 	}
 

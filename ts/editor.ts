@@ -37,9 +37,8 @@ function regenOne(preview) {
 function regen() {
 	_.forEach(previews, regenOne);
 }
-function setupPreview(container: JQuery): Preview {
+function setupPreview(container: JQuery, game: CoC = new CoC()): Preview {
 	container.html("").append(Preview.template.clone());
-	let game    = new CoC();
 	let p       = {
 		ui    : {
 			content  : container.find("[data-role=content]"),
@@ -52,7 +51,7 @@ function setupPreview(container: JQuery): Preview {
 		game  : game,
 		seed  : Rng.gen_state()
 	} as Preview;
-	let updater = _.debounce(_.partial(regenOne, p), 300);
+	let updater = _.debounce(_.partial(regenOne, p), 1000);
 	p.ui.seed.val(p.seed).on("input", updater);
 	p.ui.attrs.on("input", updater);
 	for (let a of p.ui.attrs.toArray() as HTMLInputElement[]) {
@@ -61,12 +60,75 @@ function setupPreview(container: JQuery): Preview {
 	return p;
 }
 
+let StartChars: ((Player, CoC) => any)[] = [
+	(player: Player, game: CoC) => {
+		player.short = "Aria";
+		if (!player.hasVagina()) player.createVagina();
+		if (player.femininity < 80) player.femininity = 80;
+		player.createPerk("BimboBody");
+		player.createPerk("BimboBrains");
+		player.tailType  = TAIL_TYPE_FOX;
+		player.tailVenom = 9;
+		player.createPerk("EnlightenedNinetails");
+		player.breastRows[0].breastRating = 5;
+		player.femininity                 = 100;
+		player.lowerBody                  = LOWER_BODY_TYPE_DEMONIC_HIGH_HEELS;
+		player.skinTone                   = "pink";
+		player.skinType                   = SKIN_TYPE_FUR;
+		player.skinDesc                   = "fur";
+		player.furColor                   = "pink";
+		player.hairColor                  = "pink";
+		player.hairLength                 = 50;
+		player.hipRating                  = 5;
+		player.buttRating                 = 5;
+		player.thickness                  = 10;
+		game.flags[kFLAGS.PC_FETISH]      = FetishManager.FETISH_BONDAGE;
+		player.earsPierced                = 1;
+		player.earsPShort                 = "green gem-stone handcuffs";
+		player.earsPLong                  = "Green gem-stone handcuffs";
+		player.nipplesPierced             = 1;
+		player.nipplesPShort              = "seamless black nipple-studs";
+		player.nipplesPLong               = "Seamless black nipple-studs";
+		game.flags[kFLAGS.PC_FETISH]      = FetishManager.FETISH_BONDAGE;
+		player.vaginas[0].clitPierced     = 1;
+		player.vaginas[0].clitPShort      = "emerald clit-stud";
+		player.vaginas[0].clitPLong       = "Emerald clit-stud";
+		player.vaginas[0].labiaPierced    = 2;
+		player.vaginas[0].labiaPShort     = "ruby labia-rings";
+		player.vaginas[0].labiaPLong      = "Ruby labia-rings";
+		player.createPerk("ElvenBounty");
+		player.createPerk("PureAndLoving");
+		player.createPerk("SensualLover");
+		player.createPerk("OneTrackMind");
+		player.weaponName = "succubi whip";
+		player.armorName  = "skimpy nurse's outfit";
+	},
+	(player: Player) => {
+		player.short     = "Betram";
+		player.earType   = EARS_FOX;
+		player.tailType  = TAIL_TYPE_FOX;
+		player.tailVenom = 1;
+		if (player.biggestTitSize() > 1) player.breastRows[0].breastRating = 1;
+		if (!player.hasCock()) {
+			player.createCock(CockTypesEnum.DOG, 8, 1);
+			player.cocks[0].knotMultiplier = 1.4;
+		}
+		if (!player.hasVagina()) {
+			player.createVagina();
+			player.vaginas[0].vaginalWetness = VAGINA_WETNESS_WET;
+			player.vaginas[0].clitLength     = 0.25;
+		}
+	}
+];
 $(() => {
 	textarea         = $("#source");
 	Preview.template = $("#preview-1 > *").clone();
-	for (let i = 1; i <= 2; i++) {
-		previews.push(setupPreview($("#preview-" + i)));
+	for (let i = 0; i < StartChars.length; i++) {
+		let game = new CoC();
+		StartChars[i](game.player, game);
+		previews.push(setupPreview($("#preview-" + (i + 1)), game));
+
 	}
-	textarea.on("input change", _.debounce(regen, 300));
+	textarea.on("input change", _.debounce(regen, 1000));
 	regen();
 });

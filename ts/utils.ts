@@ -1,3 +1,4 @@
+import Dictionary = _.Dictionary;
 namespace Rng {
 	let MAXINT = 0x7fffffff;
 	let MININT = 0xffffffff;
@@ -38,7 +39,7 @@ function rand(i: number): number {
 function randomChoice<T>(args: T[]): T;
 function randomChoice<T>(...args: T[]): T;
 function randomChoice() {
-	if (Array.isArray(arguments[0])) return arguments[0][rand(arguments[0].length)];
+	if (arguments.length == 1 && Array.isArray(arguments[0])) return arguments[0][rand(arguments[0].length)];
 	return arguments[rand(arguments.length)];
 }
 function capitalize(s: string): string {

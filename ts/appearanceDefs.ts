@@ -213,6 +213,15 @@ const WING_TYPE_DRACONIC_LARGE: number  = 11;
 const WING_TYPE_GIANT_DRAGONFLY: number = 12;
 const WING_TYPE_IMP_LARGE: number       = 13;
 
+const canFlyWings = [
+	WING_TYPE_BEE_LIKE_LARGE,
+	WING_TYPE_BAT_LIKE_LARGE,
+	WING_TYPE_FEATHERED_LARGE,
+	WING_TYPE_DRACONIC_LARGE,
+	WING_TYPE_GIANT_DRAGONFLY,
+	WING_TYPE_IMP_LARGE
+];
+
 // lowerBody
 const LOWER_BODY_TYPE_HUMAN: number                 = 0;
 const LOWER_BODY_TYPE_HOOFED: number                = 1;

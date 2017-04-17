@@ -173,8 +173,6 @@ var conditionalOptions = {
 	}
 };
 ///<reference path="conditionalConverters.ts"/>
-///<reference path="conditionalConverters.ts"/>
-///<reference path="conditionalConverters.ts"/>
 function trace() {
 	var argz = [];
 	for (var _i = 0; _i < arguments.length; _i++) {
@@ -198,44 +196,44 @@ var Parser = (function () {
 		this.printConditionalEvalDebug = false;
 		this.printIntermediateParseStateDebug = false;
 		this.logErrors = true;
-		/*
-		 Parser Syntax:
+        /*
+         Parser Syntax:
 
-		 // Querying simple PC stat nouns:
-		 [noun]
+         // Querying simple PC stat nouns:
+         [noun]
 
-		 Conditional statements:
-		 // Simple if statement:
-		 [if (condition) OUTPUT_IF_TRUE]
-		 // If-Else statement
-		 [if (condition) OUTPUT_IF_TRUE | OUTPUT_IF_FALSE]
-		 // Note - Implicit else indicated by presence of the "|"
+         Conditional statements:
+         // Simple if statement:
+         [if (condition) OUTPUT_IF_TRUE]
+         // If-Else statement
+         [if (condition) OUTPUT_IF_TRUE | OUTPUT_IF_FALSE]
+         // Note - Implicit else indicated by presence of the "|"
 
-		 // Object aspect descriptions
-		 [object aspect]
-		 // gets the description of aspect "aspect" of object/NPC/PC "object"
-		 // Eventually, I want this to be able to use introspection to access class attributes directly
-		 // Maybe even manipulate them, though I haven't thought that out much at the moment.
+         // Object aspect descriptions
+         [object aspect]
+         // gets the description of aspect "aspect" of object/NPC/PC "object"
+         // Eventually, I want this to be able to use introspection to access class attributes directly
+         // Maybe even manipulate them, though I haven't thought that out much at the moment.
 
-		 // Gender Pronoun Weirdness:
-		 // PRONOUNS: The parser uses Elverson/Spivak Pronouns specifically to allow characters to be written with non-specific genders.
-		 // http://en.wikipedia.org/wiki/Spivak_pronoun
-		 //
-		 // Cheat Table:
-		 //           | Subject    | Object       | Possessive Adjective | Possessive Pronoun | Reflexive         |
-		 // Agendered | ey laughs  | I hugged em  | eir heart warmed     | that is eirs       | ey loves emself   |
-		 // Masculine | he laughs  | I hugged him | his heart warmed     | that is his        | he loves himself  |
-		 // Feminine  | she laughs | I hugged her | her heart warmed     | that is hers       | she loves herself |
+         // Gender Pronoun Weirdness:
+         // PRONOUNS: The parser uses Elverson/Spivak Pronouns specifically to allow characters to be written with non-specific genders.
+         // http://en.wikipedia.org/wiki/Spivak_pronoun
+         //
+         // Cheat Table:
+         //           | Subject    | Object       | Possessive Adjective | Possessive Pronoun | Reflexive         |
+         // Agendered | ey laughs  | I hugged em  | eir heart warmed     | that is eirs       | ey loves emself   |
+         // Masculine | he laughs  | I hugged him | his heart warmed     | that is his        | he loves himself  |
+         // Feminine  | she laughs | I hugged her | her heart warmed     | that is hers       | she loves herself |
 
 
 
-		 [screen (SCREEN_NAME) | screen text]
-		 // creates a new screen/page.
+         [screen (SCREEN_NAME) | screen text]
+         // creates a new screen/page.
 
-		 [button (SCREEN_NAME)| button_text]
-		 // Creates a button which jumps to SCREEN_NAME when clicked
+         [button (SCREEN_NAME)| button_text]
+         // Creates a button which jumps to SCREEN_NAME when clicked
 
-		 */
+         */
 		// this.parserState is used to store the scene-parser state.
 		// it is cleared every time recursiveParser is called, and then any scene tags are added
 		// as parserState["sceneName"] = "scene content"
@@ -273,7 +271,7 @@ var Parser = (function () {
 			if (obj == null) {
 				if (this.lookupParserDebug || this.logErrors)
 					trace("WARNING: Unknown subject in " + arg);
-				return this.errstr("!Unknown subject in \"" + arg + "\"!");
+				return Parser.errstr("!Unknown subject in \"" + arg + "\"!");
 			}
 			if (obj.hasOwnProperty("getDescription") && arg.indexOf(".") > 0) {
 				return obj.getDescription(descriptorArray[1], "");
@@ -298,7 +296,7 @@ var Parser = (function () {
 			else {
 				if (this.lookupParserDebug || this.logErrors)
 					trace("WARNING: No lookup found for", arg, " search result is: ", obj);
-				return this.errstr("!Unknown tag \"" + arg + "\"!");
+				return Parser.errstr("!Unknown tag \"" + arg + "\"!");
 			}
 		}
 	};
@@ -309,7 +307,7 @@ var Parser = (function () {
 		if (argTemp.length != 2) {
 			if (this.logErrors)
 				trace("WARNING: Not actually a two word tag! " + inputArg);
-			return this.errstr("!Not actually a two-word tag!\"" + inputArg + "\"!");
+			return Parser.errstr("!Not actually a two-word tag!\"" + inputArg + "\"!");
 		}
 		var subject = argTemp[0];
 		var aspect = argTemp[1];
@@ -346,7 +344,7 @@ var Parser = (function () {
 			else {
 				if (this.logErrors)
 					trace("WARNING: Unknown aspect in two-word tag. Arg: " + inputArg + " Aspect: " + aspectLower);
-				return this.errstr("!Unknown aspect in two-word tag \"" + inputArg + "\"! ASCII Aspect = \"" + aspectLower + "\"");
+				return Parser.errstr("!Unknown aspect in two-word tag \"" + inputArg + "\"! ASCII Aspect = \"" + aspectLower + "\"");
 			}
 		}
 		if (this.lookupParserDebug)
@@ -360,7 +358,7 @@ var Parser = (function () {
 		if (thing == null) {
 			if (this.logErrors)
 				trace("WARNING: Unknown subject in " + inputArg);
-			return this.errstr("!Unknown subject in \"" + inputArg + "\"!");
+			return Parser.errstr("!Unknown subject in \"" + inputArg + "\"!");
 		}
 		if (thing.hasOwnProperty("getDescription") && subject.indexOf(".") > 0) {
 			if (argTemp.length > 1) {
@@ -384,7 +382,7 @@ var Parser = (function () {
 				if (isNaN(indice)) {
 					if (this.logErrors)
 						trace("WARNING: Cannot use non-number as indice to Array. Arg " + inputArg + " Subject: " + subject + " Aspect: " + aspect);
-					return this.errstr("Cannot use non-number as indice to Array \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
+					return Parser.errstr("Cannot use non-number as indice to Array \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
 				}
 				else
 					return thing[indice];
@@ -397,7 +395,7 @@ var Parser = (function () {
 				else {
 					if (this.logErrors)
 						trace("WARNING: Object does not have aspect as a member. Arg: " + inputArg + " Subject: " + subject + " Aspect:" + aspect + " or " + aspectLookup);
-					return this.errstr("Object does not have aspect as a member \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + " or " + aspectLookup + "\"");
+					return Parser.errstr("Object does not have aspect as a member \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + " or " + aspectLookup + "\"");
 				}
 			}
 			else {
@@ -410,8 +408,8 @@ var Parser = (function () {
 		}
 		if (this.lookupParserDebug || this.logErrors)
 			trace("WARNING: No lookup found for", inputArg, " search result is: ", thing);
-		return this.errstr("!Unknown subject in two-word tag \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
-		// return this.errstr("!Unknown tag \"" + arg + "\"!");
+		return Parser.errstr("!Unknown subject in two-word tag \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
+		// return Parser.errstr("!Unknown tag \"" + arg + "\"!");
 	};
 	// converts a single argument to a conditional to
 	// the relevant value, either by simply converting to a number, or
@@ -462,8 +460,8 @@ var Parser = (function () {
 				trace("WARNING: No lookups found!");
 			return null;
 		}
-		/*if (this.printConditionalEvalDebug || LogErrors) trace("WARNING: Could not convert to number. Evaluated ", arg, " as", argResult);
-		 return argResult;*/
+        /*if (this.printConditionalEvalDebug || LogErrors) trace("WARNING: Could not convert to number. Evaluated ", arg, " as", argResult);
+         return argResult;*/
 	};
 	// Evaluates the conditional section of an if-statement.
 	// Does the proper parsing and look-up of any of the special nouns
@@ -562,8 +560,8 @@ var Parser = (function () {
 						if (section == 1) {
 							if (this.settingsClass.haltOnErrors)
 								throw new Error("Nested IF statements still a WIP");
-							ret = [this.errstr("Error! Too many options in if statement!"),
-								this.errstr("Error! Too many options in if statement!")];
+							ret = [Parser.errstr("Error! Too many options in if statement!"),
+								Parser.errstr("Error! Too many options in if statement!")];
 						}
 						else {
 							ret[section] = textCtnt.substring(sectionStart, i);
@@ -661,7 +659,7 @@ var Parser = (function () {
 		else {
 			if (this.settingsClass.haltOnErrors)
 				throw "Invalid if statement! " + textCtnt;
-			return this.errstr("Invalid IF Statement " + textCtnt);
+			return Parser.errstr("Invalid IF Statement " + textCtnt);
 		}
 		return "";
 	};
@@ -676,7 +674,13 @@ var Parser = (function () {
 		if (inStr in localThis) {
 			if (this.lookupParserDebug)
 				trace("WARNING: item: ", inStr, " in: ", localThis);
-			return localThis[inStr];
+			var ret_1 = localThis[inStr];
+			if (ret_1 instanceof Function) {
+				return function () {
+					ret_1.apply(localThis, arguments);
+				};
+			}
+			return ret_1;
 		}
 		if (inStr.indexOf('.') > 0) {
 			var localReference = void 0;
@@ -711,7 +715,7 @@ var Parser = (function () {
 	Parser.prototype.getSceneSectionToInsert = function (inputArg) {
 		var argTemp = inputArg.split(" ");
 		if (argTemp.length != 2) {
-			return this.errstr("!Not actually a valid insertSection tag:!\"" + inputArg + "\"!");
+			return Parser.errstr("!Not actually a valid insertSection tag:!\"" + inputArg + "\"!");
 		}
 		var callName = argTemp[0];
 		var sceneName = argTemp[1];
@@ -750,13 +754,13 @@ var Parser = (function () {
 	// it just returns to the debugPane
 	//
 	Parser.prototype.enterParserScene = function (sceneName) {
-		/*
-		 if (sceneParserDebug) trace("WARNING: this.parserStateContents:")
-		 for (var prop in this.parserState)
-		 {
-		 if (sceneParserDebug) trace("WARNING: this.parserState."+prop+" = "+this.parserState[prop]);
-		 }
-		 */
+        /*
+         if (sceneParserDebug) trace("WARNING: this.parserStateContents:")
+         for (var prop in this.parserState)
+         {
+         if (sceneParserDebug) trace("WARNING: this.parserState."+prop+" = "+this.parserState[prop]);
+         }
+         */
 		var ret = "";
 		if (this.sceneParserDebug)
 			trace("WARNING: Entering parser scene: \"" + sceneName + "\"");
@@ -879,139 +883,145 @@ var Parser = (function () {
 		if (textCtnt.toLowerCase().indexOf("insertsection") == 0) {
 			if (this.sceneParserDebug)
 				trace("WARNING: It's a scene section insert tag!");
-			retStr = this.tostr(this.getSceneSectionToInsert(textCtnt));
+			retStr = Parser.tostr(this.getSceneSectionToInsert(textCtnt));
 		}
 		else if (singleWordTagRegExp.exec(textCtnt)) {
 			if (this.mainParserDebug)
 				trace("WARNING: It's a single word!");
-			retStr += this.tostr(this.convertSingleArg(textCtnt));
+			retStr += Parser.tostr(this.convertSingleArg(textCtnt));
 		}
 		else if (doubleWordTagRegExp.exec(textCtnt)) {
 			if (this.mainParserDebug)
 				trace("WARNING: Two-word tag!");
-			retStr += this.tostr(this.convertDoubleArg(textCtnt));
+			retStr += Parser.tostr(this.convertDoubleArg(textCtnt));
 		}
 		else {
 			if (this.mainParserDebug)
 				trace("WARNING: Cannot parse content. What?", textCtnt);
-			retStr += this.errstr("!Unknown multi-word tag \"" + retStr + "\"!");
+			retStr += Parser.errstr("!Unknown multi-word tag \"" + retStr + "\"!");
 		}
 		return retStr;
 	};
-	Parser.prototype.tostr = function (s) {
+	Parser.tostr = function (s) {
 		if (s === null || s === undefined) {
-			return this.errstr(s);
+			return Parser.errstr(s);
 		}
 		else {
 			return "" + s;
 		}
 	};
-	Parser.prototype.errstr = function (s) {
+	Parser.errstr = function (s) {
 		return "<span class='bg-danger text-white'>" + s + "</span>";
 	};
 	// Actual internal parser function.
 	// textCtnt is the text you want parsed, depth is a number that reflects the current recursion depth
 	// You pass in the string you want parsed, and the parsed result is returned as a string.
 	Parser.prototype.recParser = function (textCtnt, depth) {
-		if (this.mainParserDebug)
-			trace("WARNING: Recursion call", depth, "---------------------------------------------+++++++++++++++++++++");
-		if (this.printIntermediateParseStateDebug)
-			trace("WARNING: Parsing contents = ", textCtnt);
-		// Depth tracks our recursion depth
-		// Basically, we need to handle things differently on the first execution, so we don't mistake single-word print-statements for
-		// a tag. Therefore, every call of this.recParser increments depth by 1
-		depth += 1;
-		if (textCtnt.length == 0)
-			return "";
-		var i = 0;
-		var bracketCnt = 0;
-		var lastBracket = -1;
 		var retStr = "";
-		do {
-			lastBracket = textCtnt.indexOf("[", lastBracket + 1);
-			if (textCtnt.charAt(lastBracket - 1) == "\\") {
-				// trace("WARNING: bracket is escaped 1", lastBracket);
+		try {
+			if (this.mainParserDebug)
+				trace("WARNING: Recursion call", depth, "---------------------------------------------+++++++++++++++++++++");
+			if (this.printIntermediateParseStateDebug)
+				trace("WARNING: Parsing contents = ", textCtnt);
+			// Depth tracks our recursion depth
+			// Basically, we need to handle things differently on the first execution, so we don't mistake single-word print-statements for
+			// a tag. Therefore, every call of this.recParser increments depth by 1
+			depth += 1;
+			if (textCtnt.length == 0)
+				return "";
+			var i = 0;
+			var bracketCnt = 0;
+			var lastBracket = -1;
+			do {
+				lastBracket = textCtnt.indexOf("[", lastBracket + 1);
+				if (textCtnt.charAt(lastBracket - 1) == "\\") {
+					// trace("WARNING: bracket is escaped 1", lastBracket);
+				}
+				else if (lastBracket != -1) {
+					// trace("WARNING: need to parse bracket", lastBracket);
+					break;
+				}
+			} while (lastBracket != -1);
+			if (lastBracket != -1) {
+				for (i = lastBracket; i < textCtnt.length; i += 1) {
+					if (textCtnt.charAt(i) == "[") {
+						if (textCtnt.charAt(i - 1) != "\\") {
+							//trace("WARNING: bracket is not escaped - 2");
+							bracketCnt += 1;
+						}
+					}
+					else if (textCtnt.charAt(i) == "]") {
+						if (textCtnt.charAt(i - 1) != "\\") {
+							//trace("WARNING: bracket is not escaped - 3");
+							bracketCnt -= 1;
+						}
+					}
+					if (bracketCnt == 0) {
+						var prefixTmp = void 0, postfixTmp = void 0;
+						// Only prepend the prefix if it actually has content.
+						prefixTmp = textCtnt.substring(0, lastBracket);
+						if (this.mainParserDebug)
+							trace("WARNING: prefix content = ", prefixTmp);
+						if (prefixTmp)
+							retStr += prefixTmp;
+						// We know there aren't any brackets in the section before the first opening bracket.
+						// therefore, we just add it to the returned string
+						var tmpStr = textCtnt.substring(lastBracket + 1, i);
+						tmpStr = this.evalForSceneControls(tmpStr);
+						// this.evalForSceneControls swallows scene controls, so they won't get parsed further now.
+						// therefore, you could *theoretically* have nested scene pages, though I don't know WHY you'd ever want that.
+						if (this.isIfStatement(tmpStr)) {
+							if (this.conditionalDebug)
+								trace("WARNING: early eval as if");
+							retStr += this.parseConditional(tmpStr, depth);
+							if (this.conditionalDebug)
+								trace("WARNING: ------------------0000000000000000000000000000000000000000000000000000000000000000-----------------------");
+							//trace("WARNING: Parsed Ccnditional - ", retStr)
+						}
+						else if (tmpStr) {
+							if (this.printCcntentDebug)
+								trace("WARNING: Parsing bracket contents = ", tmpStr);
+							retStr += this.parseNonIfStatement(this.recParser(tmpStr, depth), depth);
+						}
+						// First parse into the text in the brackets (to resolve any nested brackets)
+						// then, eval their contents, in case they're an if-statement or other control-flow thing
+						// I haven't implemented yet
+						// Only parse the trailing string if it has brackets in it.
+						// if not, we need to just return the string as-is.
+						// Parsing the trailing string if it doesn't have brackets could lead to it being
+						// incorrectly interpreted as a multi-word tag (and shit would asplode and shit)
+						postfixTmp = textCtnt.substring(i + 1, textCtnt.length);
+						if (postfixTmp.indexOf("[") != -1) {
+							if (this.printCcntentDebug)
+								trace("WARNING: Need to parse trailing text", postfixTmp);
+							retStr += this.recParser(postfixTmp, depth); // Parse the trailing text (if any)
+							// Note: This leads to LOTS of recursion. Since we basically call this.recParser once per
+							// tag, it means that if a body of text has 30 tags, we'll end up recursing at least
+							// 29 times before finishing.
+							// Making this tail-call reursive, or just parsing it flatly may be a much better option in
+							// the future, if this does become an issue.
+						}
+						else {
+							if (this.printCcntentDebug)
+								trace("WARNING: No brackets in trailing text", postfixTmp);
+							retStr += postfixTmp;
+						}
+						return retStr;
+						// and return the parsed string
+					}
+				}
 			}
-			else if (lastBracket != -1) {
-				// trace("WARNING: need to parse bracket", lastBracket);
-				break;
-			}
-		} while (lastBracket != -1);
-		if (lastBracket != -1) {
-			for (i = lastBracket; i < textCtnt.length; i += 1) {
-				if (textCtnt.charAt(i) == "[") {
-					if (textCtnt.charAt(i - 1) != "\\") {
-						//trace("WARNING: bracket is not escaped - 2");
-						bracketCnt += 1;
-					}
-				}
-				else if (textCtnt.charAt(i) == "]") {
-					if (textCtnt.charAt(i - 1) != "\\") {
-						//trace("WARNING: bracket is not escaped - 3");
-						bracketCnt -= 1;
-					}
-				}
-				if (bracketCnt == 0) {
-					var prefixTmp = void 0, postfixTmp = void 0;
-					// Only prepend the prefix if it actually has content.
-					prefixTmp = textCtnt.substring(0, lastBracket);
-					if (this.mainParserDebug)
-						trace("WARNING: prefix content = ", prefixTmp);
-					if (prefixTmp)
-						retStr += prefixTmp;
-					// We know there aren't any brackets in the section before the first opening bracket.
-					// therefore, we just add it to the returned string
-					var tmpStr = textCtnt.substring(lastBracket + 1, i);
-					tmpStr = this.evalForSceneControls(tmpStr);
-					// this.evalForSceneControls swallows scene controls, so they won't get parsed further now.
-					// therefore, you could *theoretically* have nested scene pages, though I don't know WHY you'd ever want that.
-					if (this.isIfStatement(tmpStr)) {
-						if (this.conditionalDebug)
-							trace("WARNING: early eval as if");
-						retStr += this.parseConditional(tmpStr, depth);
-						if (this.conditionalDebug)
-							trace("WARNING: ------------------0000000000000000000000000000000000000000000000000000000000000000-----------------------");
-						//trace("WARNING: Parsed Ccnditional - ", retStr)
-					}
-					else if (tmpStr) {
-						if (this.printCcntentDebug)
-							trace("WARNING: Parsing bracket contents = ", tmpStr);
-						retStr += this.parseNonIfStatement(this.recParser(tmpStr, depth), depth);
-					}
-					// First parse into the text in the brackets (to resolve any nested brackets)
-					// then, eval their contents, in case they're an if-statement or other control-flow thing
-					// I haven't implemented yet
-					// Only parse the trailing string if it has brackets in it.
-					// if not, we need to just return the string as-is.
-					// Parsing the trailing string if it doesn't have brackets could lead to it being
-					// incorrectly interpreted as a multi-word tag (and shit would asplode and shit)
-					postfixTmp = textCtnt.substring(i + 1, textCtnt.length);
-					if (postfixTmp.indexOf("[") != -1) {
-						if (this.printCcntentDebug)
-							trace("WARNING: Need to parse trailing text", postfixTmp);
-						retStr += this.recParser(postfixTmp, depth); // Parse the trailing text (if any)
-						// Note: This leads to LOTS of recursion. Since we basically call this.recParser once per
-						// tag, it means that if a body of text has 30 tags, we'll end up recursing at least
-						// 29 times before finishing.
-						// Making this tail-call reursive, or just parsing it flatly may be a much better option in
-						// the future, if this does become an issue.
-					}
-					else {
-						if (this.printCcntentDebug)
-							trace("WARNING: No brackets in trailing text", postfixTmp);
-						retStr += postfixTmp;
-					}
-					return retStr;
-					// and return the parsed string
-				}
+			else {
+				// DERP. We should never have brackets around something that ISN'T a tag intended to be parsed. Therefore, we just need
+				// to determine what type of parsing should be done do the tag.
+				if (this.printCcntentDebug)
+					trace("WARNING: No brackets present in text passed to recParse", textCtnt);
+				retStr += textCtnt;
 			}
 		}
-		else {
-			// DERP. We should never have brackets around something that ISN'T a tag intended to be parsed. Therefore, we just need
-			// to determine what type of parsing should be done do the tag.
-			if (this.printCcntentDebug)
-				trace("WARNING: No brackets present in text passed to recParse", textCtnt);
-			retStr += textCtnt;
+		catch (e) {
+			console.error(e);
+			retStr = Parser.errstr("" + e);
 		}
 		return retStr;
 	};
@@ -1046,12 +1056,12 @@ var Parser = (function () {
 		ret = ret.replace(/\\\[/g, "[");
 		// And repeated spaces (this has to be done after markdown processing)
 		ret = ret.replace(/ +/g, " ");
-		/*
-		 for (var prop in this.parserState)
-		 {
-		 trace("WARNING: this.parserState."+prop+" = "+this.parserState[prop]);
-		 }
-		 */
+        /*
+         for (var prop in this.parserState)
+         {
+         trace("WARNING: this.parserState."+prop+" = "+this.parserState[prop]);
+         }
+         */
 		// Finally, if we have a parser-based scene. enter the "startup" scene.
 		if ("startup" in this.parserState) {
 			ret = this.enterParserScene("startup");
@@ -1481,7 +1491,7 @@ var cockHeadLookups = {
 var twoWordNumericTagsLookup = {
 	"cockfit": function (thisPtr, aspect) {
 		if (!kGAMECLASS.player.hasCock())
-			return "<b>(Attempt to parse cock when none present.)</b>";
+			return Parser.errstr("(Attempt to parse cock when none present.)");
 		else {
 			if (kGAMECLASS.player.cockThatFits(aspect) >= 0)
 				return kGAMECLASS.player.cockDescript(kGAMECLASS.player.cockThatFits(aspect));
@@ -1491,7 +1501,7 @@ var twoWordNumericTagsLookup = {
 	},
 	"cockfit2": function (thisPtr, aspect) {
 		if (!kGAMECLASS.player.hasCock())
-			return "<b>(Attempt to parse cock when none present.)</b>";
+			return Parser.errstr("(Attempt to parse cock when none present.)");
 		else {
 			if (kGAMECLASS.player.cockThatFits2(aspect) >= 0)
 				return kGAMECLASS.player.cockDescript(kGAMECLASS.player.cockThatFits2(aspect));
@@ -1501,7 +1511,7 @@ var twoWordNumericTagsLookup = {
 	},
 	"cockheadfit": function (thisPtr, aspect) {
 		if (!kGAMECLASS.player.hasCock()) {
-			return "<b>(Attempt to parse cockhead when none present.)</b>";
+			return Parser.errstr("(Attempt to parse cockhead when none present.)");
 		}
 		else {
 			if (kGAMECLASS.player.cockThatFits(aspect) >= 0)
@@ -1512,7 +1522,7 @@ var twoWordNumericTagsLookup = {
 	},
 	"cockheadfit2": function (thisPtr, aspect) {
 		if (!kGAMECLASS.player.hasCock())
-			return "<b>(Attempt to parse cockhead when none present.)</b>";
+			return Parser.errstr("(Attempt to parse cockhead when none present.)");
 		else {
 			if (kGAMECLASS.player.cockThatFits2(aspect) >= 0)
 				return kGAMECLASS.player.cockHead(kGAMECLASS.player.cockThatFits2(aspect));
@@ -1522,23 +1532,23 @@ var twoWordNumericTagsLookup = {
 	},
 	"cock": function (thisPtr, aspect) {
 		if (!kGAMECLASS.player.hasCock())
-			return "<b>(Attempt to parse cock when none present.)</b>";
+			return Parser.errstr("(Attempt to parse cock when none present.)");
 		else {
 			if (aspect - 1 >= 0 && aspect - 1 < kGAMECLASS.player.cockTotal())
 				return kGAMECLASS.player.cockDescript(aspect - 1);
 			else
-				return "<b>(Attempt To Parse player.cockDescript for Invalid Cock)</b>";
+				return Parser.errstr("(Attempt To Parse player.cockDescript for Invalid Cock)");
 		}
 	},
 	"cockhead": function (thisPtr, aspect) {
 		if (!kGAMECLASS.player.hasCock())
-			return "<b>(Attempt to parse cockHead when none present.)</b>";
+			return Parser.errstr("(Attempt to parse cockHead when none present.)");
 		else {
 			var intAspect = (aspect - 1) | 0;
 			if (intAspect >= 0 && intAspect < kGAMECLASS.player.cockTotal())
 				return kGAMECLASS.player.cockHead(intAspect);
 			else
-				return "<b>(Attempt To Parse CockHeadDescript for Invalid Cock)</b>";
+				return Parser.errstr("(Attempt To Parse CockHeadDescript for Invalid Cock)");
 		}
 	}
 };
@@ -1584,9 +1594,11 @@ function regenOne(preview) {
 function regen() {
 	_.forEach(previews, regenOne);
 }
-function setupPreview(container) {
+function setupPreview(container, game) {
+	if (game === void 0) {
+		game = new CoC();
+	}
 	container.html("").append(Preview.template.clone());
-	var game = new CoC();
 	var p = {
 		ui: {
 			content: container.find("[data-role=content]"),
@@ -1599,7 +1611,7 @@ function setupPreview(container) {
 		game: game,
 		seed: Rng.gen_state()
 	};
-	var updater = _.debounce(_.partial(regenOne, p), 300);
+	var updater = _.debounce(_.partial(regenOne, p), 1000);
 	p.ui.seed.val(p.seed).on("input", updater);
 	p.ui.attrs.on("input", updater);
 	for (var _i = 0, _a = p.ui.attrs.toArray(); _i < _a.length; _i++) {
@@ -1608,13 +1620,78 @@ function setupPreview(container) {
 	}
 	return p;
 }
+var StartChars = [
+	function (player, game) {
+		player.short = "Aria";
+		if (!player.hasVagina())
+			player.createVagina();
+		if (player.femininity < 80)
+			player.femininity = 80;
+		player.createPerk("BimboBody");
+		player.createPerk("BimboBrains");
+		player.tailType = TAIL_TYPE_FOX;
+		player.tailVenom = 9;
+		player.createPerk("EnlightenedNinetails");
+		player.breastRows[0].breastRating = 5;
+		player.femininity = 100;
+		player.lowerBody = LOWER_BODY_TYPE_DEMONIC_HIGH_HEELS;
+		player.skinTone = "pink";
+		player.skinType = SKIN_TYPE_FUR;
+		player.skinDesc = "fur";
+		player.furColor = "pink";
+		player.hairColor = "pink";
+		player.hairLength = 50;
+		player.hipRating = 5;
+		player.buttRating = 5;
+		player.thickness = 10;
+		game.flags[kFLAGS.PC_FETISH] = FetishManager.FETISH_BONDAGE;
+		player.earsPierced = 1;
+		player.earsPShort = "green gem-stone handcuffs";
+		player.earsPLong = "Green gem-stone handcuffs";
+		player.nipplesPierced = 1;
+		player.nipplesPShort = "seamless black nipple-studs";
+		player.nipplesPLong = "Seamless black nipple-studs";
+		game.flags[kFLAGS.PC_FETISH] = FetishManager.FETISH_BONDAGE;
+		player.vaginas[0].clitPierced = 1;
+		player.vaginas[0].clitPShort = "emerald clit-stud";
+		player.vaginas[0].clitPLong = "Emerald clit-stud";
+		player.vaginas[0].labiaPierced = 2;
+		player.vaginas[0].labiaPShort = "ruby labia-rings";
+		player.vaginas[0].labiaPLong = "Ruby labia-rings";
+		player.createPerk("ElvenBounty");
+		player.createPerk("PureAndLoving");
+		player.createPerk("SensualLover");
+		player.createPerk("OneTrackMind");
+		player.weaponName = "succubi whip";
+		player.armorName = "skimpy nurse's outfit";
+	},
+	function (player) {
+		player.short = "Betram";
+		player.earType = EARS_FOX;
+		player.tailType = TAIL_TYPE_FOX;
+		player.tailVenom = 1;
+		if (player.biggestTitSize() > 1)
+			player.breastRows[0].breastRating = 1;
+		if (!player.hasCock()) {
+			player.createCock(CockTypesEnum.DOG, 8, 1);
+			player.cocks[0].knotMultiplier = 1.4;
+		}
+		if (!player.hasVagina()) {
+			player.createVagina();
+			player.vaginas[0].vaginalWetness = VAGINA_WETNESS_WET;
+			player.vaginas[0].clitLength = 0.25;
+		}
+	}
+];
 $(function () {
 	textarea = $("#source");
 	Preview.template = $("#preview-1 > *").clone();
-	for (var i = 1; i <= 2; i++) {
-		previews.push(setupPreview($("#preview-" + i)));
+	for (var i = 0; i < StartChars.length; i++) {
+		var game = new CoC();
+		StartChars[i](game.player, game);
+		previews.push(setupPreview($("#preview-" + (i + 1)), game));
 	}
-	textarea.on("input change", _.debounce(regen, 300));
+	textarea.on("input change", _.debounce(regen, 1000));
 	regen();
 });
 var CockTypesEnum;
@@ -1817,6 +1894,14 @@ var WING_TYPE_DRACONIC_SMALL = 10;
 var WING_TYPE_DRACONIC_LARGE = 11;
 var WING_TYPE_GIANT_DRAGONFLY = 12;
 var WING_TYPE_IMP_LARGE = 13;
+var canFlyWings = [
+	WING_TYPE_BEE_LIKE_LARGE,
+	WING_TYPE_BAT_LIKE_LARGE,
+	WING_TYPE_FEATHERED_LARGE,
+	WING_TYPE_DRACONIC_LARGE,
+	WING_TYPE_GIANT_DRAGONFLY,
+	WING_TYPE_IMP_LARGE
+];
 // lowerBody
 var LOWER_BODY_TYPE_HUMAN = 0;
 var LOWER_BODY_TYPE_HOOFED = 1;
@@ -2092,16 +2177,86 @@ var BREAST_CUP_JACQUES00 = 199; // <-- Jacques00-cup
 ///<reference path="appearanceDefs.ts"/>
 var Appearance;
 (function (Appearance) {
+	Appearance.DEFAULT_GENDER_NAMES = _.object([GENDER_NONE, "genderless"], [GENDER_MALE, "male"], [GENDER_FEMALE, "female"], [GENDER_HERM, "hermaphrodite"]);
+	Appearance.DEFAULT_SKIN_NAMES = _.object([SKIN_TYPE_PLAIN, "skin"], [SKIN_TYPE_FUR, "fur"], [SKIN_TYPE_LIZARD_SCALES, "scales"], [SKIN_TYPE_GOO, "goo"], [SKIN_TYPE_UNDEFINED, "undefined flesh"], [SKIN_TYPE_DRAGON_SCALES, "scales"], [SKIN_TYPE_FISH_SCALES, "scales"]);
+	Appearance.DEFAULT_SKIN_DESCS = _.object([SKIN_TYPE_PLAIN, "skin"], [SKIN_TYPE_FUR, "fur"], [SKIN_TYPE_LIZARD_SCALES, "scales"], [SKIN_TYPE_GOO, "skin"], [SKIN_TYPE_UNDEFINED, "skin"], [SKIN_TYPE_DRAGON_SCALES, "scales"], [SKIN_TYPE_FISH_SCALES, "scales"]);
+	Appearance.DEFAULT_HAIR_NAMES = _.object([HAIR_NORMAL, "normal"], [HAIR_FEATHER, "feather"], [HAIR_GHOST, "transparent"], [HAIR_GOO, "goopy"], [HAIR_ANEMONE, "tentacle"], [HAIR_QUILL, "quill"], [HAIR_BASILISK_SPINES, "spiny basilisk"], [HAIR_BASILISK_PLUME, "feathery plume"]);
+	Appearance.DEFAULT_BEARD_NAMES = _.object([BEARD_NORMAL, "normal"], [BEARD_GOATEE, "goatee"], [BEARD_CLEANCUT, "clean-cut"], [BEARD_MOUNTAINMAN, "mountain-man"]);
+	Appearance.DEFAULT_FACE_NAMES = _.object([FACE_HUMAN, "human"], [FACE_HORSE, "horse"], [FACE_DOG, "dog"], [FACE_COW_MINOTAUR, "cow"], [FACE_SHARK_TEETH, "shark"], [FACE_SNAKE_FANGS, "snake"], [FACE_CAT, "cat"], [FACE_LIZARD, "lizard"], [FACE_BUNNY, "bunny"], [FACE_KANGAROO, "kangaroo"], [FACE_SPIDER_FANGS, "spider"], [FACE_FOX, "fox"], [FACE_DRAGON, "dragon"], [FACE_RACCOON_MASK, "raccoon mask"], [FACE_RACCOON, "racoon"], [FACE_BUCKTEETH, "buckteeth"], [FACE_MOUSE, "mouse"], [FACE_FERRET_MASK, "ferret mask"], [FACE_FERRET, "ferret"], [FACE_PIG, "pig"], [FACE_BOAR, "boar"], [FACE_RHINO, "rhino"], [FACE_ECHIDNA, "echidna"], [FACE_DEER, "deer"]);
+	Appearance.DEFAULT_TONGUE_NAMES = _.object([TONGUE_HUMAN, "human"], [TONGUE_SNAKE, "serpentine"], [TONGUE_DEMONIC, "demonic"], [TONGUE_DRACONIC, "draconic"], [TONGUE_ECHIDNA, "echidna"], [TONGUE_LIZARD, "lizard"]);
+	Appearance.DEFAULT_EYES_NAMES = _.object([EYES_HUMAN, "human"], [EYES_FOUR_SPIDER_EYES, "4 spider"], [EYES_BLACK_EYES_SAND_TRAP, "sandtrap black"], [EYES_LIZARD, "lizard"], [EYES_DRAGON, "dragon"], [EYES_BASILISK, "basilisk"]);
+	Appearance.DEFAULT_EARS_NAMES = _.object([EARS_HUMAN, "human"], [EARS_HORSE, "horse"], [EARS_DOG, "dog"], [EARS_COW, "cow"], [EARS_ELFIN, "elfin"], [EARS_CAT, "cat"], [EARS_LIZARD, "lizard"], [EARS_BUNNY, "bunny"], [EARS_KANGAROO, "kangaroo"], [EARS_FOX, "fox"], [EARS_DRAGON, "dragon"], [EARS_RACCOON, "raccoon"], [EARS_MOUSE, "mouse"], [EARS_FERRET, "ferret"], [EARS_PIG, "pig"], [EARS_RHINO, "rhino"], [EARS_ECHIDNA, "echidna"], [EARS_DEER, "deer"]);
+	Appearance.DEFAULT_HORNS_NAMES = _.object([HORNS_NONE, "non-existant"], [HORNS_DEMON, "demon"], [HORNS_COW_MINOTAUR, "cow"], [HORNS_DRACONIC_X2, "2 draconic"], [HORNS_DRACONIC_X4_12_INCH_LONG, "four 12\" long draconic"], [HORNS_ANTLERS, "deer"], [HORNS_GOAT, "goat"], [HORNS_RHINO, "rhino"]);
+	Appearance.DEFAULT_ANTENNAE_NAMES = _.object([ANTENNAE_NONE, "non-existant"], [ANTENNAE_BEE, "bee"]);
+	Appearance.DEFAULT_ARM_NAMES = _.object([ARM_TYPE_HUMAN, "human"], [ARM_TYPE_HARPY, "harpy"], [ARM_TYPE_SPIDER, "spider"], [ARM_TYPE_PREDATOR, "predator"], [ARM_TYPE_SALAMANDER, "salamander"]);
+	Appearance.DEFAULT_TAIL_NAMES = _.object([TAIL_TYPE_NONE, "non-existant"], [TAIL_TYPE_HORSE, "horse"], [TAIL_TYPE_DOG, "dog"], [TAIL_TYPE_DEMONIC, "demonic"], [TAIL_TYPE_COW, "cow"], [TAIL_TYPE_SPIDER_ADBOMEN, "spider abdomen"], [TAIL_TYPE_BEE_ABDOMEN, "bee abdomen"], [TAIL_TYPE_SHARK, "shark"], [TAIL_TYPE_CAT, "cat"], [TAIL_TYPE_LIZARD, "lizard"], [TAIL_TYPE_RABBIT, "rabbit"], [TAIL_TYPE_HARPY, "harpy"], [TAIL_TYPE_KANGAROO, "kangaroo"], [TAIL_TYPE_FOX, "fox"], [TAIL_TYPE_DRACONIC, "draconic"], [TAIL_TYPE_RACCOON, "raccoon"], [TAIL_TYPE_MOUSE, "mouse"], [TAIL_TYPE_BEHEMOTH, "behemoth"], [TAIL_TYPE_PIG, "pig"], [TAIL_TYPE_SCORPION, "scorpion"], [TAIL_TYPE_GOAT, "goat"], [TAIL_TYPE_RHINO, "rhino"], [TAIL_TYPE_ECHIDNA, "echidna"], [TAIL_TYPE_DEER, "deer"], [TAIL_TYPE_SALAMANDER, "salamander"]);
+	Appearance.DEFAULT_WING_NAMES = _.object([WING_TYPE_NONE, "non-existant"], [WING_TYPE_BEE_LIKE_SMALL, "small bee-like"], [WING_TYPE_BEE_LIKE_LARGE, "large bee-like"], [WING_TYPE_HARPY, "harpy"], [WING_TYPE_IMP, "imp"], [WING_TYPE_IMP_LARGE, "large imp"], [WING_TYPE_BAT_LIKE_TINY, "tiny bat-like"], [WING_TYPE_BAT_LIKE_LARGE, "large bat-like"], [WING_TYPE_SHARK_FIN, "shark fin"], [WING_TYPE_FEATHERED_LARGE, "large feathered"], [WING_TYPE_DRACONIC_SMALL, "small draconic"], [WING_TYPE_DRACONIC_LARGE, "large draconic"], [WING_TYPE_GIANT_DRAGONFLY, "giant dragonfly"]);
+	Appearance.DEFAULT_WING_DESCS = _.object([WING_TYPE_NONE, "non-existant"], [WING_TYPE_BEE_LIKE_SMALL, "small bee-like"], [WING_TYPE_BEE_LIKE_LARGE, "large bee-like"], [WING_TYPE_HARPY, "large feathery"], [WING_TYPE_IMP, "small"], [WING_TYPE_IMP_LARGE, "large"], [WING_TYPE_BAT_LIKE_TINY, "tiny, bat-like"], [WING_TYPE_BAT_LIKE_LARGE, "large, bat-like"], [WING_TYPE_SHARK_FIN, ""], [WING_TYPE_FEATHERED_LARGE, "large, feathered"], [WING_TYPE_DRACONIC_SMALL, "small, draconic"], [WING_TYPE_DRACONIC_LARGE, "large, draconic"], [WING_TYPE_GIANT_DRAGONFLY, "giant dragonfly"]);
+	Appearance.DEFAULT_LOWER_BODY_NAMES = _.object([LOWER_BODY_TYPE_HUMAN, "human"], [LOWER_BODY_TYPE_HOOFED, "hoofed"], [LOWER_BODY_TYPE_DOG, "dog"], [LOWER_BODY_TYPE_NAGA, "naga"], [LOWER_BODY_TYPE_CENTAUR, "centaur"], [LOWER_BODY_TYPE_DEMONIC_HIGH_HEELS, "demonic high-heels"], [LOWER_BODY_TYPE_DEMONIC_CLAWS, "demonic claws"], [LOWER_BODY_TYPE_BEE, "bee"], [LOWER_BODY_TYPE_GOO, "goo"], [LOWER_BODY_TYPE_CAT, "cat"], [LOWER_BODY_TYPE_LIZARD, "lizard"], [LOWER_BODY_TYPE_PONY, "pony"], [LOWER_BODY_TYPE_BUNNY, "bunny"], [LOWER_BODY_TYPE_HARPY, "harpy"], [LOWER_BODY_TYPE_KANGAROO, "kangaroo"], [LOWER_BODY_TYPE_CHITINOUS_SPIDER_LEGS, "chitinous spider legs"], [LOWER_BODY_TYPE_DRIDER_LOWER_BODY, "drider"], [LOWER_BODY_TYPE_FOX, "fox"], [LOWER_BODY_TYPE_DRAGON, "dragon"], [LOWER_BODY_TYPE_RACCOON, "raccoon"], [LOWER_BODY_TYPE_FERRET, "ferret"], [LOWER_BODY_TYPE_CLOVEN_HOOFED, "cloven-hoofed"], [LOWER_BODY_TYPE_ECHIDNA, "echidna"], [LOWER_BODY_TYPE_ECHIDNA, "deertaur"], [LOWER_BODY_TYPE_SALAMANDER, "salamander"]);
+	Appearance.DEFAULT_PIERCING_NAMES = _.object([PIERCING_TYPE_NONE, "none"], [PIERCING_TYPE_STUD, "stud"], [PIERCING_TYPE_RING, "ring"], [PIERCING_TYPE_LADDER, "ladder"], [PIERCING_TYPE_HOOP, "hoop"], [PIERCING_TYPE_CHAIN, "chain"]);
+	Appearance.DEFAULT_VAGINA_TYPE_NAMES = _.object([VAGINA_TYPE_HUMAN, "human"], [VAGINA_TYPE_EQUINE, "equine"], [VAGINA_TYPE_BLACK_SAND_TRAP, "black sandtrap"]);
+	Appearance.DEFAULT_VAGINA_WETNESS_SCALES = [
+		[VAGINA_WETNESS_DRY, "dry"],
+		[VAGINA_WETNESS_NORMAL, "normal"],
+		[VAGINA_WETNESS_WET, "wet"],
+		[VAGINA_WETNESS_SLICK, "slick"],
+		[VAGINA_WETNESS_DROOLING, "drooling"],
+		[VAGINA_WETNESS_SLAVERING, "slavering"],
+	];
+	Appearance.DEFAULT_VAGINA_LOOSENESS_SCALES = [
+		[VAGINA_LOOSENESS_TIGHT, "tight"],
+		[VAGINA_LOOSENESS_NORMAL, "normal"],
+		[VAGINA_LOOSENESS_LOOSE, "loose"],
+		[VAGINA_LOOSENESS_GAPING, "gaping"],
+		[VAGINA_LOOSENESS_GAPING_WIDE, "gaping wide"],
+		[VAGINA_LOOSENESS_LEVEL_CLOWN_CAR, "clown-car level"]
+	];
+	Appearance.DEFAULT_ANAL_WETNESS_SCALES = [
+		[ANAL_WETNESS_DRY, "dry"],
+		[ANAL_WETNESS_NORMAL, "normal"],
+		[ANAL_WETNESS_MOIST, "moist"],
+		[ANAL_WETNESS_SLIMY, "slimym"],
+		[ANAL_WETNESS_DROOLING, "drooling"],
+		[ANAL_WETNESS_SLIME_DROOLING, "slime-drooling"],
+	];
+	Appearance.DEFAULT_ANAL_LOOSENESS_SCALES = [
+		[ANAL_LOOSENESS_VIRGIN, "virgin"],
+		[ANAL_LOOSENESS_TIGHT, "tight"],
+		[ANAL_LOOSENESS_NORMAL, "normal"],
+		[ANAL_LOOSENESS_LOOSE, "loose"],
+		[ANAL_LOOSENESS_STRETCHED, "stretched"],
+		[ANAL_LOOSENESS_GAPING, "gaping"]
+	];
+	Appearance.DEFAULT_HIP_RATING_SCALES = [
+		[HIP_RATING_BOYISH, "boyish"],
+		[HIP_RATING_SLENDER, "slender"],
+		[HIP_RATING_AVERAGE, "average"],
+		[HIP_RATING_AMPLE, "ample"],
+		[HIP_RATING_CURVY, "curvy"],
+		[HIP_RATING_FERTILE, "fertile"],
+		[HIP_RATING_INHUMANLY_WIDE, "inhumanly wide"]
+	];
+	Appearance.DEFAULT_BUTT_RATING_SCALES = [
+		[BUTT_RATING_BUTTLESS, "buttless"],
+		[BUTT_RATING_TIGHT, "tight"],
+		[BUTT_RATING_AVERAGE, "average"],
+		[BUTT_RATING_NOTICEABLE, "noticeable"],
+		[BUTT_RATING_LARGE, "large"],
+		[BUTT_RATING_JIGGLY, "jiggly"],
+		[BUTT_RATING_EXPANSIVE, "expansive"],
+		[BUTT_RATING_HUGE, "huge"],
+		[BUTT_RATING_INCONCEIVABLY_BIG, "inconceivably big"]
+	];
 	function cockDescript(creature, cockIndex) {
 		if (cockIndex === void 0) {
 			cockIndex = 0;
 		}
 		if (creature.cocks.length == 0)
-			return "<b>ERROR: cockDescript Called But No Cock Present</b>";
+			return Parser.errstr("cockDescript Called But No Cock Present");
 		var cockType = CockTypesEnum.HUMAN;
 		if (cockIndex != 99) {
 			if (creature.cocks.length <= cockIndex)
-				return "<b>ERROR: cockDescript called with index of " + cockIndex + " - out of BOUNDS</b>";
+				return Parser.errstr("ERROR: cockDescript called with index of " + cockIndex + " - out of BOUNDS");
 			cockType = creature.cocks[cockIndex].cockType;
 		}
 		var isPierced = (creature.cocks.length == 1) && (creature.cocks[cockIndex].isPierced); //Only describe as pierced or sock covered if the creature has just one cock
@@ -2541,6 +2696,77 @@ var Appearance;
 	}
 
 	Appearance.breastSize = breastSize;
+	function allBreastsDescript(creature) {
+		var storage = "";
+		if (creature.breastRows.length == 0)
+			return "unremarkable chest muscles ";
+		if (creature.breastRows.length == 2) {
+			//if (creature.totalBreasts() == 4) storage += "quartet of ";
+			storage += "two rows of ";
+		}
+		else if (creature.breastRows.length == 3) {
+			if (rand(2) == 0)
+				storage += "three rows of ";
+			else
+				storage += "multi-layered ";
+		}
+		if (creature.breastRows.length == 4) {
+			if (rand(2) == 0)
+				storage += "four rows of ";
+			else
+				storage += "four-tiered ";
+		}
+		if (creature.breastRows.length == 5) {
+			if (rand(2) == 0)
+				storage += "five rows of ";
+			else
+				storage += "five-tiered ";
+		}
+		storage += biggestBreastSizeDescript(creature);
+		return storage;
+	}
+
+	Appearance.allBreastsDescript = allBreastsDescript;
+	function breastDescript(size, lactation) {
+		if (lactation === void 0) {
+			lactation = 0;
+		}
+		if (size < 1)
+			return "flat breasts";
+		var descript = (rand(2) == 0 ? Appearance.breastSize(size) : ""); //Add a description of the breast size 50% of the time
+		switch (rand(10)) {
+			case 1:
+				if (lactation > 2)
+					return descript + "milk-udders";
+				break;
+			case 2:
+				if (lactation > 1.5)
+					descript += "milky ";
+				if (size > 4)
+					return descript + "tits";
+				break;
+			case 4:
+			case 5:
+			case 6:
+				return descript + "tits";
+			case 7:
+				if (lactation >= 2.5)
+					return descript + "udders";
+				if (lactation >= 1)
+					descript += "milk ";
+				return descript + "jugs";
+			case 8:
+				if (size > 6)
+					return descript + "love-pillows";
+				return descript + "boobs";
+			case 9:
+				if (size > 6)
+					return descript + "tits";
+		}
+		return descript + "breasts";
+	}
+
+	Appearance.breastDescript = breastDescript;
 	function assholeDescript(i_creature, forceDesc) {
 		if (forceDesc === void 0) {
 			forceDesc = false;
@@ -2574,14 +2800,939 @@ var Appearance;
 	}
 
 	Appearance.assholeDescript = assholeDescript;
+	function tongueDescript(i_creature) {
+		if (i_creature.tongueType == TONGUE_HUMAN || !Appearance.DEFAULT_TONGUE_NAMES[i_creature.tongueType])
+			return "tongue";
+		return Appearance.DEFAULT_TONGUE_NAMES[i_creature.tongueType] + " tongue";
+	}
+
+	Appearance.tongueDescript = tongueDescript;
+	function vaginaDescript(i_creature, i_vaginaIndex, forceDesc) {
+		if (i_vaginaIndex === void 0) {
+			i_vaginaIndex = 0;
+		}
+		if (forceDesc === void 0) {
+			forceDesc = false;
+		}
+		if (i_vaginaIndex > (i_creature.vaginas.length - 1) || i_vaginaIndex < 0) {
+			return Parser.errstr("Invalid vagina number (" + i_vaginaIndex + ") passed to vaginaDescript()");
+		}
+		var description = "";
+		var weighting = 0;
+		var options = [];
+		//Very confusing way to display values.
+		var vagina = i_creature.vaginas[i_vaginaIndex];
+		if (vagina.vaginalLooseness == 0)
+			weighting = 61;
+		if (vagina.vaginalLooseness == 4 || vagina.vaginalLooseness == 5)
+			weighting = 10;
+		//tightness descript - 40% display rate
+		if (forceDesc || rand(100) + weighting > 60) {
+			if (vagina.vaginalLooseness == 0) {
+				if (vagina.virgin)
+					description += "virgin";
+				else
+					description += "tight";
+			}
+			if (vagina.vaginalLooseness == 2)
+				description += "loose";
+			if (vagina.vaginalLooseness == 3)
+				description += "very loose";
+			if (vagina.vaginalLooseness == 4)
+				description += "gaping";
+			if (vagina.vaginalLooseness == 5)
+				description += "gaping-wide";
+		}
+		//wetness descript - 30% display rate
+		if (forceDesc || rand(100) + weighting > 70) {
+			if (description != "")
+				description += ", ";
+			if (vagina.vaginalWetness == 0)
+				description += "dry";
+			if (vagina.vaginalWetness == 1)
+				description += "moist";
+			if (vagina.vaginalWetness == 2)
+				description += "wet";
+			if (vagina.vaginalWetness == 3)
+				description += "slick";
+			if (vagina.vaginalWetness == 4)
+				description += "drooling";
+			if (vagina.vaginalWetness == 5)
+				description += "slavering";
+		}
+		if (vagina.labiaPierced > 0 && (forceDesc || rand(3) == 0)) {
+			if (description != "")
+				description += ", ";
+			description += "pierced";
+		}
+		if (description == "" && i_creature.hasGooSkin()) {
+			if (description != "")
+				description = description + ", ";
+			if (rand(2) == 0)
+				description += "gooey";
+			else
+				description += "slimy";
+		}
+		if (i_creature.vaginaType() == 5 && (forceDesc || Math.floor(Math.random() * 2) == 0)) {
+			if (description != "")
+				description += ", ";
+			description += randomChoice("black", "onyx", "ebony", "dusky", "sable", "obsidian", "midnight-hued", "jet black");
+		}
+		if (description != "")
+			description += " ";
+		if (kGAMECLASS.flags[kFLAGS.SFW_MODE] > 0) {
+			options = ["vagina",
+				"pussy",
+				"cooter",
+				"snatch",
+				"muff"];
+		}
+		else {
+			options = ["vagina",
+				"pussy",
+				"cooter",
+				"twat",
+				"cunt",
+				"snatch",
+				"fuck-hole",
+				"muff"];
+		}
+		description += randomChoice(options);
+		//Something that would be nice to have but needs a variable in Creature or Character.
+		//if (i_creature.bunnyScore() >= 3) description += "rabbit hole";
+		return description;
+	}
+
+	Appearance.vaginaDescript = vaginaDescript;
+	function hairDescription(i_creature) {
+		var description = "";
+		var options = [];
+		//
+		// LENGTH ADJECTIVE!
+		//
+		if (i_creature.hairLength == 0)
+			return randomChoice(["shaved", "bald", "smooth", "hairless", "glabrous"]) + " head";
+		if (i_creature.hairLength < 1)
+			description += randomChoice(["close-cropped, ", "trim, ", "very short, "]);
+		else if (i_creature.hairLength < 3)
+			description += "short, ";
+		else if (i_creature.hairLength < 6)
+			description += "shaggy, ";
+		else if (i_creature.hairLength < 10)
+			description += "moderately long, ";
+		else if (i_creature.hairLength < 16)
+			description += randomChoice(["long, ", "shoulder-length, "]);
+		else if (i_creature.hairLength < 26)
+			description += randomChoice(["very long, ", "flowing locks of "]);
+		else if (i_creature.hairLength < 40)
+			description += "ass-length, ";
+		else if (i_creature.hairLength < i_creature.tallness)
+			description += "obscenely long, ";
+		else
+			description += randomChoice(["floor-length, ", "floor-dragging, "]);
+		//
+		// COLORS
+		//
+		description += i_creature.hairColor + " ";
+		//
+		// HAIR WORDS
+		//
+		switch (i_creature.hairType) {
+			case HAIR_BASILISK_SPINES:
+				options = [
+					"rubbery spines",
+					"spiny crown",
+					"basilisk spines",
+					"reptilian spines",
+				];
+				return description + randomChoice(options);
+			case HAIR_BASILISK_PLUME:
+				options = [
+					"feathered hair",
+					"fluffy plume",
+					"basilisk plume",
+					"shock of feathers",
+				];
+				return description + randomChoice(options);
+		}
+		// TODO: Fix the spaghetti-code below to use a switch-case-return and it'll be
+		// case HAIR_GOO: return description + "goo-mane";
+		// and so on. (Stadler76)
+		//If furry and longish hair sometimes call it a mane (50%)
+		if (i_creature.hasFur() && i_creature.hairLength > 3 && rand(2) == 0) {
+			if (i_creature.hairType == HAIR_FEATHER)
+				description += "feather-";
+			else if (i_creature.hairType == HAIR_GHOST)
+				description += "transparent ";
+			else if (i_creature.hairType == HAIR_GOO)
+				description += "goo-";
+			else if (i_creature.hairType == HAIR_ANEMONE)
+				description += "tentacle-";
+			else if (i_creature.hairType == HAIR_QUILL)
+				description += "quill-";
+			description += "mane";
+			return description;
+		}
+		//if medium length refer to as locks sometimes
+		//CUT - locks is plural and screws up tense.
+        /*if (creature.hairLength >= 3 && creature.hairLength < 16 && rand(2) == 0) {
+         descript += "locks of hair";
+         return descript;
+         }*/
+		//If nothing else used, use hair!
+		if (i_creature.hairType == HAIR_FEATHER)
+			description += "feather-";
+		else if (i_creature.hairType == HAIR_GHOST)
+			description += "transparent ";
+		else if (i_creature.hairType == HAIR_GOO)
+			description += "goo-";
+		else if (i_creature.hairType == HAIR_ANEMONE)
+			description += "tentacle-";
+		else if (i_creature.hairType == HAIR_QUILL)
+			description += "quill-";
+		description += "hair";
+		return description;
+	}
+
+	Appearance.hairDescription = hairDescription;
+	function wingsDescript(i_creature) {
+		return Appearance.DEFAULT_WING_NAMES[i_creature.wingType] + " wings";
+	}
+
+	Appearance.wingsDescript = wingsDescript;
+	function tailDescript(i_creature) {
+		if (i_creature.tailType == TAIL_TYPE_NONE) {
+			trace("WARNING: Creature has no tails to describe.");
+			return "<b>!Creature has no tails to describe!</b>";
+		}
+		var descript = "";
+		if (i_creature.tailType == TAIL_TYPE_FOX && i_creature.tailVenom >= 1) {
+			// Kitsune tails, we're using tailVenom to track tail count
+			if (i_creature.tailVenom > 1) {
+				if (i_creature.tailVenom == 2)
+					descript += "pair ";
+				else if (i_creature.tailVenom == 3)
+					descript += "trio ";
+				else if (i_creature.tailVenom == 4)
+					descript += "quartet ";
+				else if (i_creature.tailVenom == 5)
+					descript += "quintet ";
+				else if (i_creature.tailVenom > 5)
+					descript += "bundle ";
+				descript += "of kitsune tails";
+			}
+			else
+				descript += "kitsune tail";
+		}
+		else {
+			descript += Appearance.DEFAULT_TAIL_NAMES[i_creature.tailType];
+			descript += " tail";
+		}
+		return descript;
+	}
+
+	Appearance.tailDescript = tailDescript;
+	function oneTailDescript(i_creature) {
+		if (i_creature.tailType == TAIL_TYPE_NONE) {
+			trace("WARNING: Creature has no tails to describe.");
+			return "<b>!Creature has no tails to describe!</b>";
+		}
+		var descript = "";
+		if (i_creature.tailType == TAIL_TYPE_FOX && i_creature.tailVenom >= 1) {
+			if (i_creature.tailVenom == 1) {
+				descript += "your kitsune tail";
+			}
+			else {
+				descript += "one of your kitsune tails";
+			}
+		}
+		else {
+			descript += "your " + Appearance.DEFAULT_TAIL_NAMES[i_creature.tailType] + " tail";
+		}
+		return descript;
+	}
+
+	Appearance.oneTailDescript = oneTailDescript;
+	function buttDescription(i_creature) {
+		var description = "";
+		if (i_creature.buttRating <= 1) {
+			description += randomChoice("insignificant ", "very small ");
+		}
+		else if (i_creature.buttRating > 1 && i_creature.buttRating < 4) {
+			description += randomChoice("tight ", "firm ", "compact ");
+		}
+		else if (i_creature.buttRating >= 4 && i_creature.buttRating < 6) {
+			description += randomChoice("regular ", "unremarkable ");
+		}
+		else if (i_creature.buttRating >= 6 && i_creature.buttRating < 8) {
+			if (rand(3) == 0)
+				return "handful of ass";
+			description += randomChoice("full ", "shapely ");
+		}
+		else if (i_creature.buttRating >= 8 && i_creature.buttRating < 10) {
+			description += randomChoice("squeezable ", "large ", "substantial ");
+		}
+		else if (i_creature.buttRating >= 10 && i_creature.buttRating < 13) {
+			description += randomChoice("jiggling ", "spacious ", "heavy ");
+		}
+		else if (i_creature.buttRating >= 13 && i_creature.buttRating < 16) {
+			if (rand(3) == 0)
+				return "generous amount of ass";
+			description += randomChoice("expansive ", "voluminous ");
+		}
+		else if (i_creature.buttRating >= 16 && i_creature.buttRating < 20) {
+			if (rand(3) == 2)
+				return "jiggling expanse of ass";
+			description += randomChoice("huge ", "vast ");
+		}
+		else if (i_creature.buttRating >= 20) {
+			description += randomChoice("ginormous ", "colossal ", "tremendous ");
+		}
+		description += randomChoice("butt ", "ass ");
+		if (rand(2) == 0)
+			description += "cheeks";
+		return description;
+	}
+
+	Appearance.buttDescription = buttDescription;
+	function eyesDescript(i_creature) {
+		return Appearance.DEFAULT_EYES_NAMES[i_creature.eyeType] + " eyes";
+	}
+
+	Appearance.eyesDescript = eyesDescript;
+	function hipDescription(i_character) {
+		var description = "";
+		var hipRating = i_character.hipRating;
+		if (hipRating <= 1) {
+			description = randomChoice("tiny ", "narrow ", "boyish ");
+		}
+		else if (hipRating > 1 && hipRating < 4) {
+			description = randomChoice("slender ", "narrow ", "thin ");
+			if (i_character.thickness < 30) {
+				if (rand(2) == 0)
+					description = "slightly-flared ";
+				else
+					description = "curved ";
+			}
+		}
+		else if (hipRating >= 4 && hipRating < 6) {
+			description = randomChoice("well-formed ", "pleasant ");
+			if (i_character.thickness < 30) {
+				if (rand(2) == 0)
+					description = "flared ";
+				else
+					description = "curvy ";
+			}
+		}
+		else if (hipRating >= 6 && hipRating < 10) {
+			description = randomChoice("ample ", "noticeable ", "girly ");
+			if (i_character.thickness < 30) {
+				if (rand(2) == 0)
+					description = "flared ";
+				else
+					description = "waspish ";
+			}
+		}
+		else if (hipRating >= 10 && hipRating < 15) {
+			description = randomChoice("flared ", "curvy ", "wide ");
+			if (i_character.thickness < 30) {
+				if (rand(2) == 0)
+					description = "flared ";
+				else
+					description = "waspish ";
+			}
+		}
+		else if (hipRating >= 15 && hipRating < 20) {
+			if (i_character.thickness < 40) {
+				if (rand(2) == 0)
+					description = "flared, ";
+				else
+					description = "waspish, ";
+			}
+			description += randomChoice("fertile ", "child-bearing ", "voluptuous ");
+		}
+		else if (hipRating >= 20) {
+			if (i_character.thickness < 40) {
+				if (rand(2) == 0)
+					description = "flaring, ";
+				else
+					description = "incredibly waspish, ";
+			}
+			description += randomChoice("broodmother-sized ", "cow-like ", "inhumanly-wide ");
+		}
+		//Taurs
+		if (i_character.isTaur() && rand(3) == 0)
+			description += "flanks";
+		else if (i_character.isNaga() && rand(3) == 0)
+			description += "sides";
+		else {
+			//Non taurs or taurs who didn't roll flanks
+			description += randomChoice("hips", "thighs");
+		}
+		return description;
+	}
+
+	Appearance.hipDescription = hipDescription;
+	function nippleDescription(i_creature, i_rowNum) {
+		if (i_rowNum === void 0) {
+			i_rowNum = 0;
+		}
+		//DEBUG SHIT!
+		if (i_rowNum > (i_creature.breastRows.length - 1) || i_rowNum < 0) {
+			return Parser.errstr("Error: Invalid breastRows (" + i_rowNum + ") passed to nippleDescription()");
+		}
+		var haveDescription = false;
+		var description = "";
+		//Size descriptors 33% chance
+		var nippleLength = i_creature.nippleLength;
+		if (rand(4) == 0) {
+			//TINAHHHH
+			if (nippleLength < .25) {
+				description += randomChoice("tiny ", "itty-bitty ", "teeny-tiny ", "dainty ");
+			}
+			else if (nippleLength >= .4 && nippleLength < 1) {
+				//Prominant
+				description += randomChoice("prominent ", "pencil eraser-sized ", "eye-catching ", "pronounced ", "striking ");
+			}
+			else if (nippleLength >= 1 && nippleLength < 2) {
+				//Big 'uns
+				description += randomChoice("forwards-jutting ", "over-sized ", "fleshy ", "large protruding ");
+			}
+			else if (nippleLength >= 2 && nippleLength < 3.2) {
+				//'Uge
+				description += randomChoice("elongated ", "massive ", "awkward ", "lavish ", "hefty ");
+			}
+			else if (nippleLength >= 3.2) {
+				//Massive
+				description += randomChoice("bulky ", "ponderous ", "thumb-sized ", "cock-sized ", "cow-like ");
+			}
+			haveDescription = true;
+		}
+		//Milkiness/Arousal/Wetness Descriptors 33% of the time
+		if (rand(3) == 0 && !haveDescription) {
+			//Fuckable chance first!
+			if (i_creature.hasFuckableNipples()) {
+				//Fuckable and lactating?
+				if (i_creature.biggestLactation() > 1) {
+					description += randomChoice("milk-lubricated ", "lactating ", "lactating ", "milk-slicked ", "milky ");
+				}
+				else {
+					description += randomChoice("wet ", "mutated ", "slimy ", "damp ", "moist ", "slippery ", "oozing ", "sloppy ", "dewy ");
+				}
+				haveDescription = true;
+			}
+			else if (i_creature.biggestLactation() > 0) {
+				//Light lactation
+				if (i_creature.biggestLactation() <= 1) {
+					description += randomChoice("milk moistened ", "slightly lactating ", "milk-dampened ");
+				}
+				//Moderate lactation
+				if (i_creature.biggestLactation() > 1 && i_creature.biggestLactation() <= 2) {
+					description += randomChoice("lactating ", "milky ", "milk-seeping ");
+				}
+				//Heavy lactation
+				if (i_creature.biggestLactation() > 2) {
+					description += randomChoice("dripping ", "dribbling ", "milk-leaking ", "drooling ");
+				}
+				haveDescription = true;
+			}
+		}
+		else if (rand(3) == 0 && !haveDescription) {
+			if (i_creature.lust > 50 && i_creature.lust < 75) {
+				description += randomChoice("erect ", "perky ", "erect ", "firm ", "tender ");
+				haveDescription = true;
+			}
+			if (i_creature.lust >= 75) {
+				description += randomChoice("throbbing ", "trembling ", "needy ", "throbbing ");
+				haveDescription = true;
+			}
+		}
+		if (!haveDescription && rand(2) == 0 && i_creature.nipplesPierced > 0 && i_rowNum == 0) {
+			if (i_creature.nipplesPierced == 5)
+				description += "chained ";
+			else
+				description += "pierced ";
+			haveDescription = true;
+		}
+		if (!haveDescription && i_creature.hasGooSkin()) {
+			description += randomChoice("slime-slick ", "goopy ", "slippery ");
+		}
+		if (!haveDescription && i_creature.hasStatusEffect("BlackNipples")) {
+			description += randomChoice("black ", "ebony ", "sable ");
+		}
+		//Nounsssssssss*BOOM*
+		switch (rand(5)) {
+			case 0:
+				description += "nipple";
+				break;
+			case 1:
+				if (nippleLength < .5)
+					description += "perky nipple";
+				else
+					description += "cherry-like nub";
+				break;
+			case 2:
+				if (i_creature.hasFuckableNipples())
+					description += "fuckable nip";
+				else {
+					if (i_creature.biggestLactation() >= 1 && nippleLength >= 1)
+						description += "teat";
+					else
+						description += "nipple";
+				}
+				break;
+			case 3:
+				if (i_creature.hasFuckableNipples())
+					description += "nipple-hole";
+				else {
+					if (i_creature.biggestLactation() >= 1 && nippleLength >= 1)
+						description += "teat";
+					else
+						description += "nipple";
+				}
+				break;
+			case 4:
+				if (i_creature.hasFuckableNipples())
+					description += "nipple-cunt";
+				else
+					description += "nipple";
+				break;
+		}
+		return description;
+	}
+
+	Appearance.nippleDescription = nippleDescription;
+	function ballsDescription(i_forcedSize, i_plural, i_creature, i_withArticle) {
+		if (i_withArticle === void 0) {
+			i_withArticle = false;
+		}
+		if (i_creature.balls == 0)
+			return "prostate";
+		var description = "";
+		var options;
+		if (i_plural && (!i_creature.hasStatusEffect("Uniball"))) {
+			if (i_creature.balls == 1) {
+				if (i_withArticle) {
+					options = ["a single",
+						"a solitary",
+						"a lone",
+						"an individual"];
+				}
+				else {
+					options = ["single",
+						"solitary",
+						"lone",
+						"individual"];
+				}
+				description += randomChoice(options);
+			}
+			else if (i_creature.balls == 2) {
+				if (i_withArticle) {
+					options = ["a pair of",
+						"two",
+						"a duo of"];
+				}
+				else {
+					options = ["pair of",
+						"two",
+						"duo of"];
+				}
+				description += randomChoice(options);
+			}
+			else if (i_creature.balls == 3) {
+				options = ["three",
+					"triple"];
+				(i_withArticle) ? options.push("a trio of") : options.push("trio of");
+				description += randomChoice(options);
+			}
+			else if (i_creature.balls == 4) {
+				options = ["four",
+					"quadruple"];
+				(i_withArticle) ? options.push("a quartette of") : options.push("quartette of");
+				description += randomChoice(options);
+			}
+			else {
+				if (i_withArticle) {
+					options = ["a multitude of",
+						"many",
+						"a large handful of"];
+				}
+				else {
+					options = ["multitude of",
+						"many",
+						"large handful of"];
+				}
+				description += randomChoice(options);
+			}
+		}
+		//size!
+		if (i_creature.ballSize > 1 && (rand(3) <= 1 || i_forcedSize)) {
+			if (description)
+				description += " ";
+			if (i_creature.ballSize >= 18)
+				description += "hideously swollen and oversized";
+			else if (i_creature.ballSize >= 15)
+				description += "beachball-sized";
+			else if (i_creature.ballSize >= 12)
+				description += "watermelon-sized";
+			else if (i_creature.ballSize >= 9)
+				description += "basketball-sized";
+			else if (i_creature.ballSize >= 7)
+				description += "soccerball-sized";
+			else if (i_creature.ballSize >= 5)
+				description += "cantaloupe-sized";
+			else if (i_creature.ballSize >= 4)
+				description += "grapefruit-sized";
+			else if (i_creature.ballSize >= 3)
+				description += "apple-sized";
+			else if (i_creature.ballSize >= 2)
+				description += "baseball-sized";
+			else if (i_creature.ballSize > 1)
+				description += "large";
+		}
+		//UNIBALL
+		if (i_creature.hasStatusEffect("Uniball")) {
+			if (description)
+				description += " ";
+			options = ["tightly-compressed",
+				"snug",
+				"cute",
+				"pleasantly squeezed",
+				"compressed-together"];
+			description += randomChoice(options);
+		}
+		//Descriptive
+		if (i_creature.hoursSinceCum >= 48 && rand(2) == 0 && !i_forcedSize) {
+			if (description)
+				description += " ";
+			options = ["overflowing",
+				"swollen",
+				"cum-engorged"];
+			description += randomChoice(options);
+		}
+		//lusty
+		if (i_creature.lust > 90 && (description == "") && rand(2) == 0 && !i_forcedSize) {
+			options = ["eager",
+				"full",
+				"needy",
+				"desperate",
+				"throbbing",
+				"heated",
+				"trembling",
+				"quivering",
+				"quaking"];
+			description += randomChoice(options);
+		}
+		//Slimy skin
+		if (i_creature.hasGooSkin()) {
+			if (description)
+				description += " ";
+			options = ["goopey",
+				"gooey",
+				"slimy"];
+			description += randomChoice(options);
+		}
+		if (description)
+			description += " ";
+		options = ["nut",
+			"gonad",
+			"teste",
+			"testicle",
+			"testicle",
+			"ball",
+			"ball",
+			"ball"];
+		// I don't know how this was ever supposed to work.
+		//if (i_creature.balls == 4 && i_plural) options.push("quads", "quads", "quads");
+		description += randomChoice(options);
+		if (i_plural)
+			description += "s";
+		if (i_creature.hasStatusEffect("Uniball") && rand(2) == 0) {
+			if (rand(3) == 0)
+				description += " merged into a cute, spherical package";
+			else if (rand(2) == 0)
+				description += " combined into a round, girlish shape";
+			else
+				description += " squeezed together into a perky, rounded form";
+		}
+		return description;
+	}
+
+	Appearance.ballsDescription = ballsDescription;
+	function hairOrFur(creature) {
+		return creature.hasFur() ? "fur" : "hair";
+	}
+
+	Appearance.hairOrFur = hairOrFur;
+	function sackDescript(i_creature) {
+		if (i_creature.balls == 0)
+			return "prostate";
+		var options;
+		var description = "";
+		options = ["scrotum",
+			"sack",
+			"nutsack",
+			"ballsack",
+			"beanbag",
+			"pouch"];
+		description += randomChoice(options);
+		return description;
+	}
+
+	Appearance.sackDescript = sackDescript;
+	function clitDescription(i_creature) {
+		var description = "";
+		var options;
+		var haveDescription = false;
+		//Length Adjective - 50% chance
+		if (rand(2) == 0) {
+			//small clits!
+			var clitLength = i_creature.vaginas[0].clitLength;
+			if (clitLength <= .5) {
+				options = ["tiny ",
+					"little ",
+					"petite ",
+					"diminutive ",
+					"miniature "];
+				description += randomChoice(options);
+			}
+			//"average".
+			if (clitLength > .5 && clitLength < 1.5) {
+				//no size comment
+			}
+			//Biggies!
+			if (clitLength >= 1.5 && clitLength < 4) {
+				options = ["large ",
+					"large ",
+					"substantial ",
+					"substantial ",
+					"considerable "];
+				description += randomChoice(options);
+			}
+			//'Uge
+			if (clitLength >= 4) {
+				options = ["monster ",
+					"tremendous ",
+					"colossal ",
+					"enormous ",
+					"bulky "];
+				description += randomChoice(options);
+			}
+		}
+		//Descriptive descriptions - 50% chance of being called
+		if (rand(2) == 0) {
+			//Doggie descriptors - 50%
+			//TODO Conditionals don't make sense, need to introduce a class variable to keep of "something" or move race or Creature/Character
+            /*if (i_creature.hasFur() > 2 && !haveDescription && rand(2) == 0) {
+             description += "bitch-";
+             haveDescription = true;
+             }*/
+            /*Horse descriptors - 50%
+             if (creature.hasFur() > 2 && !descripted && rand(2) == 0) {
+             descripted = true;
+             descript += "mare-";
+             }*/
+			//Horny descriptors - 75% chance
+			if (i_creature.lust > 70 && rand(4) < 3 && !haveDescription) {
+				options = ["throbbing ",
+					"pulsating ",
+					"hard "];
+				description += randomChoice(options);
+				haveDescription = true;
+			}
+			//High libido - always use if no other descript
+			if (i_creature.lib > 50 && rand(2) == 0 && !haveDescription) {
+				options = ["insatiable ",
+					"greedy ",
+					"demanding ",
+					"rapacious"];
+				description += randomChoice(options);
+				haveDescription = true;
+			}
+		}
+		if (i_creature.hasVagina()) {
+			if (!haveDescription && i_creature.vaginas[0].clitPierced > 0) {
+				description += "pierced ";
+			}
+		}
+		else {
+			return Parser.errstr("clitDescript with no clit");
+		}
+		//Clit nouns
+		options = ["clit",
+			"clitty",
+			"button",
+			"pleasure-buzzer",
+			"clit",
+			"clitty",
+			"button",
+			"clit",
+			"clit",
+			"button"];
+		if (kGAMECLASS.flags[kFLAGS.SFW_MODE] > 0) {
+			options = ["bump", "button"];
+		}
+		description += randomChoice(options);
+		return description;
+	}
+
+	Appearance.clitDescription = clitDescription;
+	function multiCockDescriptLight(creature) {
+		if (creature.cocks.length < 1) {
+			return Parser.errstr("multiCockDescriptLight() called with no penises present.");
+		}
+		//Get cock counts
+		var descript = "";
+		var currCock = 0;
+		var totCock = creature.cocks.length;
+		var dogCocks = 0;
+		var horseCocks = 0;
+		var normalCocks = 0;
+		var normalCockKey = 0;
+		var dogCockKey = 0;
+		var horseCockKey = 0;
+		var averageLength = 0;
+		var averageThickness = 0;
+		var same = true;
+		//For temp14 random values
+		var rando = 0;
+		var descripted = false;
+		//If one, return normal cock descript
+		if (totCock == 1)
+			return creature.cockDescript(0);
+		//Count cocks & Prep average totals
+		while (currCock <= totCock - 1) {
+			if (creature.cocks[currCock].cockType == CockTypesEnum.HUMAN) {
+				normalCocks++;
+				normalCockKey = currCock;
+			}
+			if (creature.cocks[currCock].cockType == CockTypesEnum.HORSE) {
+				horseCocks++;
+				horseCockKey = currCock;
+			}
+			if (creature.cocks[currCock].cockType == CockTypesEnum.DOG) {
+				dogCocks++;
+				dogCockKey = currCock;
+			}
+			averageLength += creature.cocks[currCock].cockLength;
+			averageThickness += creature.cocks[currCock].cockThickness;
+			//If cocks are matched make sure they still are
+			if (same && currCock > 0 && creature.cocks[currCock].cockType != creature.cocks[currCock - 1].cockType)
+				same = false;
+			currCock++;
+		}
+		//Crunch averages
+		averageLength /= currCock;
+		averageThickness /= currCock;
+		//Quantity descriptors
+		if (creature.cockTotal() == 1) {
+			if (dogCocks == 1)
+				return cockNoun(CockTypesEnum.DOG);
+			if (horseCocks == 1)
+				return cockNoun(CockTypesEnum.HORSE);
+			if (normalCocks == 1)
+				return creature.cockDescript(0);
+			//Failsafe
+			return creature.cockDescript(0);
+		}
+		if (currCock == 2) {
+			//For cocks that are the same
+			if (same) {
+				descript += randomChoice("pair of ", "two ", "brace of ", "matching ", "twin ");
+				descript += creature.cockAdjective();
+				if (normalCocks == 2)
+					descript += " " + cockNoun(CockTypesEnum.HUMAN) + "s";
+				if (horseCocks == 2)
+					descript += ", " + cockNoun(CockTypesEnum.HORSE) + "s";
+				if (dogCocks == 2)
+					descript += ", " + cockNoun(CockTypesEnum.DOG) + "s";
+				//Failsafe
+				if (creature.cocks[0].cockType > 2)
+					descript += ", " + cockNoun(creature.cocks[0].cockType) + "s";
+			}
+			else {
+				descript += randomChoice("pair of ", "two ", "brace of ");
+				descript += creature.cockAdjective() + ", ";
+				descript += randomChoice("mutated cocks", "mutated dicks", "mixed cocks", "mismatched dicks");
+			}
+		}
+		if (currCock == 3) {
+			//For samecocks
+			if (same) {
+				descript += randomChoice("three ", "group of ", "<i>ménage à trois</i> of ", "triad of ", "triumvirate of ");
+				descript += creature.cockAdjective();
+				if (normalCocks == 3)
+					descript += " " + cockNoun(CockTypesEnum.HUMAN) + "s";
+				if (horseCocks == 3)
+					descript += ", " + cockNoun(CockTypesEnum.HORSE) + "s";
+				if (dogCocks == 3)
+					descript += ", " + cockNoun(CockTypesEnum.DOG) + "s";
+				//Tentacles
+				if (creature.cocks[0].cockType > 2)
+					descript += ", " + cockNoun(creature.cocks[0].cockType) + "s";
+			}
+			else {
+				descript += randomChoice("three ", "group of ");
+				descript += creature.cockAdjective() + ", ";
+				descript += randomChoice("mutated cocks", "mutated dicks", "mixed cocks", "mismatched dicks");
+			}
+		}
+		//Large numbers of cocks!
+		if (currCock > 3) {
+			descript += randomChoice("bundle of ", "obscene group of ", "cluster of ", "wriggling bunch of ");
+			//Cock adjectives and nouns
+			descripted = false;
+			//Same
+			if (same) {
+				if (currCock == normalCocks) {
+					descript += creature.cockAdjective() + " ";
+					descript += cockNoun(CockTypesEnum.HUMAN) + "s";
+					descripted = true;
+				}
+				if (currCock == dogCocks) {
+					descript += creature.cockAdjective() + ", ";
+					descript += cockNoun(CockTypesEnum.DOG) + "s";
+					descripted = true;
+				}
+				if (currCock == horseCocks) {
+					descript += creature.cockAdjective() + ", ";
+					descript += cockNoun(CockTypesEnum.HORSE) + "s";
+					descripted = true;
+				}
+				if (creature.cocks[0].cockType > 2) {
+					descript += creature.cockAdjective() + ", ";
+					descript += cockNoun(creature.cocks[0].cockType) + "s";
+					descripted = true;
+				}
+			}
+			//If mixed
+			if (!descripted) {
+				descript += creature.cockAdjective() + ", ";
+				descript += randomChoice("mutated cocks", "mutated dicks", "mixed cocks", "mismatched dicks");
+			}
+		}
+		return descript;
+	}
+
+	Appearance.multiCockDescriptLight = multiCockDescriptLight;
 })(Appearance || (Appearance = {}));
 var CockClass = (function () {
-	function CockClass() {
-		this.cockType = CockTypesEnum.HUMAN;
+	function CockClass(cockLength, cockThickness, cockType) {
+		if (cockLength === void 0) {
+			cockLength = 5.5;
+		}
+		if (cockThickness === void 0) {
+			cockThickness = 1;
+		}
+		if (cockType === void 0) {
+			cockType = CockTypesEnum.HUMAN;
+		}
+		this.cockLength = cockLength;
+		this.cockThickness = cockThickness;
+		this.cockType = cockType;
 		this.isPierced = false;
 		this.sock = "";
-		this.cockLength = 5;
-		this.cockThickness = 1.5;
+		this.knotMultiplier = 0.25;
 	}
 
 	return CockClass;
@@ -2599,29 +3750,17 @@ var BreastRowClass = (function () {
 		this.breastRating = 0;
 		this.lactationMultiplier = 1;
 		this.breasts = 2;
+		this.fuckable = false;
 	}
 
 	return BreastRowClass;
 }());
 var VaginaClass = (function () {
 	function VaginaClass() {
-		//data
-		//Vag wetness
 		this.vaginalWetness = 1;
-		/*Vag looseness
-		 0 - virgin
-		 1 - normal
-		 2 - loose
-		 3 - very loose
-		 4 - gaping
-		 5 - monstrous*/
 		this.vaginalLooseness = 0;
-		//Type
-		//0 - Normal
-		//5 - Black bugvag
 		this.type = 0;
 		this.virgin = true;
-		//Used during sex to determine how full it currently is.  For multi-dick sex.
 		this.fullness = 0;
 		this.labiaPierced = 0;
 		this.labiaPShort = "";
@@ -2633,6 +3772,9 @@ var VaginaClass = (function () {
 		this.recoveryProgress = 0;
 	}
 
+	VaginaClass.prototype.capacity = function () {
+		return 8 * (Math.pow(this.vaginalLooseness, 2)) * (1 + this.vaginalWetness / 10);
+	};
 	return VaginaClass;
 }());
 var CreatureData = (function () {
@@ -2663,6 +3805,7 @@ var CreatureData = (function () {
 		this.hairType = HAIR_NORMAL;
 		this.skinType = SkinTypeEnum.PLAIN;
 		this.skinAdj = "";
+		this.skinDesc = "skin";
 		this.skinTone = "pale";
 		this.faceType = FACE_HUMAN;
 		this.eyeType = EYES_HUMAN;
@@ -2672,19 +3815,45 @@ var CreatureData = (function () {
 		this.legCount = 2;
 		this.armType = ARM_TYPE_HUMAN;
 		this.clawType = CLAW_TYPE_NORMAL;
+		this.clawTone = "";
 		this.hornType = HORNS_NONE;
 		this.horns = 0;
 		this.tailType = TAIL_TYPE_NONE;
 		this.tailVenom = 0;
 		this.wingType = WING_TYPE_NONE;
+		this.wingDesc = "non-existant";
+		this.gillType = GILLS_NONE;
 		this.antennae = 0;
 		this._furColor = "no";
+		this.nipplesPierced = 0;
+		this.nipplesPShort = "";
+		this.nipplesPLong = "";
+		this.lipPierced = 0;
+		this.lipPShort = "";
+		this.lipPLong = "";
+		this.tonguePierced = 0;
+		this.tonguePShort = "";
+		this.tonguePLong = "";
+		this.eyebrowPierced = 0;
+		this.eyebrowPShort = "";
+		this.eyebrowPLong = "";
+		this.earsPierced = 0;
+		this.earsPShort = "";
+		this.earsPLong = "";
+		this.nosePierced = 0;
+		this.nosePShort = "";
+		this.nosePLong = "";
+		this.nippleLength = .25;
 		this.balls = 0;
 		this.ballSize = 0;
+		this.hoursSinceCum = 0;
+		this.cumMultiplier = 1;
 		this.cocks = [];
 		this.ass = new AssClass();
 		this.breastRows = [new BreastRowClass()];
 		this.vaginas = [];
+		this.perks = [];
+		this.statusEffects = [];
 	}
 
 	return CreatureData;
@@ -2695,9 +3864,30 @@ var Creature = (function (_super) {
 		return _super !== null && _super.apply(this, arguments) || this;
 	}
 
+	Creature.prototype.createPerk = function (name) {
+		this.perks.push(name);
+	};
+	Creature.prototype.createVagina = function () {
+		this.vaginas.push(new VaginaClass());
+	};
+	Creature.prototype.createCock = function (clength, cthickness, ctype) {
+		if (clength === void 0) {
+			clength = 5.5;
+		}
+		if (cthickness === void 0) {
+			cthickness = 1;
+		}
+		if (ctype === void 0) {
+			ctype = CockTypesEnum.HUMAN;
+		}
+		this.cocks.push(new CockClass(clength, cthickness, ctype));
+	};
 	Object.defineProperty(Creature.prototype, "furColor", {
 		get: function () {
 			return this.hasFur() ? this._furColor : this.hairColor;
+		},
+		set: function (color) {
+			this._furColor = color;
 		},
 		enumerable: true,
 		configurable: true
@@ -2709,15 +3899,42 @@ var Creature = (function (_super) {
 		enumerable: true,
 		configurable: true
 	});
-	Creature.prototype.mf = function (m, f) {
-		todo("mf");
-		return this.hasVagina() ? f : m;
+	Creature.prototype.mf = function (male, female) {
+		var biggestTitSize = this.biggestTitSize();
+		var femininity = this.femininity;
+		if (this.hasCock()) {
+			if (this.hasVagina()) {
+				// herm
+				if (biggestTitSize >= 2)
+					return female;
+				else if (biggestTitSize == 1)
+					return femininity >= 50 ? female : male;
+				else
+					return femininity >= 75 ? female : male;
+			}
+			else if (biggestTitSize >= 1 && femininity > 55 || femininity >= 75)
+				return female; // d-girl
+			else
+				return male;
+		}
+		else {
+			if (this.hasVagina())
+				if (biggestTitSize <= 1 && femininity < 45)
+					return male; // c-boy
+				else
+					return female;
+			else {
+				if (biggestTitSize >= 3 || femininity >= 75)
+					return female;
+				else
+					return male;
+			}
+		}
 	};
 	Creature.prototype.maleFemaleHerm = function (caps) {
 		if (caps === void 0) {
 			caps = false;
 		}
-		todo("maleFemaleHerm");
 		var options = {
 			0: ["genderless", "fem-genderless"],
 			1: ["male", "dickgirl"],
@@ -2728,35 +3945,169 @@ var Creature = (function (_super) {
 		return caps ? capitalize(s) : s;
 	};
 	Creature.prototype.claws = function () {
-		todo("claws");
+		var toneText = this.clawTone == "" ? " " : (", " + this.clawTone + " ");
+		switch (this.clawType) {
+			case CLAW_TYPE_NORMAL:
+				return "fingernails";
+			case CLAW_TYPE_LIZARD:
+				return "short curved" + toneText + "claws";
+			case CLAW_TYPE_DRAGON:
+				return "powerful, thick curved" + toneText + "claws";
+		}
+		return "fingernails";
 	};
 	Creature.prototype.face = function () {
-		todo("face");
+		var stringo = "";
+		//0 - human
+		//5 - Human w/Naga fangz
+		//8 - bunnah faceahhh bunbun
+		//10 - spidah-face (humanish)
+		var faceType = this.faceType;
+		if (faceType == 0)
+			return "face";
+		//1 - horse
+		//2 - dogface
+		//6 - kittah face
+		//7 - lizard face (durned argonians!)
+		//9 - kangaface
+		if (this.hasMuzzle()) {
+			if (rand(3) == 0 && faceType == FACE_HORSE)
+				stringo = "long ";
+			if (rand(3) == 0 && faceType == FACE_CAT)
+				stringo = "feline ";
+			if (rand(3) == 0 && faceType == FACE_RHINO)
+				stringo = "rhino ";
+			if (rand(3) == 0 && (faceType == FACE_LIZARD || faceType == FACE_DRAGON))
+				stringo = "reptilian ";
+			switch (rand(3)) {
+				case 0:
+					return stringo + "muzzle";
+				case 1:
+					return stringo + "snout";
+				case 2:
+					return stringo + "face";
+				default:
+					return stringo + "face";
+			}
+		}
+		//3 - cowface
+		if (faceType == FACE_COW_MINOTAUR) {
+			if (rand(4) == 0)
+				stringo = "bovine ";
+			if (rand(2) == 0)
+				return "muzzle";
+			return stringo + "face";
+		}
+		//4 - sharkface-teeth
+		if (faceType == FACE_SHARK_TEETH) {
+			if (rand(4) == 0)
+				stringo = "angular ";
+			return stringo + "face";
+		}
+		if (faceType == FACE_PIG || faceType == FACE_BOAR) {
+			if (Math.floor(Math.random() * 4) == 0)
+				stringo = (faceType == FACE_PIG ? "pig" : "boar") + "-like ";
+			if (Math.floor(Math.random() * 4) == 0)
+				return stringo + "snout";
+			return stringo + "face";
+		}
+		return "face";
 	};
-	Creature.prototype.feet = function () {
-		todo("feet");
-	};
-	Creature.prototype.foot = function () {
-		todo("foot");
+	// returns leg,legs,foot,feet
+	Creature.prototype.lowerBodyParts = function () {
+		switch (this.lowerBody) {
+			case LOWER_BODY_TYPE_HUMAN:
+				return ["leg", "legs", "foot", "feet"];
+			case LOWER_BODY_TYPE_HOOFED:
+				return ["leg", "legs", "hoof", "hooves"];
+			case LOWER_BODY_TYPE_DOG:
+				return ["leg", "legs", "paw", "paws"];
+			case LOWER_BODY_TYPE_NAGA:
+				return ["snake-tail", "snake-like coils", "coiled tail", "coils"];
+			case LOWER_BODY_TYPE_CENTAUR:
+				return ["equine leg", "equine legs", "hoof", "hooves"];
+			case LOWER_BODY_TYPE_DEMONIC_HIGH_HEELS:
+				return ["leg", "legs", "foot", "demonic high-heels"];
+			case LOWER_BODY_TYPE_DEMONIC_CLAWS:
+				return ["leg", "legs", "foot", "demonic foot-claws"];
+			case LOWER_BODY_TYPE_GOO:
+				return ["mound of goo", "mounds of goo", "slimey undercarriage", "slimey cillia"];
+			case LOWER_BODY_TYPE_PONY:
+				return ["cartoonish pony-leg", "cute pony-legs", "flat pony-foot", "flat pony-feet"];
+			case LOWER_BODY_TYPE_BUNNY:
+				return randomChoice(["fuzzy, bunny leg", "fuzzy, bunny legs"], ["fur-covered leg", "fur-covered legs"], ["furry leg", "furry legs"], ["leg", "legs"], ["leg", "legs"], ["leg", "legs"]).concat(randomChoice(["large bunny feet", "large bunny feet"], ["rabbit foot", "rabbit feet"], ["large foot", "feet"], ["foot", "feet"], ["foot", "feet"]));
+			case LOWER_BODY_TYPE_HARPY:
+				return randomChoice(["bird-like leg", "bird-like legs"], ["feathered leg", "feathered legs"], ["leg", "legs"], ["leg", "legs"], ["leg", "legs"]).concat(randomChoice(["taloned foot", "taloned feet"], ["foot", "feet"], ["foot", "feet"], ["foot", "feet"], ["foot", "feet"]));
+			case LOWER_BODY_TYPE_KANGAROO:
+				return ["leg", "legs", "foot-paw", "foot-paws"];
+			case LOWER_BODY_TYPE_FOX:
+				return randomChoice(["fox-like leg", "fox-like legs"], ["vulpine leg", "vulpine legs"], ["leg", "legs"], ["leg", "legs"]).concat(randomChoice(["soft, padded paw", "soft, padded paws"], ["fox-like fee", "fox-like feet"], ["paw", "paws"], ["paw", "paws"]));
+			case LOWER_BODY_TYPE_RACCOON:
+				return randomChoice(["raccoon-like leg", "raccoon-like legs"], ["leg", "legs"], ["leg", "legs"], ["leg", "legs"]).concat(randomChoice(["raccoon-like foot", "raccoon-like feet"], ["long-toed paw", "long-toed paws"], ["foot", "feet"], ["paw", "paws"]));
+			case LOWER_BODY_TYPE_CLOVEN_HOOFED:
+				return randomChoice(["pig-like leg", "pig-like legs"], ["swine leg", "swine legs"], ["leg", "legs"], ["leg", "legs"], ["leg", "legs"]).concat(["foot", "feet"]);
+		}
+		return ["leg", "legs", "foot", "feet"];
 	};
 	Creature.prototype.leg = function () {
-		todo("leg");
+		return this.lowerBodyParts()[0];
 	};
 	Creature.prototype.legs = function () {
-		todo("legs");
+		if (this.isDrider())
+			return num2Text(this.legCount) + " spider legs";
+		if (this.isTaur())
+			return num2Text(this.legCount) + " legs";
+		return this.lowerBodyParts()[1];
 	};
-	Creature.prototype.skin = function (adj) {
-		todo("skin");
+	Creature.prototype.foot = function () {
+		return this.lowerBodyParts()[2];
+	};
+	Creature.prototype.feet = function () {
+		return this.lowerBodyParts()[3];
+	};
+	Creature.prototype.skin = function (noAdj, noTone) {
+		if (noAdj === void 0) {
+			noAdj = false;
+		}
+		if (noTone === void 0) {
+			noTone = false;
+		}
+		var skinzilla = "";
+		var skinTone = this.skinTone;
+		var skinAdj = this.skinAdj;
+		if (!noAdj) {
+			if (skinAdj != "" && !noTone && skinTone != "rough gray") {
+				skinzilla += skinAdj;
+				if (noTone)
+					skinzilla += " ";
+				else
+					skinzilla += ", ";
+			}
+		}
+		if (!noTone)
+			skinzilla += skinTone + " ";
+		//Fur handled a little differently since it uses haircolor
+		if (this.hasFur())
+			skinzilla += "skin";
+		else
+			skinzilla += this.skinDesc;
+		return skinzilla;
 	};
 	Creature.prototype.hairOrFur = function () {
-		todo("hairOrFur");
-		return this.hasFur() ? "fur" : "hair";
+		return Appearance.hairOrFur(this);
 	};
 	Creature.prototype.skinFurScales = function () {
-		todo("skinFurScales");
-	};
-	Creature.prototype.bodyType = function () {
-		todo("bodyType");
+		var skinzilla = "";
+		if (this.skinAdj != "")
+			skinzilla += this.skinAdj + ", ";
+		if (this.hasFur())
+			skinzilla += this.furColor + " ";
+		else if (this.hasDragonScales())
+			skinzilla += "iron-like, " + this.skinTone + " shield-shaped ";
+		else
+			skinzilla += this.skinTone + " ";
+		skinzilla += this.skinDesc;
+		return skinzilla;
 	};
 	Creature.prototype.chestDesc = function () {
 		if (this.biggestTitSize() < 1)
@@ -2764,36 +4115,36 @@ var Creature = (function (_super) {
 		return Appearance.biggestBreastSizeDescript(this);
 	};
 	Creature.prototype.allChestDesc = function () {
-		todo("allChestDesc");
+		if (this.biggestTitSize() < 1)
+			return "chest";
+		return this.allBreastsDescript();
 	};
 	Creature.prototype.hairDescript = function () {
-		todo("hairDescript");
-		return "moderately long, " + this.hairColor + " hair";
+		return Appearance.hairDescription(this);
 	};
 	Creature.prototype.hipDescript = function () {
-		todo("hipDescript");
-		return "curvy hips";
+		return Appearance.hipDescription(this);
 	};
 	Creature.prototype.hornDescript = function () {
-		todo("hornDescript");
+		return Appearance.DEFAULT_HORNS_NAMES[this.hornType] + " horns";
 	};
-	Creature.prototype.nippleDescript = function (row) {
-		todo("nippleDescript");
+	Creature.prototype.nippleDescript = function (rowIdx) {
+		if (rowIdx === void 0) {
+			rowIdx = 0;
+		}
+		return Appearance.nippleDescription(this, rowIdx);
 	};
 	Creature.prototype.tongueDescript = function () {
-		todo("tongueDescript");
+		return Appearance.tongueDescript(this);
 	};
 	Creature.prototype.wingsDescript = function () {
-		todo("wingsDescript");
-		return "large feathered wings";
+		return Appearance.wingsDescript(this);
 	};
 	Creature.prototype.tailDescript = function () {
-		todo("tailDescript");
-		return "trio of kitsune tails";
+		return Appearance.tailDescript(this);
 	};
 	Creature.prototype.oneTailDescript = function () {
-		todo("oneTailDescript");
-		return "one of kitsune tails";
+		return Appearance.oneTailDescript(this);
 	};
 	Creature.prototype.cockDescript = function (index) {
 		if (index === void 0) {
@@ -2805,110 +4156,382 @@ var Creature = (function (_super) {
 		if (row === void 0) {
 			row = 0;
 		}
-		todo("breastDescript");
-		return "large breasts";
+		if (row < 0 || row >= this.breastRows.length)
+			return Parser.errstr("breastRows index out of range");
+		return Appearance.breastDescript(this.breastRows[row].breastRating, this.breastRows[row].lactationMultiplier);
 	};
 	Creature.prototype.allBreastsDescript = function () {
-		todo("allBreastsDescript");
-		return "two rows of large breasts";
+		return Appearance.allBreastsDescript(this);
 	};
 	Creature.prototype.vaginaDescript = function (index) {
 		if (index === void 0) {
 			index = 0;
 		}
-		todo("vaginaDescript");
-		return "virgin, moist vagina";
+		return Appearance.vaginaDescript(this, index);
 	};
 	Creature.prototype.sackDescript = function () {
-		todo("sackDescript");
-		return "scrotum";
+		return Appearance.sackDescript(this);
 	};
 	Creature.prototype.sheathDescript = function () {
-		todo("sheathDescript");
+		if (this.hasSheath())
+			return "sheath";
+		return "base";
 	};
 	Creature.prototype.buttDescript = function () {
-		todo("buttDescript");
-		return "firm ass";
+		return Appearance.buttDescription(this);
 	};
 	Creature.prototype.assholeDescript = function () {
 		return Appearance.assholeDescript(this);
 	};
 	Creature.prototype.clitDescript = function () {
-		todo("clitDescript");
-		return "tiny clit";
+		return Appearance.clitDescription(this);
 	};
 	Creature.prototype.eyesDescript = function () {
-		todo("eyesDescript");
-		return "human eyes";
+		return Appearance.eyesDescript(this);
 	};
 	Creature.prototype.hasCock = function () {
 		return this.cocks.length > 0;
 	};
 	Creature.prototype.hasVagina = function () {
-		return this.vaginas.lengh > 0;
+		return this.vaginas.length > 0;
 	};
 	Creature.prototype.hasFur = function () {
 		return this.skinType == SkinTypeEnum.FUR;
 	};
+	Creature.prototype.hasSheath = function () {
+		return _.any(this.cocks, function (cock) {
+			return [CockTypesEnum.CAT,
+					CockTypesEnum.DISPLACER,
+					CockTypesEnum.DOG,
+					CockTypesEnum.FOX,
+					CockTypesEnum.HORSE,
+					CockTypesEnum.KANGAROO,
+					CockTypesEnum.AVIAN,
+					CockTypesEnum.ECHIDNA].indexOf(cock.cockType) >= 0;
+		});
+	};
 	Creature.prototype.cockTotal = function () {
 		return this.cocks.length;
 	};
-	Creature.prototype.cockHead = function (index) {
-		todo("cockHead");
+	Creature.prototype.cockHead = function (cockNum) {
+		if (cockNum === void 0) {
+			cockNum = 0;
+		}
+		if (cockNum < 0 || cockNum >= this.cocks.length) {
+			return Parser.errstr("cocks index out of bounds");
+		}
+		switch (this.cocks[cockNum].cockType) {
+			case CockTypesEnum.CAT:
+				return randomChoice("point", "narrow tip");
+			case CockTypesEnum.DEMON:
+				return randomChoice("tainted crown", "nub-ringed tip");
+			case CockTypesEnum.DISPLACER:
+				return randomChoice("star tip", "blooming cock-head", "open crown", "alien tip", "bizarre head");
+			case CockTypesEnum.DOG:
+			case CockTypesEnum.FOX:
+				return randomChoice("pointed tip", "narrow tip");
+			case CockTypesEnum.HORSE:
+				return randomChoice("flare", "flat tip");
+			case CockTypesEnum.KANGAROO:
+				return randomChoice("tip", "point");
+			case CockTypesEnum.LIZARD:
+				return randomChoice("crown", "head");
+			case CockTypesEnum.TENTACLE:
+				return randomChoice("mushroom-like tip", "wide plant-like crown");
+			case CockTypesEnum.PIG:
+				return randomChoice("corkscrew tip", "corkscrew head");
+			case CockTypesEnum.RHINO:
+				return randomChoice("flared head", "rhinoceros dickhead");
+			case CockTypesEnum.ECHIDNA:
+				return randomChoice("quad heads", "echidna quad heads");
+			default:
+		}
+		if (rand(2) == 0)
+			return "crown";
+		return randomChoice("head", "cock-head");
+	};
+	Creature.prototype.cockAdjective = function (index) {
+		if (index === void 0) {
+			index = -1;
+		}
+		if (index < 0)
+			index = this.biggestCockIndex();
+		var cock = this.cocks[index];
+		var isPierced = (this.cocks.length == 1) && (cock.isPierced); //Only describe as pierced or sock covered if the creature has just one cock
+		var hasSock = (this.cocks.length == 1) && (cock.sock != "");
+		var isGooey = (this.skinType == SKIN_TYPE_GOO);
+		return Appearance.cockAdjective(cock.cockType, cock.cockLength, cock.cockThickness, this.lust, this.cumQ(), isPierced, hasSock, isGooey);
 	};
 	Creature.prototype.multiCockDescriptLight = function () {
-		todo("multiCockDescriptLight");
+		return Appearance.multiCockDescriptLight(this);
 	};
 	Creature.prototype.sMultiCockDesc = function () {
-		todo("sMultiCockDesc");
+		return (this.cocks.length > 1 ? "one of your " : "your ") + this.cockMultiLDescriptionShort();
+	};
+	Creature.prototype.SMultiCockDesc = function () {
+		return (this.cocks.length > 1 ? "One of your " : "Your ") + this.cockMultiLDescriptionShort();
 	};
 	Creature.prototype.oMultiCockDesc = function () {
-		todo("oMultiCockDesc");
+		return (this.cocks.length > 1 ? "each of your " : "your ") + this.cockMultiLDescriptionShort();
+	};
+	Creature.prototype.OMultiCockDesc = function () {
+		return (this.cocks.length > 1 ? "Each of your " : "Your ") + this.cockMultiLDescriptionShort();
+	};
+	Creature.prototype.cockMultiLDescriptionShort = function () {
+		var cocks = this.cocks;
+		if (cocks.length < 1) {
+			return Parser.errstr("NO WANGS DETECTED for cockMultiLightDesc()");
+		}
+		if (cocks.length == 1) {
+			return Appearance.cockDescript(this, 0);
+		}
+		switch (cocks[0].cockType) {
+			case CockTypesEnum.ANEMONE:
+			case CockTypesEnum.CAT:
+			case CockTypesEnum.DEMON:
+			case CockTypesEnum.DISPLACER:
+			case CockTypesEnum.DRAGON:
+			case CockTypesEnum.HORSE:
+			case CockTypesEnum.KANGAROO:
+			case CockTypesEnum.LIZARD:
+			case CockTypesEnum.PIG:
+			case CockTypesEnum.TENTACLE:
+				if (this.countCocksOfType(cocks[0].cockType) == cocks.length)
+					return Appearance.cockNoun(cocks[0].cockType) + "s";
+				break;
+			case CockTypesEnum.DOG:
+			case CockTypesEnum.FOX:
+				if (this.dogCocks() == cocks.length)
+					return Appearance.cockNoun(CockTypesEnum.DOG) + "s";
+				break;
+			default:
+		}
+		return Appearance.cockNoun(CockTypesEnum.HUMAN) + "s";
+	};
+	Creature.prototype.cockArea = function (i_cockIndex) {
+		if (i_cockIndex >= this.cocks.length || i_cockIndex < 0)
+			return 0;
+		return (this.cocks[i_cockIndex].cockThickness * this.cocks[i_cockIndex].cockLength);
 	};
 	Creature.prototype.biggestCockIndex = function () {
-		todo("biggestCockIndex");
+		var i = 0;
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (this.cockArea(j) > this.cockArea(i))
+				i = j;
+		}
+		return i;
 	};
 	Creature.prototype.biggestCockIndex2 = function () {
-		todo("biggestCockIndex2");
+		var i = 0, m1 = this.biggestCockIndex();
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (this.cockArea(j) > this.cockArea(i) && j != m1)
+				i = j;
+		}
+		return i;
 	};
 	Creature.prototype.biggestCockIndex3 = function () {
-		todo("biggestCockIndex3");
+		var i = 0, m1 = this.biggestCockIndex(), m2 = this.biggestCockIndex2();
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (this.cockArea(j) > this.cockArea(i) && j != m1 && j != m2)
+				i = j;
+		}
+		return i;
 	};
 	Creature.prototype.smallestCockIndex = function () {
-		todo("smallestCockIndex");
+		var i = 0;
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (this.cockArea(j) < this.cockArea(i))
+				i = j;
+		}
+		return i;
 	};
 	Creature.prototype.smallestCockIndex2 = function () {
-		todo("smallestCockIndex2");
+		var i = 0, m1 = this.smallestCockIndex();
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (this.cockArea(j) < this.cockArea(i) && j != m1)
+				i = j;
+		}
+		return i;
 	};
 	Creature.prototype.smallestCockIndex3 = function () {
-		todo("smallestCockIndex3");
+		var i = 0, m1 = this.smallestCockIndex(), m2 = this.smallestCockIndex2();
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (this.cockArea(j) < this.cockArea(i) && j != m1 && j != m2)
+				i = j;
+		}
+		return i;
 	};
 	Creature.prototype.longestCock = function () {
-		todo("longestCock");
+		var i = 0;
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (this.cocks[j].cockLength > this.cocks[i].cockLength)
+				i = j;
+		}
+		return i;
 	};
 	Creature.prototype.shortestCockIndex = function () {
-		todo("shortestCockIndex");
+		var i = 0;
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (this.cocks[j].cockLength < this.cocks[i].cockLength)
+				i = j;
+		}
+		return i;
 	};
-	Creature.prototype.cockThatFits = function (aspect) {
-		todo("cockThatFits");
+	Creature.prototype.cockThatFits = function (i_fits, type) {
+		if (i_fits === void 0) {
+			i_fits = 0;
+		}
+		if (type === void 0) {
+			type = "area";
+		}
+		if (this.cocks.length <= 0)
+			return -1;
+		var i = 0;
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (type == "area") {
+				if (this.cockArea(j) <= i_fits) {
+					if (this.cockArea(j) > this.cockArea(i))
+						i = j;
+				}
+			}
+			else if (type == "length") {
+				if (this.cocks[j].cockLength <= i_fits) {
+					if (this.cocks[j].cockLength > this.cocks[i].cockLength)
+						i = j;
+				}
+			}
+		}
+		return i;
 	};
-	Creature.prototype.cockThatFits2 = function (aspect) {
-		todo("cockThatFits2");
+	Creature.prototype.cockThatFits2 = function (i_fits, type) {
+		if (i_fits === void 0) {
+			i_fits = 0;
+		}
+		if (type === void 0) {
+			type = "area";
+		}
+		if (this.cocks.length <= 1)
+			return -1;
+		var i = 0, m1 = this.cockThatFits(i_fits, type);
+		for (var j = 1; j < this.cocks.length; j++) {
+			if (j == m1)
+				continue;
+			if (type == "area") {
+				if (this.cockArea(j) <= i_fits) {
+					if (this.cockArea(j) > this.cockArea(i))
+						i = j;
+				}
+			}
+			else if (type == "length") {
+				if (this.cocks[j].cockLength <= i_fits) {
+					if (this.cocks[j].cockLength > this.cocks[i].cockLength)
+						i = j;
+				}
+			}
+		}
+		return i;
 	};
 	Creature.prototype.vaginalCapacity = function () {
-		todo("vaginalCapacity");
+		return this.vaginas[0].capacity();
 	};
 	Creature.prototype.analCapacity = function () {
-		todo("analCapacity");
+		var bonus = 0;
+		if (this.isTaur())
+			bonus = 30;
+		if (this.findPerk("HistorySlut") >= 0)
+			bonus += 20;
+		if (this.findPerk("Cornucopia") >= 0)
+			bonus += 30;
+		if (this.findPerk("OneTrackMind") >= 0)
+			bonus += 10;
+		if (this.ass.analWetness > 0)
+			bonus += 15;
+		return ((bonus + this.statusEffectv1("BonusACapacity") + 6 * (Math.pow(this.ass.analLooseness, 2))) * (1 + this.ass.analWetness / 10));
+	};
+	Creature.prototype.cumCapacity = function () {
+		if (!this.hasCock())
+			return 0;
+		var quantity = 0;
+		if (this.balls > 0)
+			quantity += Math.pow(((4 / 3) * Math.PI * (this.ballSize / 2)), 3) * this.balls;
+		else
+			quantity += Math.pow(((4 / 3) * Math.PI), 3) * 2;
+		quantity = this.applyCumBonus(quantity) * this.cumMultiplier;
+		quantity = Math.round(quantity);
+		if (quantity > 0x7fffffff)
+			quantity = 0x7fffffff;
+		return quantity;
+	};
+	Creature.prototype.applyCumBonus = function (quantity) {
+		if (this.findPerk("BroBody") >= 0)
+			quantity *= 1.3;
+		if (this.findPerk("FertilityPlus") >= 0)
+			quantity *= 1.5;
+		if (this.findPerk("FertilityMinus") >= 0 && this.lib < 25)
+			quantity *= 0.7;
+		if (this.findPerk("MessyOrgasms") >= 0)
+			quantity *= 1.5;
+		if (this.findPerk("OneTrackMind") >= 0)
+			quantity *= 1.1;
+		if (this.findPerk("ParasiteMusk") >= 0)
+			quantity *= 1.2;
+		if (this.findPerk("MaraesGiftStud") >= 0)
+			quantity += 350;
+		if (this.findPerk("FerasBoonAlpha") >= 0)
+			quantity += 200;
+		if (this.findPerk("MagicalVirility") >= 0)
+			quantity += 200 + (this.perkv1("MagicalVirility") * 100);
+		if (this.findPerk("FerasBoonSeeder") >= 0)
+			quantity += 1000;
+		quantity += this.perkv1("ElvenBounty");
+		if (this.findPerk("BroBody") >= 0)
+			quantity += 200;
+		if (this.findPerk("SatyrSexuality") >= 0)
+			quantity += 50;
+		quantity += this.statusEffectv1("Rut");
+		quantity *= (1 + (2 * this.perkv1("PiercedFertite")) / 100);
+		//if (jewelryEffectId == JewelryLib.MODIFIER_FERTILITY) quantity *= (1 + (jewelryEffectMagnitude / 100));
+		return quantity;
 	};
 	Creature.prototype.cumQ = function () {
-		todo("cumQ");
-	};
-	Creature.prototype.lactationQ = function () {
-		todo("lactationQ");
+		if (!this.hasCock())
+			return 0;
+		var quantity = 0;
+		var lustCoefficient = (this.lust + 50) / 10;
+		var _a = this, hoursSinceCum = _a.hoursSinceCum, balls = _a.balls, cumMultiplier = _a.cumMultiplier,
+			ballSize = _a.ballSize;
+		if (kGAMECLASS.flags[kFLAGS.HUNGER_ENABLED] >= 1) {
+			//If realistic mode is enabled, limits cum to capacity.
+			lustCoefficient = lustCoefficient / 2;
+			if (this.findPerk("PilgrimsBounty") >= 0)
+				lustCoefficient = 30;
+			var percent = lustCoefficient + (hoursSinceCum + 10);
+			if (percent > 100) {
+				//Pilgrim's bounty maxes lust coefficient
+				percent = 100;
+				if (quantity > this.cumCapacity()) {
+				}
+				quantity = this.cumCapacity();
+				return (percent / 100) * this.cumCapacity();
+			}
+		}
+		if (this.findPerk("PilgrimsBounty") >= 0)
+			lustCoefficient = 150 / 10;
+		if ((balls == 0 || this.hasStatusEffect("Uniball")) && this.findPerk("PotentProstate") >= 0)
+			quantity = 0 | (4 * 2 * cumMultiplier * 2 * lustCoefficient * (hoursSinceCum + 10) / 24) / 10;
+		else if (balls == 0)
+			quantity = 0 | (1.25 * 2 * cumMultiplier * 2 * lustCoefficient * (hoursSinceCum + 10) / 24) / 10;
+		else
+			quantity = 0 | (ballSize * balls * cumMultiplier * 2 * lustCoefficient * (hoursSinceCum + 10) / 24) / 10;
+		quantity = this.applyCumBonus(quantity);
+		if (quantity < 2)
+			quantity = 2;
+		if (quantity > 0x7fffffff)
+			quantity = 0x7fffffff;
+		return quantity;
 	};
 	Creature.prototype.wetness = function () {
-		todo("wetness");
+		return this.vaginas.length > 0 ? this.vaginas[0].vaginalWetness : 0;
 	};
 	Creature.prototype.bRows = function () {
 		return this.breastRows.length;
@@ -2925,7 +4548,11 @@ var Creature = (function (_super) {
 		return this.breastRows[this.biggestTitRow()].breastRating;
 	};
 	Creature.prototype.biggestLactation = function () {
-		todo("biggestLactation");
+		if (this.breastRows.length == 0)
+			return 0;
+		return this.breastRows.reduce(function (a, b) {
+			return (a.lactationMultiplier > b.lactationMultiplier) ? a : b;
+		}).lactationMultiplier;
 	};
 	Creature.prototype.averageBreastSize = function () {
 		return this.breastRows.map(function (b) {
@@ -2935,15 +4562,18 @@ var Creature = (function (_super) {
 			}) / this.breastRows.length;
 	};
 	Creature.prototype.hasFuckableNipples = function () {
-		todo("hasFuckableNipples");
-		return false;
+		return _.any(this.breastRows, function (b) {
+			return b.fuckable;
+		});
 	};
 	Creature.prototype.canFly = function () {
-		todo("canFly");
-		return true;
+		return !this.hasStatusEffect("Web") && canFlyWings.indexOf(this.wingType) != -1;
 	};
-	Creature.prototype.ballsDescriptLight = function () {
-		todo("ballsDescriptLight");
+	Creature.prototype.ballsDescriptLight = function (forcedSize) {
+		if (forcedSize === void 0) {
+			forcedSize = true;
+		}
+		return Appearance.ballsDescription(forcedSize, true, this);
 	};
 	Creature.prototype.countCocksOfType = function () {
 		var types = [];
@@ -2958,11 +4588,10 @@ var Creature = (function (_super) {
 		return this.countCocksOfType(CockTypesEnum.DOG, CockTypesEnum.FOX);
 	};
 	Creature.prototype.hasStatusEffect = function (t) {
-		todo("hasStatusEffect");
-		return false;
+		return this.statusEffects.indexOf(t) >= 0;
 	};
 	Creature.prototype.statusEffectv1 = function (t) {
-		todo("statusEffectv1");
+		//todo("statusEffectv1");
 		return 0;
 	};
 	Creature.prototype.vaginaType = function () {
@@ -3023,7 +4652,6 @@ var Creature = (function (_super) {
 		return this.hasDragonWings(largeWings) && this.hasDragonfire();
 	};
 	Creature.prototype.isBasilisk = function () {
-		todo("isBasilisk");
 		return this.eyeType == EYES_BASILISK;
 	};
 	Creature.prototype.isMaleOrHerm = function () {
@@ -3033,11 +4661,10 @@ var Creature = (function (_super) {
 		return (this.gender & GENDER_FEMALE) != 0;
 	};
 	Creature.prototype.findPerk = function (perk) {
-		todo("findPerk");
-		return -1;
+		return this.perks.indexOf(perk);
 	};
 	Creature.prototype.perkv1 = function (t) {
-		todo("perkv1");
+		//todo("perkv1");
 		return 0;
 	};
 	Creature.prototype.hasScales = function () {
@@ -3064,6 +4691,9 @@ var Creature = (function (_super) {
 	Creature.prototype.hasPlainSkin = function () {
 		return this.skinType == SKIN_TYPE_PLAIN;
 	};
+	Creature.prototype.hasMuzzle = function () {
+		return [FACE_HORSE, FACE_DOG, FACE_CAT, FACE_LIZARD, FACE_KANGAROO, FACE_FOX, FACE_DRAGON, FACE_RHINO, FACE_ECHIDNA, FACE_DEER].indexOf(this.faceType) >= 0;
+	};
 	Creature.prototype.isBiped = function () {
 		return this.legCount == 2;
 	};
@@ -3071,9 +4701,7 @@ var Creature = (function (_super) {
 		return this.lowerBody == LOWER_BODY_TYPE_NAGA;
 	};
 	Creature.prototype.isTaur = function () {
-		if (this.legCount > 2 && !this.isDrider())
-			return true;
-		return false;
+		return this.legCount > 2 && !this.isDrider();
 	};
 	Creature.prototype.isDrider = function () {
 		return (this.lowerBody == LOWER_BODY_TYPE_DRIDER_LOWER_BODY);
@@ -4408,7 +6036,7 @@ function rand(i) {
 	return Rng.rand(i);
 }
 function randomChoice() {
-	if (Array.isArray(arguments[0]))
+	if (arguments.length == 1 && Array.isArray(arguments[0]))
 		return arguments[0][rand(arguments[0].length)];
 	return arguments[rand(arguments.length)];
 }
@@ -7437,4 +9065,22 @@ var KitsuneScene;
 	KitsuneScene.basicKitsuneHair = ["white", "black", "black", "black", "red", "red", "red"];
 	KitsuneScene.elderKitsuneColors = ["metallic golden", "golden blonde", "metallic silver", "silver blonde", "snow white", "iridescent gray"];
 })(KitsuneScene || (KitsuneScene = {}));
+var FetishManager;
+(function (FetishManager) {
+	FetishManager.DEFAULT_STATE = 0;
+	FetishManager.FETISH_EXHIBITION = 1 << 0; //00000001 = 1
+	FetishManager.FETISH_BONDAGE = 1 << 1; //00000010 = 2
+	FetishManager.FETISH_NO_COMBAT = 1 << 2; //00000100 = 4
+	FetishManager.FETISH_A = 1 << 3; //00001000 = 8
+	FetishManager.FETISH_B = 1 << 4; //00010000 = 16
+	FetishManager.FETISH_C = 1 << 5; //00100000 = 32
+	FetishManager.FETISH_D = 1 << 6; //01000000 = 64
+	FetishManager.FETISH_E = 1 << 7; //10000000 = 128
+	FetishManager.FETISH_F = 1 << 8; //00000001 00000000 = 256
+	FetishManager.FETISH_G = 1 << 9; //00000010 00000000 = 512
+	FetishManager.FETISH_H = 1 << 10; //00000100 00000000 = 1,024
+	FetishManager.FETISH_I = 1 << 11; //00001000 00000000 = 2,048
+	FetishManager.FETISH_J = 1 << 12; //00010000 00000000 = 4,096
+	FetishManager.FETISH_K = 1 << 13; //00100000 00000000 = 8,192
+})(FetishManager || (FetishManager = {}));
 //# sourceMappingURL=tsout.js.map
