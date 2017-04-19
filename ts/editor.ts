@@ -1,14 +1,21 @@
 let textarea: JQuery;
 let previews: Preview[] = [];
 
+interface AttrList {
+	name: string;
+	template: JQuery;
+	items: JQuery;
+}
+interface PreviewUi {
+	container: JQuery;
+	content: JQuery;
+	status: JQuery;
+	seed: JQuery;
+	attrs: JQuery;
+	attrLists: AttrList[];
+}
 interface Preview {
-	ui: {
-		container: JQuery;
-		content: JQuery;
-		status: JQuery;
-		seed: JQuery;
-		attrs: JQuery;
-	},
+	ui: PreviewUi;
 	parser: Parser;
 	game: CoC;
 	seed: number;
@@ -49,7 +56,10 @@ function setupPreview(container: JQuery, game: CoC = new CoC()): Preview {
 			container: container,
 			status   : container.find("[data-role=status]"),
 			seed     : container.find("[name=seed]"),
-			attrs    : container.find("[data-role=attr]")
+			attrs    : container.find("[data-role=attr]"),
+			attrLists: container.find("[data-role=attrlist]").toArray().map(element => {
+				return {} as AttrList;
+			})
 		},
 		parser: new Parser(game, {}),
 		game  : game,
@@ -126,6 +136,7 @@ let StartChars: ((Player, CoC) => any)[] = [
 ];
 $(() => {
 	textarea         = $("#source");
+	textarea.val($("#demo1").html());
 	Preview.template = $("#preview-1 > *").clone();
 	for (let i = 0; i < StartChars.length; i++) {
 		let game = new CoC();

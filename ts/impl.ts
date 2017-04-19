@@ -47,10 +47,30 @@ class Measurements {
 		return this.game.flags[kFLAGS.USE_METRICS] ? inches * 2.54 : inches;
 	}
 }
+class TimeModel {
+	minutes: number = 0;
+	hours: number   = 0;
+	days: number    = 0;
+}
+class GameModel {
+	readonly time: TimeModel = new TimeModel();
+}
+class PrisonCaptor {
+	captorTitle: string    = "captorTitle";
+	captorName: string     = "captorName";
+	captorPronoun1: string = "captorPronoun1";
+	captorPronoun2: string = "captorPronoun2";
+	captorPronoun3: string = "captorPronoun3";
+}
+class PrisonClass {
+	readonly prisonCaptor: PrisonCaptor = new PrisonCaptor();
+}
+
 class CoC {
 	player: Player        = new Player();
-	player2: Player       = new Player();
-	readonly model: GameModel;
+	monster               = this.player;
+	player2: Player       = this.player;
+	readonly model        = new GameModel();
 	readonly measurements = new Measurements(this);
 	readonly flags: {
 		[index: number]: (string | number);
@@ -60,10 +80,12 @@ class CoC {
 		this.flags[kFLAGS.AKBAL_TIMES_BITCHED] = 69;
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	get kFLAGS_REF(): any {
 		return kFLAGS
 	};
-	readonly prison: PrisonClass;
+
+	readonly prison = new PrisonClass();
 }
 function attrGet(game: CoC, attr: string): any {
 	try {

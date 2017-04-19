@@ -102,7 +102,7 @@ class Parser {
 				if (this.debug || this.logErrors) trace("WARNING: Unknown subject in " + arg);
 				return Parser.errstr("!Unknown subject in \"" + arg + "\"!");
 			}
-			if (obj.hasOwnProperty("getDescription") && arg.indexOf(".") > 0) {
+			if (typeof obj["getDescription"] === "function" && arg.indexOf(".") > 0) {
 				return obj.getDescription(descriptorArray[1], "");
 			}
 			// end hack
@@ -196,7 +196,7 @@ class Parser {
 			if (this.logErrors) trace("WARNING: Unknown subject in " + inputArg);
 			return Parser.errstr("!Unknown subject in \"" + inputArg + "\"!");
 		}
-		if (thing.hasOwnProperty("getDescription") && subject.indexOf(".") > 0) {
+		if (typeof thing["getDescription"] === "function" && subject.indexOf(".") > 0) {
 			if (argTemp.length > 1) {
 				return thing.getDescription(descriptorArray[1], aspect);
 			}
@@ -222,11 +222,9 @@ class Parser {
 				}
 				else return Parser.wrapeval(depth, thing[indice])
 			} else if (typeof thing == "object") {
-
-				if (thing.hasOwnProperty(aspectLookup))
+				if (aspectLookup in thing)
 					return Parser.wrapeval(depth, thing[aspectLookup]);
-
-				else if (thing.hasOwnProperty(aspect))
+				else if (aspect in thing)
 					return Parser.wrapeval(depth, thing[aspect]);
 				else {
 					if (this.logErrors) trace("WARNING: Object does not have aspect as a member. Arg: " + inputArg + " Subject: " + subject + " Aspect:" + aspect + " or " + aspectLookup);
@@ -516,10 +514,8 @@ class Parser {
 					if (this.debug) trace("WARNING: Item 2 = ", output[1]);
 					if (this.debug) trace("WARNING: -2--------------------------------------------------");
 
-					if (conditional)
-						return this.recParser(output[0], depth);
-					else
-						return this.recParser(output[1], depth);
+					if (conditional) return Parser.wrapgroup(depth, this.recParser(output[0], depth));
+					else return Parser.wrapgroup(depth, this.recParser(output[1], depth));
 
 				}
 			}

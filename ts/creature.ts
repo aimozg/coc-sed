@@ -39,6 +39,7 @@ class VaginaClass {
 }
 class CreatureData {
 	short: string = "creature";
+	a: string     = "the ";
 
 	str  = 15;
 	tou  = 15;
@@ -127,6 +128,21 @@ class CreatureData {
 	statusEffects: string[] = [];
 }
 class Creature extends CreatureData {
+	get capitalA(): string {
+		return capitalize(this.a);
+	}
+
+	get pronoun1(): string {
+		return this.mf("he", "she");
+	}
+
+	get pronoun2(): string {
+		return this.mf("him", "her");
+	}
+
+	get pronoun3(): string {
+		return this.mf("his", "her");
+	}
 	get flags() {
 		return kGAMECLASS.flags;
 	}
@@ -438,6 +454,31 @@ class Creature extends CreatureData {
 		return Appearance.cockDescript(this, index);
 	}
 
+	cockDescriptShort(i_cockIndex: number = 0): string {
+		if (this.cocks.length == 0) return Parser.errstr("INVALID CREATURE SPECIFIED to cockDescriptShort");
+
+		let description = "";
+		let cock        = this.cocks[i_cockIndex];
+		if (rand(3) == 0) {
+			if (cock.cockLength >= 30) description = "towering ";
+			else if (cock.cockLength >= 18) description = "enormous ";
+			else if (cock.cockLength >= 13) description = "massive ";
+			else if (cock.cockLength >= 10) description = "huge ";
+			else if (cock.cockLength >= 7) description = "long ";
+			else if (cock.cockLength >= 5) description = "average ";
+			else description = "short ";
+		} else if (rand(2) == 0) {
+			if (cock.cockThickness <= .75) description = "narrow ";
+			if (cock.cockThickness > 1 && cock.cockThickness <= 1.4) description = "ample ";
+			if (cock.cockThickness > 1.4 && cock.cockThickness <= 2) description = "broad ";
+			if (cock.cockThickness > 2 && cock.cockThickness <= 3.5) description = "fat ";
+			if (cock.cockThickness > 3.5) description = "distended ";
+		}
+		description += Appearance.cockNoun(cock.cockType);
+
+		return description;
+	}
+
 	breastDescript(row: number = 0): string {
 		if (row < 0 || row >= this.breastRows.length) return Parser.errstr("breastRows index out of range");
 		return Appearance.breastDescript(this.breastRows[row].breastRating, this.breastRows[row].lactationMultiplier);
@@ -596,7 +637,7 @@ class Creature extends CreatureData {
 		return Appearance.cockNoun(CockTypesEnum.HUMAN) + "s";
 	}
 
-	cockArea(i_cockIndex: number): number {
+	cockArea(i_cockIndex: number = 0): number {
 		if (i_cockIndex >= this.cocks.length || i_cockIndex < 0) return 0;
 		return (this.cocks[i_cockIndex].cockThickness * this.cocks[i_cockIndex].cockLength);
 	}

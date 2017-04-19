@@ -2385,6 +2385,7 @@ var VaginaClass = (function () {
 var CreatureData = (function () {
     function CreatureData() {
         this.short = "creature";
+		this.a = "the ";
         this.str = 15;
         this.tou = 15;
         this.spe = 15;
@@ -2467,6 +2468,35 @@ var Creature = (function (_super) {
     function Creature() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+
+	Object.defineProperty(Creature.prototype, "capitalA", {
+		get: function () {
+			return capitalize(this.a);
+		},
+		enumerable: true,
+		configurable: true
+	});
+	Object.defineProperty(Creature.prototype, "pronoun1", {
+		get: function () {
+			return this.mf("he", "she");
+		},
+		enumerable: true,
+		configurable: true
+	});
+	Object.defineProperty(Creature.prototype, "pronoun2", {
+		get: function () {
+			return this.mf("him", "her");
+		},
+		enumerable: true,
+		configurable: true
+	});
+	Object.defineProperty(Creature.prototype, "pronoun3", {
+		get: function () {
+			return this.mf("his", "her");
+		},
+		enumerable: true,
+		configurable: true
+	});
     Object.defineProperty(Creature.prototype, "flags", {
         get: function () {
             return kGAMECLASS.flags;
@@ -2746,6 +2776,45 @@ var Creature = (function (_super) {
         if (index === void 0) { index = 0; }
         return Appearance.cockDescript(this, index);
     };
+	Creature.prototype.cockDescriptShort = function (i_cockIndex) {
+		if (i_cockIndex === void 0) {
+			i_cockIndex = 0;
+		}
+		if (this.cocks.length == 0)
+			return Parser.errstr("INVALID CREATURE SPECIFIED to cockDescriptShort");
+		var description = "";
+		var cock = this.cocks[i_cockIndex];
+		if (rand(3) == 0) {
+			if (cock.cockLength >= 30)
+				description = "towering ";
+			else if (cock.cockLength >= 18)
+				description = "enormous ";
+			else if (cock.cockLength >= 13)
+				description = "massive ";
+			else if (cock.cockLength >= 10)
+				description = "huge ";
+			else if (cock.cockLength >= 7)
+				description = "long ";
+			else if (cock.cockLength >= 5)
+				description = "average ";
+			else
+				description = "short ";
+		}
+		else if (rand(2) == 0) {
+			if (cock.cockThickness <= .75)
+				description = "narrow ";
+			if (cock.cockThickness > 1 && cock.cockThickness <= 1.4)
+				description = "ample ";
+			if (cock.cockThickness > 1.4 && cock.cockThickness <= 2)
+				description = "broad ";
+			if (cock.cockThickness > 2 && cock.cockThickness <= 3.5)
+				description = "fat ";
+			if (cock.cockThickness > 3.5)
+				description = "distended ";
+		}
+		description += Appearance.cockNoun(cock.cockType);
+		return description;
+	};
     Creature.prototype.breastDescript = function (row) {
         if (row === void 0) { row = 0; }
         if (row < 0 || row >= this.breastRows.length)
@@ -2893,6 +2962,9 @@ var Creature = (function (_super) {
         return Appearance.cockNoun(CockTypesEnum.HUMAN) + "s";
     };
     Creature.prototype.cockArea = function (i_cockIndex) {
+		if (i_cockIndex === void 0) {
+			i_cockIndex = 0;
+		}
         if (i_cockIndex >= this.cocks.length || i_cockIndex < 0)
             return 0;
         return (this.cocks[i_cockIndex].cockThickness * this.cocks[i_cockIndex].cockLength);
@@ -3455,7 +3527,10 @@ function setupPreview(container, game) {
             container: container,
             status: container.find("[data-role=status]"),
             seed: container.find("[name=seed]"),
-            attrs: container.find("[data-role=attr]")
+			attrs: container.find("[data-role=attr]"),
+			attrLists: container.find("[data-role=attrlist]").toArray().map(function (element) {
+				return {};
+			})
         },
         parser: new Parser(game, {}),
         game: game,
@@ -3535,6 +3610,7 @@ var StartChars = [
 ];
 $(function () {
     textarea = $("#source");
+	textarea.val($("#demo1").html());
     Preview.template = $("#preview-1 > *").clone();
     for (var i = 0; i < StartChars.length; i++) {
         var game = new CoC();
@@ -7791,15 +7867,53 @@ var Measurements = (function () {
     };
     return Measurements;
 }());
+var TimeModel = (function () {
+	function TimeModel() {
+		this.minutes = 0;
+		this.hours = 0;
+		this.days = 0;
+	}
+
+	return TimeModel;
+}());
+var GameModel = (function () {
+	function GameModel() {
+		this.time = new TimeModel();
+	}
+
+	return GameModel;
+}());
+var PrisonCaptor = (function () {
+	function PrisonCaptor() {
+		this.captorTitle = "captorTitle";
+		this.captorName = "captorName";
+		this.captorPronoun1 = "captorPronoun1";
+		this.captorPronoun2 = "captorPronoun2";
+		this.captorPronoun3 = "captorPronoun3";
+	}
+
+	return PrisonCaptor;
+}());
+var PrisonClass = (function () {
+	function PrisonClass() {
+		this.prisonCaptor = new PrisonCaptor();
+	}
+
+	return PrisonClass;
+}());
 var CoC = (function () {
     function CoC() {
         this.player = new Player();
-        this.player2 = new Player();
+		this.monster = this.player;
+		this.player2 = this.player;
+		this.model = new GameModel();
         this.measurements = new Measurements(this);
         this.flags = {};
+		this.prison = new PrisonClass();
         this.flags[kFLAGS.AKBAL_TIMES_BITCHED] = 69;
     }
     Object.defineProperty(CoC.prototype, "kFLAGS_REF", {
+		//noinspection JSUnusedGlobalSymbols
         get: function () {
             return kFLAGS;
         },
@@ -7920,7 +8034,7 @@ var Parser = (function () {
                     trace("WARNING: Unknown subject in " + arg);
                 return Parser.errstr("!Unknown subject in \"" + arg + "\"!");
             }
-            if (obj.hasOwnProperty("getDescription") && arg.indexOf(".") > 0) {
+			if (typeof obj["getDescription"] === "function" && arg.indexOf(".") > 0) {
                 return obj.getDescription(descriptorArray[1], "");
             }
             // end hack
@@ -8009,7 +8123,7 @@ var Parser = (function () {
                 trace("WARNING: Unknown subject in " + inputArg);
             return Parser.errstr("!Unknown subject in \"" + inputArg + "\"!");
         }
-        if (thing.hasOwnProperty("getDescription") && subject.indexOf(".") > 0) {
+		if (typeof thing["getDescription"] === "function" && subject.indexOf(".") > 0) {
             if (argTemp.length > 1) {
                 return thing.getDescription(descriptorArray[1], aspect);
             }
@@ -8039,9 +8153,9 @@ var Parser = (function () {
                     return Parser.wrapeval(depth, thing[indice]);
             }
             else if (typeof thing == "object") {
-                if (thing.hasOwnProperty(aspectLookup))
+				if (aspectLookup in thing)
                     return Parser.wrapeval(depth, thing[aspectLookup]);
-                else if (thing.hasOwnProperty(aspect))
+				else if (aspect in thing)
                     return Parser.wrapeval(depth, thing[aspect]);
                 else {
                     if (this.logErrors)
@@ -8301,9 +8415,9 @@ var Parser = (function () {
                     if (this.debug)
                         trace("WARNING: -2--------------------------------------------------");
                     if (conditional)
-                        return this.recParser(output[0], depth);
+						return Parser.wrapgroup(depth, this.recParser(output[0], depth));
                     else
-                        return this.recParser(output[1], depth);
+						return Parser.wrapgroup(depth, this.recParser(output[1], depth));
                 }
             }
         }
