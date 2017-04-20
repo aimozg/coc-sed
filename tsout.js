@@ -7944,10 +7944,6 @@ function attrSet(game, attr, value) {
 }
 var kGAMECLASS = new CoC();
 ///<reference path="conditionalConverters.ts"/>
-/*function trace(...argz: any[]) {
-    console.debug.apply(console, argz);
- }*/
-var trace = console.debug;
 var Parser = (function () {
     /**
      * @param ownerClass main game class. Variables are looked-up in this class.
@@ -8009,56 +8005,40 @@ var Parser = (function () {
     // returned.
     // ALWAYS returns a string
     Parser.prototype.convertSingleArg = function (depth, arg) {
+		if (this.debug)
+			console.debug("  convertSingleArg", arg);
         var argResult = null;
         var capitalize = this.isUpperCase(arg.charAt(0));
         var argLower;
         argLower = arg.toLowerCase();
         if (argLower in singleArgConverters) {
-            //if (this.logErrors) trace("WARNING: Found corresponding anonymous function");
+			if (this.debug)
+				console.debug("    is singleArgConverter", argLower);
             argResult = singleArgConverters[argLower](this.ownerClass);
             if (this.debug)
-                trace("WARNING: Called, return = ", argResult);
+				console.debug("      =>", argResult);
             if (capitalize)
                 argResult = this.capitalizeFirstWord(argResult);
             return Parser.wrapeval(depth, argResult);
         }
         else {
-            // ---------------------------------------------------------------------------------
-            // TODO: Get rid of this shit.
-            // UGLY hack to patch legacy functionality in TiTS
-            // This needs to go eventually
-            var descriptorArray = arg.split(".");
-            var obj = this.getObjectFromString(this.ownerClass, descriptorArray[0]);
-            if (obj == null) {
-                if (this.debug || this.logErrors)
-                    trace("WARNING: Unknown subject in " + arg);
-                return Parser.errstr("!Unknown subject in \"" + arg + "\"!");
-            }
-			if (typeof obj["getDescription"] === "function" && arg.indexOf(".") > 0) {
-                return obj.getDescription(descriptorArray[1], "");
-            }
-            // end hack
-            // ---------------------------------------------------------------------------------
-            if (this.debug)
-                trace("WARNING: Lookup Arg = ", arg);
-            obj = this.getObjectFromString(this.ownerClass, arg);
+			var obj = this.getObjectFromString(this.ownerClass, arg);
             if (obj != null) {
                 if (this.debug)
-                    trace("        Found something in owner class, obj =", obj, typeof obj);
+					console.debug("    In owner class:", typeof obj, obj);
                 if (obj instanceof Function) {
+					var rslt = obj();
                     if (this.debug)
-                        trace("        Found corresponding function in owner class");
-                    return Parser.wrapeval(depth, obj());
+						console.debug("      is function =>", rslt);
+					return Parser.wrapeval(depth, rslt);
                 }
                 else {
-                    if (this.debug)
-                        trace("WARNING: Found corresponding aspect in owner class");
-                    return Parser.wrapeval(depth, obj); // explicit cast probably not needed
+					return Parser.wrapeval(depth, obj);
                 }
             }
             else {
                 if (this.debug || this.logErrors)
-                    trace("WARNING: No lookup found for", arg, " search result is: ", obj);
+					console.warn("    No lookup found for", arg, "search result is:", typeof obj, obj);
                 return Parser.errstr("!Unknown tag \"" + arg + "\"!");
             }
         }
@@ -8069,7 +8049,7 @@ var Parser = (function () {
         var argTemp = inputArg.split(" ");
         if (argTemp.length != 2) {
             if (this.logErrors)
-                trace("WARNING: Not actually a two word tag! " + inputArg);
+				console.warn("  Not a two word tag", inputArg, argTemp);
             return Parser.errstr("!Not actually a two-word tag!\"" + inputArg + "\"!");
         }
         var subject = argTemp[0];
@@ -8077,102 +8057,88 @@ var Parser = (function () {
         var subjectLower = argTemp[0].toLowerCase();
         var aspectLower = argTemp[1].toLowerCase();
         if (this.debug)
-            trace("    convertDoubleArg, subject =", subject, ", aspect =", aspect);
+			console.debug("  convertDoubleArg, subject =", subject, ", aspect =", aspect);
         // Figure out if we need to capitalize the resulting text
         var capitalize = this.isUpperCase(aspect.charAt(0));
         // Only perform lookup in twoWordNumericTagsLookup if aspect can be cast to a valid number
         if ((subjectLower in twoWordNumericTagsLookup) && !isNaN(+aspect)) {
             aspectLower = +aspectLower;
             if (this.debug)
-                trace("        Found corresponding anonymous function");
+				console.debug("    is twoWordNumericTag", aspectLower);
             argResult = twoWordNumericTagsLookup[subjectLower](this.ownerClass, aspectLower);
             if (capitalize)
                 argResult = this.capitalizeFirstWord(argResult);
             if (this.debug)
-                trace("        Called two word numeric lookup, return = ", argResult);
+				console.debug("      =>", argResult);
             return Parser.wrapeval(depth, argResult);
         }
         // aspect isn't a number. Look for subject in the normal twoWordTagsLookup
         if (subjectLower in twoWordTagsLookup) {
-            if (aspectLower in twoWordTagsLookup[subjectLower]) {
+			var twoWordGroup = twoWordTagsLookup[subjectLower];
+			if (aspectLower in twoWordGroup) {
                 if (this.debug)
-                    trace("        Found corresponding anonymous function");
-                argResult = twoWordTagsLookup[subjectLower][aspectLower](this.ownerClass);
+					console.debug("    is twoWordTag", subjectLower, aspectLower);
+				argResult = twoWordGroup[aspectLower](this.ownerClass);
                 if (capitalize)
                     argResult = this.capitalizeFirstWord(argResult);
                 if (this.debug)
-                    trace("        Called two word lookup, return = ", argResult);
+					console.debug("      =>", argResult);
                 return Parser.wrapeval(depth, argResult);
             }
             else {
                 if (this.logErrors)
-                    trace("WARNING: Unknown aspect in two-word tag. Arg: " + inputArg + " Aspect: " + aspectLower);
+					console.warn("    Is a two-word tag but not an aspect, Input:", inputArg, "Aspect:", aspectLower);
                 return Parser.errstr("!Unknown aspect in two-word tag \"" + inputArg + "\"! ASCII Aspect = \"" + aspectLower + "\"");
             }
         }
-        if (this.debug)
-            trace("        trying to look-up two-word tag in parent");
-        // ---------------------------------------------------------------------------------
-        // TODO: Get rid of this shit.
-        // UGLY hack to patch legacy functionality in TiTS
-        // This needs to go eventually
+		//if (this.debug) console.debug("    testing parent");
         var descriptorArray = subject.split(".");
         thing = this.getObjectFromString(this.ownerClass, descriptorArray[0]);
-        if (thing == null) {
-            if (this.logErrors)
-                trace("WARNING: Unknown subject in " + inputArg);
-            return Parser.errstr("!Unknown subject in \"" + inputArg + "\"!");
-        }
-		if (typeof thing["getDescription"] === "function" && subject.indexOf(".") > 0) {
-            if (argTemp.length > 1) {
-                return thing.getDescription(descriptorArray[1], aspect);
-            }
-            else {
-                return thing.getDescription(descriptorArray[1], "");
-            }
-        }
-        // end hack
-        // ---------------------------------------------------------------------------------
         var aspectLookup = this.getObjectFromString(this.ownerClass, aspect);
         if (thing != null) {
             if (this.debug)
-                trace("        Found something in owner class, thing =", thing);
+				console.debug("    in owner class:", typeof thing, thing);
             if (thing instanceof Function) {
+				var argResult_1 = thing(aspect);
                 if (this.debug)
-                    trace("        Found corresponding function in owner class", this.ownerClass);
-                return Parser.wrapeval(depth, thing(aspect));
+					console.debug("      is function", argResult_1);
+				return Parser.wrapeval(depth, argResult_1);
             }
             else if (Array.isArray(thing)) {
-                var indice = +aspectLower;
-                if (isNaN(indice)) {
+				var index = +aspectLower;
+				if (isNaN(index)) {
                     if (this.logErrors)
-                        trace("WARNING: Cannot use non-number as indice to Array. Arg " + inputArg + " Subject: " + subject + " Aspect: " + aspect);
-                    return Parser.errstr("Cannot use non-number as indice to Array \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
+						console.warn("      is array, but index is non-number, Input:", inputArg, "Subject:", subject, "Aspect:", aspect);
+					return Parser.errstr("Cannot use non-number as index to Array \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
                 }
-                else
-                    return Parser.wrapeval(depth, thing[indice]);
+				else {
+					argResult = thing[index];
+					if (this.debug)
+						console.debug("      is array =>", argResult);
+					return Parser.wrapeval(depth, argResult);
+				}
             }
             else if (typeof thing == "object") {
-				if (aspectLookup in thing)
+				if (aspectLookup in thing) {
                     return Parser.wrapeval(depth, thing[aspectLookup]);
-				else if (aspect in thing)
+				}
+				else if (aspect in thing) {
                     return Parser.wrapeval(depth, thing[aspect]);
+				}
                 else {
                     if (this.logErrors)
-                        trace("WARNING: Object does not have aspect as a member. Arg: " + inputArg + " Subject: " + subject + " Aspect:" + aspect + " or " + aspectLookup);
+						console.debug("WARNING: Object does not have aspect as a member. Arg: " + inputArg + " Subject: " + subject + " Aspect:" + aspect + " or " + aspectLookup);
                     return Parser.errstr("Object does not have aspect as a member \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + " or " + aspectLookup + "\"");
                 }
             }
             else {
-                // This will work, but I don't know why you'd want to
-                // the aspect is just ignored
                 if (this.debug)
-                    trace("        Found corresponding aspect in owner class", this.ownerClass);
-                return Parser.wrapeval(depth, "" + thing);
+					console.warn("      Non-container subject", thing, "with an aspect", aspect);
+				return Parser.wrapeval(depth, thing);
             }
         }
         if (this.debug || this.logErrors)
-            trace("WARNING: No lookup found for", inputArg, " search result is: ", thing);
+			console.debug("WARNING: No lookup found for", inputArg, " search result is: ", thing);
         return Parser.errstr("!Unknown subject in two-word tag \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
         // return Parser.errstr("!Unknown tag \"" + arg + "\"!");
     };
@@ -8190,42 +8156,42 @@ var Parser = (function () {
         // Try to cast to a number. If it fails, go on with the switch/case statement.
         if (!isNaN(+arg)) {
             if (this.debug)
-                trace("WARNING: Converted to float. number = ", +arg);
+				console.debug("WARNING: Converted to float. number = ", +arg);
             return +arg;
         }
         if (argLower in conditionalOptions) {
             if (this.debug)
-                trace("WARNING: Found corresponding anonymous function");
+				console.debug("WARNING: Found corresponding anonymous function");
             argResult = conditionalOptions[argLower](this.ownerClass);
             if (this.debug)
-                trace("WARNING: Called, return = ", argResult);
+				console.debug("WARNING: Called, return = ", argResult);
             return argResult;
         }
         var obj = this.getObjectFromString(this.ownerClass, arg);
         if (this.debug)
-            trace("WARNING: Looked up ", arg, " in ", this.ownerClass, "Result was:", obj);
+			console.debug("WARNING: Looked up ", arg, " in ", this.ownerClass, "Result was:", obj);
         if (obj != null) {
             if (this.debug)
-                trace("WARNING: Found corresponding function for conditional argument lookup.");
+				console.debug("WARNING: Found corresponding function for conditional argument lookup.");
             if (obj instanceof Function) {
                 if (this.debug)
-                    trace("WARNING: Found corresponding function in owner class");
+					console.debug("WARNING: Found corresponding function in owner class");
                 argResult = +obj();
                 return argResult;
             }
             else {
                 if (this.debug)
-                    trace("WARNING: Found corresponding aspect in owner class");
+					console.debug("WARNING: Found corresponding aspect in owner class");
                 argResult = +obj;
                 return argResult;
             }
         }
         else {
             if (this.debug || this.logErrors)
-                trace("WARNING: No lookups found!");
+				console.debug("WARNING: No lookups found!");
             return null;
         }
-        /*if (this.printConditionalEvalDebug || LogErrors) trace("WARNING: Could not convert to number. Evaluated ", arg, " as", argResult);
+        /*if (this.printConditionalEvalDebug || LogErrors) console.debug("WARNING: Could not convert to number. Evaluated ", arg, " as", argResult);
          return argResult;*/
     };
     // Evaluates the conditional section of an if-statement.
@@ -8251,19 +8217,19 @@ var Parser = (function () {
             var condArg = this.convertConditionalArgumentFromStr(textCond);
             if (condArg != null) {
                 if (this.debug)
-                    trace("WARNING: Conditional \"", textCond, "\" Evalueated to: \"", condArg, "\"");
+					console.debug("WARNING: Conditional \"", textCond, "\" Evalueated to: \"", condArg, "\"");
                 return condArg;
             }
             else {
                 if (this.logErrors)
-                    trace("WARNING: Invalid conditional! \"(", textCond, ")\" Conditionals must be in format:");
+					console.debug("WARNING: Invalid conditional! \"(", textCond, ")\" Conditionals must be in format:");
                 if (this.logErrors)
-                    trace("WARNING:  \"({statment1} (==|=|!=|<|>|<=|>=) {statement2})\" or \"({valid variable/function name})\". ");
+					console.debug("WARNING:  \"({statment1} (==|=|!=|<|>|<=|>=) {statement2})\" or \"({valid variable/function name})\". ");
                 return false;
             }
         }
         if (this.debug)
-            trace("WARNING: Expression = ", textCond, "Expression result = [", expressionResult, "], length of = ", expressionResult.length);
+			console.debug("WARNING: Expression = ", textCond, "Expression result = [", expressionResult, "], length of = ", expressionResult.length);
         var condArgStr1 = expressionResult[1];
         var operator = expressionResult[2];
         var condArgStr2 = expressionResult[3];
@@ -8288,7 +8254,7 @@ var Parser = (function () {
         else
             retVal = (condArg1 != condArg2);
         if (this.debug)
-            trace("WARNING: Check: " + condArg1 + " " + operator + " " + condArg2 + " result: " + retVal);
+			console.debug("WARNING: Check: " + condArg1 + " " + operator + " " + condArg2 + " result: " + retVal);
         return retVal;
     };
     // Splits the result from an if-statement.
@@ -8302,11 +8268,11 @@ var Parser = (function () {
         //                 ^          This Bit            ^
         // If there is no OUTPUT_IF_FALSE, returns an empty string for the second option.
         if (this.debug)
-            trace("WARNING: ------------------4444444444444444444444444444444444444444444444444444444444-----------------------");
+			console.debug("WARNING: ------------------4444444444444444444444444444444444444444444444444444444444-----------------------");
         if (this.debug)
-            trace("WARNING: Split Conditional input string: ", textCtnt);
+			console.debug("WARNING: Split Conditional input string: ", textCtnt);
         if (this.debug)
-            trace("WARNING: ------------------4444444444444444444444444444444444444444444444444444444444-----------------------");
+			console.debug("WARNING: ------------------4444444444444444444444444444444444444444444444444444444444-----------------------");
         var ret = ["", ""];
         var i;
         var sectionStart = 0;
@@ -8341,11 +8307,11 @@ var Parser = (function () {
         }
         ret[section] = textCtnt.substring(sectionStart, textCtnt.length);
         if (this.debug)
-            trace("WARNING: ------------------5555555555555555555555555555555555555555555555555555555555-----------------------");
+			console.debug("WARNING: ------------------5555555555555555555555555555555555555555555555555555555555-----------------------");
         if (this.debug)
-            trace("WARNING: Outputs: ", ret);
+			console.debug("WARNING: Outputs: ", ret);
         if (this.debug)
-            trace("WARNING: ------------------5555555555555555555555555555555555555555555555555555555555-----------------------");
+			console.debug("WARNING: ------------------5555555555555555555555555555555555555555555555555555555555-----------------------");
         return ret;
     };
     // Called to evaluate a if statment string, and return the evaluated result.
@@ -8372,11 +8338,11 @@ var Parser = (function () {
         // I need to do some testing
         // ~~~~Fake-Name
         if (this.debug)
-            trace("WARNING: ------------------2222222222222222222222222222222222222222222222222222222222-----------------------");
+			console.debug("WARNING: ------------------2222222222222222222222222222222222222222222222222222222222-----------------------");
         if (this.debug)
-            trace("WARNING: If input string: ", textCtnt);
+			console.debug("WARNING: If input string: ", textCtnt);
         if (this.debug)
-            trace("WARNING: ------------------2222222222222222222222222222222222222222222222222222222222-----------------------");
+			console.debug("WARNING: ------------------2222222222222222222222222222222222222222222222222222222222-----------------------");
         var ret = ["", "", ""]; // first string is conditional, second string is the output
         var i = 0;
         var parenthesisCount = 0;
@@ -8403,17 +8369,17 @@ var Parser = (function () {
                     output = this.splitConditionalResult(output);
                     // LOTS of debugging
                     if (this.debug)
-                        trace("WARNING: prefix = '", ret[0], "' conditional = ", conditional, " content = ", output);
+						console.debug("WARNING: prefix = '", ret[0], "' conditional = ", conditional, " content = ", output);
                     if (this.debug)
-                        trace("WARNING: -0--------------------------------------------------");
+						console.debug("WARNING: -0--------------------------------------------------");
                     if (this.debug)
-                        trace("WARNING: Content Item 1 = ", output[0]);
+						console.debug("WARNING: Content Item 1 = ", output[0]);
                     if (this.debug)
-                        trace("WARNING: -1--------------------------------------------------");
+						console.debug("WARNING: -1--------------------------------------------------");
                     if (this.debug)
-                        trace("WARNING: Item 2 = ", output[1]);
+						console.debug("WARNING: Item 2 = ", output[1]);
                     if (this.debug)
-                        trace("WARNING: -2--------------------------------------------------");
+						console.debug("WARNING: -2--------------------------------------------------");
                     if (conditional)
 						return Parser.wrapgroup(depth, this.recParser(output[0], depth));
                     else
@@ -8431,53 +8397,42 @@ var Parser = (function () {
     // ---------------------------------------------------------------------------------------------------------------------------------------
     // SCENE PARSING ---------------------------------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------------------------------------------------------
-    // attempt to return function "inStr" that is a member of "localThis"
+	// attempt to return function "prop" that is a member of "object"
     // Properly handles nested classes/objects, e.g. localThis.herp.derp
     // is returned by getFuncFromString(localThis, "herp.derp");
     // returns the relevant function if it exists, null if it does not.
-    Parser.prototype.getObjectFromString = function (localThis, inStr) {
-        if (inStr in localThis) {
+	Parser.prototype.getObjectFromString = function (object, prop) {
+		if (this.debug)
+			console.debug("  getObjectFromString: prop=", prop, "object=", object);
+		var ret = object[prop];
+		if (ret !== undefined) {
             if (this.debug)
-                trace("WARNING: item: ", inStr, " in: ", localThis);
-            var ret_1 = localThis[inStr];
-            if (ret_1 instanceof Function) {
+				console.debug("    found", typeof ret, ret);
+			if (ret instanceof Function) {
                 var _this_1 = this;
                 return function () {
                     if (_this_1.debug)
-                        trace("            curried call on", localThis, ".", inStr, "with args", arguments);
-                    return ret_1.apply(localThis, arguments);
+						console.debug("        curried call on prop=", prop, "this=", object, "with args", arguments);
+					return ret.apply(object, arguments);
                 };
             }
-            return ret_1;
+			return ret;
         }
-        if (inStr.indexOf('.') > 0) {
+		if (prop.indexOf('.') > 0) {
             var localReference = void 0;
             var itemName = void 0;
-            localReference = inStr.substr(0, inStr.indexOf('.'));
-            itemName = inStr.substr(inStr.indexOf('.') + 1);
-            // Debugging, what debugging?
+			localReference = prop.substr(0, prop.indexOf('.'));
+			itemName = prop.substr(prop.indexOf('.') + 1);
+			var subitem = object[localReference];
             if (this.debug)
-                trace("WARNING: localReference = ", localReference);
-            if (this.debug)
-                trace("WARNING: itemName = ", itemName);
-            if (this.debug)
-                trace("WARNING: localThis = \"", localThis, "\"");
-            if (this.debug)
-                trace("WARNING: dereferenced = ", localThis[localReference]);
-            // If we have the localReference as a member of the localThis, call this function again to further for
-            // the item itemName in localThis[localReference]
-            // This allows arbitrarily-nested data-structures, by recursing over the . structure in inStr
-            if (localReference in localThis) {
-                if (this.debug)
-                    trace("WARNING: have localReference:", localThis[localReference]);
-                return this.getObjectFromString(localThis[localReference], itemName);
-            }
-            else {
-                return null;
-            }
+				console.debug("    subitem: ", localReference, "[", itemName, "], this[", localReference + "]=", subitem);
+			// If we have the localReference as a member of the object, call this function again to further for
+			// the item itemName in object[localReference]
+			// This allows arbitrarily-nested data-structures, by recursing over the . structure in prop
+			return this.getObjectFromString(subitem, itemName);
         }
         if (this.debug)
-            trace("WARNING: item: ", inStr, " NOT in: ", localThis);
+			console.warn("getObjectFromString:", prop, " NOT in: ", object);
         return null;
     };
     Parser.prototype.getSceneSectionToInsert = function (inputArg) {
@@ -8489,13 +8444,13 @@ var Parser = (function () {
         var sceneName = argTemp[1];
         var callNameLower = argTemp[0].toLowerCase();
         if (this.debug)
-            trace("WARNING: Doing lookup for sceneSection tag:", callName, " scene name: ", sceneName);
+			console.debug("WARNING: Doing lookup for sceneSection tag:", callName, " scene name: ", sceneName);
         // this should have been checked before calling.
         if (callNameLower != "insertsection")
             throw new Error("Wat?");
         if (sceneName in this.parserState) {
             if (this.debug)
-                trace("WARNING: Have sceneSection \"" + sceneName + "\". Parsing and setting up menu");
+				console.debug("WARNING: Have sceneSection \"" + sceneName + "\". Parsing and setting up menu");
             this.buttonNum = 0; // Clear the button number, so we start adding buttons from button 0
             // Split up into multiple variables for debugging (it was crashing at one point. Separating the calls let me delineate what was crashing)
             var tmp1 = this.parserState[sceneName];
@@ -8503,7 +8458,7 @@ var Parser = (function () {
             //var tmp3:string = Showdown.makeHtml(tmp2)
             return ""; //Fuck Showdown
             //return tmp3;			// and then stick it on the display
-            //if (sceneParserDebug) trace("WARNING: Scene contents: \"" + tmp1 + "\" as parsed: \"" + tmp2 + "\"")
+			//if (sceneParserDebug) console.debug("WARNING: Scene contents: \"" + tmp1 + "\" as parsed: \"" + tmp2 + "\"")
         }
         else {
             return "Insert sceneSection called with unknown arg \"" + sceneName + "\". falling back to the debug pane";
@@ -8523,20 +8478,20 @@ var Parser = (function () {
     //
     Parser.prototype.enterParserScene = function (sceneName) {
         /*
-         if (sceneParserDebug) trace("WARNING: this.parserStateContents:")
+         if (sceneParserDebug) console.debug("WARNING: this.parserStateContents:")
          for (var prop in this.parserState)
          {
-         if (sceneParserDebug) trace("WARNING: this.parserState."+prop+" = "+this.parserState[prop]);
+         if (sceneParserDebug) console.debug("WARNING: this.parserState."+prop+" = "+this.parserState[prop]);
          }
          */
         var ret = "";
         if (this.debug)
-            trace("WARNING: Entering parser scene: \"" + sceneName + "\"");
+			console.debug("WARNING: Entering parser scene: \"" + sceneName + "\"");
         if (this.debug)
-            trace("WARNING: Do we have the scene name? ", sceneName in this.parserState);
+			console.debug("WARNING: Do we have the scene name? ", sceneName in this.parserState);
         if (sceneName == "exit") {
             if (this.debug)
-                trace("WARNING: Enter scene called to exit");
+				console.debug("WARNING: Enter scene called to exit");
             //doNextClear(debugPane);
             // TODO:
             // This needs to change to something else anyways. I need to add the ability to
@@ -8545,24 +8500,24 @@ var Parser = (function () {
         }
         else if (sceneName in this.parserState) {
             if (this.debug)
-                trace("WARNING: Have scene \"" + sceneName + "\". Parsing and setting up menu");
+				console.debug("WARNING: Have scene \"" + sceneName + "\". Parsing and setting up menu");
             this.ownerClass.menu();
             this.buttonNum = 0; // Clear the button number, so we start adding buttons from button 0
             var tmp1 = this.parserState[sceneName];
             var tmp2 = this.recParser(tmp1, 0); // we have to actually parse the scene now
             //ret             = Showdown.makeHtml(tmp2)
             //this.ownerClass.rawOutputText(ret, true);			// and then stick it on the display
-            //if (sceneParserDebug) trace("WARNING: Scene contents: \"" + tmp1 + "\" as parsed: \"" + tmp2 + "\"")
+			//if (sceneParserDebug) console.debug("WARNING: Scene contents: \"" + tmp1 + "\" as parsed: \"" + tmp2 + "\"")
             if (this.debug)
-                trace("WARNING: Scene contents after markdown: \"" + ret + "\"");
+				console.debug("WARNING: Scene contents after markdown: \"" + ret + "\"");
         }
         else if (this.getObjectFromString(this.ownerClass, sceneName) != null) {
             if (this.debug)
-                trace("WARNING: Have function \"" + sceneName + "\" in this!. Calling.");
+				console.debug("WARNING: Have function \"" + sceneName + "\" in this!. Calling.");
             this.getObjectFromString(this.ownerClass, sceneName)();
         }
         else {
-            trace("WARNING: Enter scene called with unknown arg/function \"" + sceneName + "\". falling back to the debug pane");
+			console.debug("WARNING: Enter scene called with unknown arg/function \"" + sceneName + "\". falling back to the debug pane");
             this.ownerClass.doNext(this.ownerClass.debugPane);
         }
         return ret;
@@ -8583,7 +8538,7 @@ var Parser = (function () {
         sceneCont = textCtnt.substr(textCtnt.indexOf('|') + 1);
         sceneName = this.stripStr(sceneName);
         if (this.debug)
-            trace("WARNING: Adding scene with name \"" + sceneName + "\"");
+			console.debug("WARNING: Adding scene with name \"" + sceneName + "\"");
         // Cleanup the scene content from spurious leading and trailing space.
         sceneCont = this.trimStr(sceneCont, "\n");
         sceneCont = this.trimStr(sceneCont, "	");
@@ -8607,7 +8562,7 @@ var Parser = (function () {
         }
         var buttonName = this.stripStr(arr[1]);
         var buttonFunc = this.stripStr(arr[0].substring(arr[0].indexOf(' ')));
-        //trace("WARNING: adding a button with name\"" + buttonName + "\" and function \"" + buttonFunc + "\"");
+		//console.debug("WARNING: adding a button with name\"" + buttonName + "\" and function \"" + buttonFunc + "\"");
         this.ownerClass.addButton(this.buttonNum, buttonName, this.enterParserScene, buttonFunc);
         this.buttonNum += 1;
     };
@@ -8616,16 +8571,16 @@ var Parser = (function () {
     // if the contents are not a button or scene contents, returns the contents.
     Parser.prototype.evalForSceneControls = function (textCtnt) {
         if (this.debug)
-            trace("WARNING: Checking for scene tags.");
+			console.debug("WARNING: Checking for scene tags.");
         if (textCtnt.toLowerCase().indexOf("screen") == 0) {
             if (this.debug)
-                trace("WARNING: It's a scene");
+				console.debug("WARNING: It's a scene");
             this.parseSceneTag(textCtnt);
             return "";
         }
         else if (textCtnt.toLowerCase().indexOf("button") == 0) {
             if (this.debug)
-                trace("WARNING: It's a button add statement");
+				console.debug("WARNING: It's a button add statement");
             this.parseButtonTag(textCtnt);
             return "";
         }
@@ -8640,32 +8595,32 @@ var Parser = (function () {
     Parser.prototype.parseNonIfStatement = function (textCtnt, depth) {
         var retStr = "";
         if (this.debug)
-            trace("WARNING: Parsing content string: ", textCtnt);
+			console.debug("WARNING: Parsing content string: ", textCtnt);
         if (this.debug)
-            trace("WARNING: Not an if statement");
+			console.debug("WARNING: Not an if statement");
         // Match a single word, with no leading or trailing space
         var singleWordTagRegExp = /^[\w\.]+$/;
         var doubleWordTagRegExp = /^[\w\.]+\s[\w\.]+$/;
         if (this.debug)
-            trace("WARNING: string length = ", textCtnt.length);
+			console.debug("WARNING: string length = ", textCtnt.length);
         if (textCtnt.toLowerCase().indexOf("insertsection") == 0) {
             if (this.debug)
-                trace("WARNING: It's a scene section insert tag!");
+				console.debug("WARNING: It's a scene section insert tag!");
             retStr = Parser.tostr(this.getSceneSectionToInsert(textCtnt));
         }
         else if (singleWordTagRegExp.exec(textCtnt)) {
             if (this.debug)
-                trace("WARNING: It's a single word!");
+				console.debug("WARNING: It's a single word!");
             retStr += this.convertSingleArg(depth, textCtnt);
         }
         else if (doubleWordTagRegExp.exec(textCtnt)) {
             if (this.debug)
-                trace("WARNING: Two-word tag!");
+				console.debug("WARNING: Two-word tag!");
             retStr += Parser.tostr(this.convertDoubleArg(depth, textCtnt));
         }
         else {
             if (this.debug)
-                trace("WARNING: Cannot parse content. What?", textCtnt);
+				console.debug("WARNING: Cannot parse content. What?", textCtnt);
             retStr += Parser.errstr("!Unknown multi-word tag \"" + retStr + "\"!");
         }
         return retStr;
@@ -8677,9 +8632,9 @@ var Parser = (function () {
         var retStr = "";
         try {
             if (this.debug)
-                trace("WARNING: Recursion call", depth, "---------------------------------------------+++++++++++++++++++++");
+				console.debug("WARNING: Recursion call", depth, "---------------------------------------------+++++++++++++++++++++");
             if (this.debug)
-                trace("WARNING: Parsing contents = ", textCtnt);
+				console.debug("WARNING: Parsing contents = ", textCtnt);
             // Depth tracks our recursion depth
             // Basically, we need to handle things differently on the first execution, so we don't mistake single-word print-statements for
             // a tag. Therefore, every call of this.recParser increments depth by 1
@@ -8693,10 +8648,10 @@ var Parser = (function () {
             do {
                 lastBracket = textCtnt.indexOf("[", lastBracket + 1);
                 if (textCtnt.charAt(lastBracket - 1) == "\\") {
-                    // trace("WARNING: bracket is escaped 1", lastBracket);
+					// console.debug("WARNING: bracket is escaped 1", lastBracket);
                 }
                 else if (lastBracket != -1) {
-                    // trace("WARNING: need to parse bracket", lastBracket);
+					// console.debug("WARNING: need to parse bracket", lastBracket);
                     break;
                 }
             } while (lastBracket != -1);
@@ -8704,13 +8659,13 @@ var Parser = (function () {
                 for (i = lastBracket; i < textCtnt.length; i += 1) {
                     if (textCtnt.charAt(i) == "[") {
                         if (textCtnt.charAt(i - 1) != "\\") {
-                            //trace("WARNING: bracket is not escaped - 2");
+							//console.debug("WARNING: bracket is not escaped - 2");
                             bracketCnt += 1;
                         }
                     }
                     else if (textCtnt.charAt(i) == "]") {
                         if (textCtnt.charAt(i - 1) != "\\") {
-                            //trace("WARNING: bracket is not escaped - 3");
+							//console.debug("WARNING: bracket is not escaped - 3");
                             bracketCnt -= 1;
                         }
                     }
@@ -8719,7 +8674,7 @@ var Parser = (function () {
                         // Only prepend the prefix if it actually has content.
                         prefixTmp = textCtnt.substring(0, lastBracket);
                         if (this.debug)
-                            trace("WARNING: prefix content = ", prefixTmp);
+							console.debug("WARNING: prefix content = ", prefixTmp);
                         if (prefixTmp)
                             retStr += Parser.wrapgroup(depth - 1, prefixTmp);
                         // We know there aren't any brackets in the section before the first opening bracket.
@@ -8730,15 +8685,15 @@ var Parser = (function () {
                         // therefore, you could *theoretically* have nested scene pages, though I don't know WHY you'd ever want that.
                         if (this.isIfStatement(tmpStr)) {
                             if (this.debug)
-                                trace("WARNING: early eval as if");
+								console.debug("WARNING: early eval as if");
                             retStr += this.parseConditional(tmpStr, depth);
                             if (this.debug)
-                                trace("WARNING: ------------------0000000000000000000000000000000000000000000000000000000000000000-----------------------");
-                            //trace("WARNING: Parsed Ccnditional - ", retStr)
+								console.debug("WARNING: ------------------0000000000000000000000000000000000000000000000000000000000000000-----------------------");
+							//console.debug("WARNING: Parsed Ccnditional - ", retStr)
                         }
                         else if (tmpStr) {
                             if (this.debug)
-                                trace("WARNING: Parsing bracket contents = ", tmpStr);
+								console.debug("WARNING: Parsing bracket contents = ", tmpStr);
                             retStr += this.parseNonIfStatement(this.recParser(tmpStr, depth), depth);
                         }
                         // First parse into the text in the brackets (to resolve any nested brackets)
@@ -8751,7 +8706,7 @@ var Parser = (function () {
                         postfixTmp = textCtnt.substring(i + 1, textCtnt.length);
                         if (postfixTmp.indexOf("[") != -1) {
                             if (this.debug)
-                                trace("WARNING: Need to parse trailing text", postfixTmp);
+								console.debug("WARNING: Need to parse trailing text", postfixTmp);
                             retStr += this.recParser(postfixTmp, depth - 1); // Parse the trailing text (if any)
                             // Note: This leads to LOTS of recursion. Since we basically call this.recParser once per
                             // tag, it means that if a body of text has 30 tags, we'll end up recursing at least
@@ -8761,7 +8716,7 @@ var Parser = (function () {
                         }
                         else {
                             if (this.debug)
-                                trace("WARNING: No brackets in trailing text", postfixTmp);
+								console.debug("WARNING: No brackets in trailing text", postfixTmp);
                             retStr += Parser.wrapgroup(depth, postfixTmp);
                         }
                         return retStr;
@@ -8773,7 +8728,7 @@ var Parser = (function () {
                 // DERP. We should never have brackets around something that ISN'T a tag intended to be parsed. Therefore, we just need
                 // to determine what type of parsing should be done do the tag.
                 if (this.debug)
-                    trace("WARNING: No brackets present in text passed to recParse", textCtnt);
+					console.debug("WARNING: No brackets present in text passed to recParse", textCtnt);
                 if (depth > 1)
                     retStr += textCtnt;
                 else
@@ -8796,17 +8751,17 @@ var Parser = (function () {
     Parser.prototype.recursiveParser = function (contents, prettyQuotes) {
         if (prettyQuotes === void 0) { prettyQuotes = true; }
         if (this.debug)
-            trace("WARNING: ------------------ Parser called on string -----------------------");
+			console.debug("WARNING: ------------------ Parser called on string -----------------------");
         // Eventually, when this goes properly class-based, we'll add a period, and have this.parserState.
         // Reset the parser's internal state, since we're parsing a new string:
-        // trace("WARNING: Purging scene parser contents")
+		// console.debug("WARNING: Purging scene parser contents")
         this.parserState = {};
         var ret;
         // Run through the parser
         contents = contents.replace(/\\\n/g, '').replace(/\\n/g, "\n");
         ret = this.recParser(contents, 0);
         if (this.debug)
-            trace("WARNING: Parser intermediate contents = ", ret);
+			console.debug("WARNING: Parser intermediate contents = ", ret);
         // Currently, not parsing text as markdown by default because it's fucking with the line-endings.
         if (prettyQuotes) {
             // Convert quotes to prettyQuotes
@@ -8821,7 +8776,7 @@ var Parser = (function () {
         /*
          for (var prop in this.parserState)
          {
-         trace("WARNING: this.parserState."+prop+" = "+this.parserState[prop]);
+         console.debug("WARNING: this.parserState."+prop+" = "+this.parserState[prop]);
          }
          */
         // Finally, if we have a parser-based scene. enter the "startup" scene.
@@ -8831,12 +8786,12 @@ var Parser = (function () {
             // since we're initially called via a outputText command, the content of the first page's text will be overwritten
             // when we return. Therefore, in a horrible hack, we return the contents of mainTest.htmlText as the ret value, so
             // the outputText call overwrites the window content with the exact same content.
-            // trace("WARNING: Returning: ", ret);
+			// console.debug("WARNING: Returning: ", ret);
             this.ownerClass.currentText = ret;
         }
         ret = ret.replace(/\n/g, '<br>');
-        //trace(ret);
-        // trace("WARNING: Maintext content @ recursiveParser = ", mainText.htmlText.length)
+		//console.debug(ret);
+		// console.debug("WARNING: Maintext content @ recursiveParser = ", mainText.htmlText.length)
         return ret;
     };
     // ---------------------------------------------------------------------------------------------------------------------------------------
@@ -8845,8 +8800,8 @@ var Parser = (function () {
     // Make shit look nice
     Parser.prototype.makeQuotesPrettah = function (inStr) {
         inStr = inStr.replace(/(\w)'(\w)/g, "$1\u2019$2") // Apostrophes
-            .replace(/(^|[\r\n 	\.\!\,\?])"([a-zA-Z<>\.\!\,\?])/g, "$1\u201c$2") // Opening doubles
-            .replace(/([a-zA-Z<>\.\!\,\?])"([\r\n 	\.\!\,\?]|$)/g, "$1\u201d$2") // Closing doubles
+			.replace(/(^|[\r\n\t \.\!\,\?])"([a-zA-Z<>\.\!\,\?])/g, "$1\u201c$2") // Opening doubles
+			.replace(/([a-zA-Z<>\.\!\,\?])"([\r\n\t \.\!\,\?]|$)/g, "$1\u201d$2") // Closing doubles
             .replace(/--/g, "\u2014"); // em-dashes
         return inStr;
     };
@@ -9301,4 +9256,240 @@ function num2Text(n) {
 function todo(what) {
     console.warn("TODO properly implement " + what);
 }
+var Parser2;
+(function (Parser2) {
+	var TokenType;
+	(function (TokenType) {
+		TokenType[TokenType["TEXT"] = 0] = "TEXT";
+		TokenType[TokenType["SEPARATOR"] = 1] = "SEPARATOR";
+		TokenType[TokenType["XMLOPEN"] = 2] = "XMLOPEN";
+		TokenType[TokenType["XMLCLOSE"] = 3] = "XMLCLOSE";
+		TokenType[TokenType["XMLSINGLE"] = 4] = "XMLSINGLE";
+		TokenType[TokenType["NUMBER"] = 5] = "NUMBER";
+		TokenType[TokenType["WORD"] = 6] = "WORD";
+		TokenType[TokenType["RESWORD"] = 7] = "RESWORD";
+		TokenType[TokenType["OPERATOR"] = 8] = "OPERATOR";
+		TokenType[TokenType["SBOPEN"] = 9] = "SBOPEN";
+		TokenType[TokenType["SBCLOSE"] = 10] = "SBCLOSE";
+		TokenType[TokenType["CBOPEN"] = 11] = "CBOPEN";
+		TokenType[TokenType["CBCLOSE"] = 12] = "CBCLOSE";
+		TokenType[TokenType["PAROPEN"] = 13] = "PAROPEN";
+		TokenType[TokenType["PARCLOSE"] = 14] = "PARCLOSE"; // )
+	})(TokenType = Parser2.TokenType || (Parser2.TokenType = {}));
+	Parser2.DecimalRex = /^[+-]?(\d+\.\d*|\.\d+|\d+)(e[+-]?\d+)?/i;
+	Parser2.HexRex = /^[+-]?0x\d{1,8}/i;
+	Parser2.IdentifierRex = /^[a-z_$][a-z_$0-9]*/i;
+	Parser2.XmlOpRex = /^<([a-z0-9_-]+) *([^[\]\n<>])*>/i;
+	Parser2.XmlSingleRex = /^<([a-z0-9_-]+) *([^[\]\n<>])*\/>/i;
+	Parser2.XmlCloseRex = /^<\/([a-z0-9_-]+) *([^[\]\n<>])*>/i;
+	Parser2.TextRex = /^[^<\\[|\]]+/;
+	Parser2.Operators = ['===', '!==', '==', '!=', '<=', '>=', '>', '<',
+		'++', '--', '**', '&&', '||',
+		'+', '-', '~', '*', '/', '%', '^', '&', '|', '=',
+		'?', ':', ';', ',', '.'];
+	Parser2.XmlSingleTags = ["br", "hr", "input"];
+	Parser2.ReservedWords = ["if", "screen", "button"];
+	var LexerStateType;
+	(function (LexerStateType) {
+		LexerStateType[LexerStateType["TEXT"] = 0] = "TEXT";
+		LexerStateType[LexerStateType["SUBTEXT"] = 1] = "SUBTEXT";
+		LexerStateType[LexerStateType["EXPRESSION"] = 2] = "EXPRESSION";
+		LexerStateType[LexerStateType["EOF"] = 3] = "EOF";
+	})(LexerStateType = Parser2.LexerStateType || (Parser2.LexerStateType = {}));
+	function lexstep(lexerState, _a) {
+		var _b = _a.allowNewlineEscape, allowNewlineEscape = _b === void 0 ? true : _b;
+		var input = lexerState.input, pos = lexerState.pos, stack = lexerState.stack;
+		stack = stack.slice();
+		var _c = stack[stack.length - 1], top = _c[0], flags = _c[1];
+		var rslt = [];
+		var x;
+		var s = input.slice(pos);
+		switch (top) {
+			case LexerStateType.TEXT:
+			case LexerStateType.SUBTEXT:
+				var buffer = '', next = null, pos0 = pos;
+				while (next == null && s.length > 0) {
+					var c0_1 = s[0], c1_1 = s[1], l_1 = 0, y_1 = void 0;
+					if ((x = s.match(Parser2.TextRex))) {
+						l_1 = (y_1 = x[0]).length;
+						buffer += y_1;
+					}
+					else {
+						switch (c0_1) {
+							case '|':
+								l_1 = 1;
+								if (top == LexerStateType.SUBTEXT) {
+									next = {type: TokenType.SEPARATOR, from: pos, to: pos + l_1, content: c0_1};
+								}
+								else {
+									buffer += c0_1;
+								}
+								break;
+							case ']':
+								if (top == LexerStateType.SUBTEXT) {
+									stack.pop();
+									next = {type: TokenType.SBCLOSE, from: pos, to: pos + 1, content: c0_1};
+								}
+								else {
+									l_1 = 1;
+									buffer += c0_1;
+								}
+								break;
+							case '<':
+								var ttype = void 0;
+								if ((x = s.match(Parser2.XmlCloseRex))) {
+									ttype = TokenType.XMLCLOSE;
+								}
+								else if ((x = s.match(Parser2.XmlSingleRex))) {
+									ttype = TokenType.XMLSINGLE;
+								}
+								else if ((x = s.match(Parser2.XmlOpRex))) {
+									ttype = TokenType.XMLOPEN;
+								}
+								else {
+									buffer += c0_1;
+									l_1 = 1;
+									break;
+								}
+								l_1 = x[0].length;
+								next = {type: ttype, content: [x[1], x[2]], from: pos, to: pos + l_1};
+								break;
+							case '\\':
+								switch (c1_1) {
+									case '[':
+									case ']':
+									case '|':
+										buffer += c1_1;
+										l_1 = 2;
+										break;
+									case '\n':
+										l_1 = 2;
+										if (!allowNewlineEscape) {
+											buffer += c0_1;
+											buffer += c1_1;
+										}
+										break;
+									default:
+										buffer += c0_1;
+										l_1 = 1;
+										break;
+								}
+								break;
+							case '[':
+								next = {type: TokenType.SBOPEN, content: '[', from: pos, to: pos + 1};
+								stack.push([LexerStateType.EXPRESSION, {paropen: 0}]);
+								l_1 = 1;
+								break;
+							default:
+								console.warn("Lexer pitfall, pos=", pos, " buffer.length=", buffer.length, " c0=", c0_1);
+								buffer += c0_1;
+								l_1 = 1;
+						}
+					}
+					pos += l_1;
+					s = s.slice(l_1);
+				}
+				if (buffer.length > 0) {
+					rslt.push({type: TokenType.TEXT, content: buffer, from: pos0, to: pos});
+				}
+				if (next != null)
+					rslt.push(next);
+				break;
+			case LexerStateType.EXPRESSION:
+				var c0 = s[0], c1 = s[1], l = 0, y = "";
+				var s3_1 = s.substr(0, 3);
+				if ((x = s.match(/^\s+/))) {
+					l = x[0].length;
+				}
+				else if ((x = s.match(Parser2.IdentifierRex))) {
+					l = (y = x[0]).length;
+					rslt.push({
+						type: Parser2.ReservedWords.indexOf(y.toLowerCase()) >= 0 ? TokenType.RESWORD : TokenType.WORD,
+						content: y, from: pos, to: pos + l
+					});
+				}
+				else if ((x = s.match(Parser2.DecimalRex)) || (x = s.match(Parser2.HexRex))) {
+					l = (y = x[0]).length;
+					rslt.push({type: TokenType.NUMBER, content: +y, from: pos, to: pos + l});
+				}
+				else if ((y = Parser2.Operators.filter(function (i) {
+						return s3_1.indexOf(i) === 0;
+					})[0])) {
+					l = y.length;
+					rslt.push({
+						type: TokenType.OPERATOR, content: y, from: pos, to: pos + l
+					});
+				}
+				else {
+					switch (c0) {
+						case ']':
+							stack.pop();
+							rslt.push({type: TokenType.SBCLOSE, from: pos, to: pos + l, content: c0});
+							l = 1;
+							break;
+						case '(':
+							l = 1;
+							rslt.push({type: TokenType.PAROPEN, content: '(', from: pos, to: pos + l});
+							flags.paropen++;
+							break;
+						case ')':
+							flags.paropen--;
+							l = 1;
+							rslt.push({type: TokenType.PARCLOSE, content: ')', from: pos, to: pos + 1});
+							if (flags.paropen == 0) {
+								stack.push([LexerStateType.SUBTEXT, {paropen: 0}]);
+							}
+							break;
+					}
+				}
+				pos += l;
+				break;
+			case LexerStateType.EOF:
+				break;
+		}
+		if (pos >= input.length) {
+			stack.pop();
+			stack.push([LexerStateType.EOF, {paropen: 0}]);
+		}
+		return {
+			tokens: rslt,
+			state: {input: input, pos: pos, stack: stack, top: stack[stack.length - 1]}
+		};
+	}
+
+	Parser2.lexstep = lexstep;
+	function lexrun(input, options) {
+		if (options === void 0) {
+			options = {};
+		}
+		var tokens = [];
+		var stack = [[LexerStateType.TEXT, {paropen: 0}]];
+		var state = {
+			input: input, pos: 0, stack: stack, top: stack[stack.length - 1]
+		};
+		var brk = 0;
+		while (state.top[0] != LexerStateType.EOF) {
+			var rslt = lexstep(state, options);
+			tokens.push.apply(tokens, rslt.tokens);
+			if (rslt.state.pos <= state.pos) {
+				brk++;
+				if (brk >= 3) {
+					console.error("Lexer stuck in state", LexerStateType[state.top[0]], "at", state.pos);
+					break;
+				}
+			}
+			else {
+				brk = 0;
+			}
+			if (state.top == rslt.state.top && state.pos == rslt.state.pos) {
+				console.error("Lexer stuck in state", LexerStateType[state.top[0]], "at", state.pos);
+				break;
+			}
+			state = rslt.state;
+		}
+		return tokens;
+	}
+
+	Parser2.lexrun = lexrun;
+})(Parser2 || (Parser2 = {}));
 //# sourceMappingURL=tsout.js.map
