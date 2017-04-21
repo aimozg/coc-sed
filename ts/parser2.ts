@@ -1,236 +1,316 @@
-namespace Parser2 {
-	export enum TokenType {
-		TEXT,
-		SEPARATOR, // | in [if (expr) TEXT1 | TEXT2 ]
-		XMLOPEN, // <something>
-		XMLCLOSE, // </something>
-		XMLSINGLE, // <something/>
-		NUMBER, // decimal/hex, int/float
-		WORD, // identifier or something
-		RESWORD, // if screen button
-		OPERATOR, // js op
-		SBOPEN, // [
-		SBCLOSE, // ]
-		CBOPEN, // {
-		CBCLOSE, // }
-		PAROPEN, // (
-		PARCLOSE // )
+///<reference path="lexer.ts"/>
+namespace Parser {
+	import Token = Lexer.Token;
+	import XmlSingleTags = Lexer.XmlSingleTags;
+	import TokenType = Lexer.TokenType;
+	import XmlToken = Lexer.XmlToken;
+	import lexrun = Lexer.lexrun;
+	import LexerOptions = Lexer.LexerOptions;
+	export interface ParserOptions extends LexerOptions {
+		debugParser?: boolean;
 	}
-	export interface Token {
-		type: TokenType;
-		content: any;
-		from: number;
-		to: number;
+	export abstract class Processor {
+		abstract attach(parser: Parser);
+
+		abstract text(text: string): string;
+
+		abstract comment(text: string): string;
+
+		abstract xml(tag: string, attributes: string, body: string): string;
+
+		abstract screen(name: string, body: string): string;
+
+		abstract button(name: string, body: string): string;
+
+		abstract lookup(parent: any, item: string): string;
+
+		abstract twoWordLookup(word1: string, word2: string): string;
+
+		abstract toBoolean(data: string): boolean;
+
+		abstract wrapResult(text: string): string;
+
+		abstract handleError(error: any, top: Token | undefined): string;
 	}
-	export const DecimalRex    = /^[+-]?(\d+\.\d*|\.\d+|\d+)(e[+-]?\d+)?/i;
-	export const HexRex        = /^[+-]?0x\d{1,8}/i;
-	export const IdentifierRex = /^[a-z_$][a-z_$0-9]*/i;
-	export const XmlOpRex      = /**/   /^<([a-z0-9_-]+) *([^[\]\n<>])*>/i;
-	export const XmlSingleRex  = /**/   /^<([a-z0-9_-]+) *([^[\]\n<>])*\/>/i;
-	export const XmlCloseRex   = /**/ /^<\/([a-z0-9_-]+) *([^[\]\n<>])*>/i;
-	export const TextRex       = /^[^<\\[|\]]+/;
-	export const Operators     = ['===', '!==', '==', '!=', '<=', '>=', '>', '<',
-		'++', '--', '**', '&&', '||',
-		'+', '-', '~', '*', '/', '%', '^', '&', '|', '=',
-		'?', ':', ';', ',', '.'];
-	export const XmlSingleTags = ["br", "hr", "input"];
-	export const ReservedWords = ["if", "screen", "button"];
-	export enum LexerStateType {
-		TEXT,
-		SUBTEXT,
-		EXPRESSION,
-		EOF
-	}
-	export interface LexerStateFlags {
-		paropen: number;
-	}
-	export type LexerState = [LexerStateType, LexerStateFlags];
-	export interface LexerData {
-		input: string;
-		pos: number;
-		stack: LexerState[];
-		top: LexerState;
-	}
-	export interface LexerResult {
-		tokens: Token[];
-		state: LexerData;
-	}
-	export interface LexerOptions {
-		allowNewlineEscape?: boolean;
-	}
-	export function lexstep(lexerState: LexerData,
-							{allowNewlineEscape = true}: LexerOptions): LexerResult {
-		let {input, pos, stack} = lexerState;
-		stack                   = stack.slice();
-		let [top, flags]        = stack[stack.length - 1];
-		let rslt: Token[]       = [];
-		let x: RegExpMatchArray;
-		let s                   = input.slice(pos);
-		switch (top) {
-			case LexerStateType.TEXT:
-			case LexerStateType.SUBTEXT:
-				let buffer = '', next: Token | null = null, pos0 = pos;
-				while (next == null && s.length > 0) {
-					let c0 = s[0], c1 = s[1], l = 0, y: string;
-					if (( x = s.match(TextRex))) {
-						l = (y = x[0]).length;
-						buffer += y;
-					} else {
-						switch (c0) {
-							case '|':
-								l = 1;
-								if (top == LexerStateType.SUBTEXT) {
-									next = {type: TokenType.SEPARATOR, from: pos, to: pos + l, content: c0};
-								} else {
-									buffer += c0;
-								}
-								break;
-							case ']':
-								if (top == LexerStateType.SUBTEXT) {
-									stack.pop();
-									next = {type: TokenType.SBCLOSE, from: pos, to: pos + 1, content: c0};
-								} else {
-									l = 1;
-									buffer += c0;
-								}
-								break;
-							case '<':
-								let ttype: TokenType;
-								if ((x = s.match(XmlCloseRex))) {
-									ttype = TokenType.XMLCLOSE;
-								} else if ((x = s.match(XmlSingleRex))) {
-									ttype = TokenType.XMLSINGLE;
-								} else if (( x = s.match(XmlOpRex))) {
-									ttype = TokenType.XMLOPEN;
-								} else {
-									buffer += c0;
-									l = 1;
-									break;
-								}
-								l    = x[0].length;
-								next = {type: ttype, content: [x[1], x[2]], from: pos, to: pos + l};
-								break;
-							case '\\':
-								switch (c1) {
-									case '[':
-									case ']':
-									case '|':
-										buffer += c1;
-										l = 2;
-										break;
-									case '\n':
-										l = 2;
-										if (!allowNewlineEscape) {
-											buffer += c0;
-											buffer += c1;
-										}
-										break;
-									default:
-										buffer += c0;
-										l = 1;
-										break;
-								}
-								break;
-							case '[':
-								next = {type: TokenType.SBOPEN, content: '[', from: pos, to: pos + 1};
-								stack.push([LexerStateType.EXPRESSION, {paropen: 0}]);
-								l = 1;
-								break;
-							default:
-								console.warn("Lexer pitfall, pos=", pos, " buffer.length=", buffer.length, " c0=", c0);
-								buffer += c0;
-								l = 1;
-						}
-					}
-					pos += l;
-					s = s.slice(l);
-				}
-				if (buffer.length > 0) {
-					rslt.push({type: TokenType.TEXT, content: buffer, from: pos0, to: pos});
-				}
-				if (next != null) rslt.push(next);
-				break;
-			case LexerStateType.EXPRESSION:
-				let c0 = s[0], c1 = s[1], l = 0, y = "";
-				let s3 = s.substr(0, 3);
-				if ((x = s.match(/^\s+/))) {
-					l = x[0].length;
-				} else if ((x = s.match(IdentifierRex))) {
-					l = (y = x[0]).length;
-					rslt.push({
-						type   : ReservedWords.indexOf(y.toLowerCase()) >= 0 ? TokenType.RESWORD : TokenType.WORD,
-						content: y, from: pos, to: pos + l
-					});
-				} else if ((x = s.match(DecimalRex)) || (x = s.match(HexRex))) {
-					l = (y = x[0]).length;
-					rslt.push({type: TokenType.NUMBER, content: +y, from: pos, to: pos + l});
-				} else if ((y = Operators.filter(i => s3.indexOf(i) === 0)[0])) {
-					l = y.length;
-					rslt.push({
-						type: TokenType.OPERATOR, content: y, from: pos, to: pos + l
-					});
-				} else {
-					switch (c0) {
-						case ']':
-							stack.pop();
-							rslt.push({type: TokenType.SBCLOSE, from: pos, to: pos + l, content: c0});
-							l = 1;
-							break;
-						case '(':
-							l = 1;
-							rslt.push({type: TokenType.PAROPEN, content: '(', from: pos, to: pos + l});
-							flags.paropen++;
-							break;
-						case ')':
-							flags.paropen--;
-							l = 1;
-							rslt.push({type: TokenType.PARCLOSE, content: ')', from: pos, to: pos + 1});
-							if (flags.paropen == 0) {
-								stack.push([LexerStateType.SUBTEXT, {paropen: 0}]);
-							}
-							break;
-					}
-				}
-				pos += l;
-				break;
-			case LexerStateType.EOF:
-				break;
+	export abstract class AbstractProcessor extends Processor {
+		public parser: Parser;
+
+		attach(parser: Parser) {
+			this.parser = parser;
 		}
-		if (pos >= input.length) {
-			stack.pop();
-			stack.push([LexerStateType.EOF, {paropen: 0}]);
+
+		text(text: string): string {
+			return text;
 		}
-		return {
-			tokens: rslt,
-			state : {input, pos, stack, top: stack[stack.length - 1]}
-		};
+
+		comment(text: string): string {
+			return '';
+		}
+
+		xml(tag: string, attributes: string, body: string): string {
+			attributes = attributes ? ' ' + attributes : '';
+			if (XmlSingleTags.indexOf(tag) >= 0) return '<' + tag + attributes + '/>';
+			return '<' + tag + attributes + '>' + body + '</' + tag + '>';
+		}
+
+		toBoolean(data: string): boolean {
+			return data !== "false" && data !== "true" && +data !== 0 && data !== "";
+		}
+
+		wrapResult(text: string): string {
+			return text;
+		}
+
+	}
+	export class SimpleProcessor extends AbstractProcessor {
+		text(text: string): string {
+			return wrapgroup(this.parser.depth, text);
+		}
+
+		comment(text: string): string {
+			return spanwrap('text-muted', '[#' + text + '#]');
+		}
+
+		screen(name: string, body: string): string {
+			return wrapeval(this.parser.depth, '[screen(' + name + ')' + body + ']');
+		}
+
+		button(name: string, body: string): string {
+			return '<button type="button">' + name + '/' + body + '</button>';
+		}
+
+		lookup(parent: any, item: string): string {
+			if (parent === null || parent === undefined) return wrapeval(this.parser.depth, "[" + parent + "." + item + "]");
+			return parent[item];
+		}
+
+		twoWordLookup(word1: string, word2: string): string {
+			return wrapeval(this.parser.depth, "[" + word1 + "." + word2 + "]");
+		}
+
+		handleError(error: any, top: Token | any): string {
+			console.warn(error, top);
+			return errstr(error);
+		}
 	}
 
-	export function lexrun(input: string, options: LexerOptions = {}): Token[] {
-		let tokens: Token[]     = [];
-		let stack: LexerState[] = [[LexerStateType.TEXT, {paropen: 0}]];
-		let state: LexerData    = {
-			input: input, pos: 0, stack: stack, top: stack[stack.length - 1]
-		};
-		let brk                 = 0;
-		while (state.top[0] != LexerStateType.EOF) {
-			let rslt = lexstep(state, options);
-			tokens.push(...rslt.tokens);
-			if (rslt.state.pos <= state.pos) {
-				brk++;
-				if (brk >= 3) {
-					console.error("Lexer stuck in state", LexerStateType[state.top[0]], "at", state.pos);
+	enum IExprNodeType {
+		LITERAL,
+		TERM,
+		LIST,
+		OPERATOR,
+		ERROR
+	}
+	interface LiteralNode {
+		type: IExprNodeType.LITERAL;
+		value: Token;
+	}
+	interface TermNode {
+		type: IExprNodeType.TERM;
+		value: Token;
+	}
+	interface ExprNodeList {
+		type: IExprNodeType.LIST;
+		operands: IExpressionNode[];
+	}
+	interface OperatorNode {
+		type: IExprNodeType.OPERATOR;
+		value: Token;
+	}
+	interface ErrorNode {
+		type: IExprNodeType.ERROR;
+		value: any;
+	}
+	type IExpressionNode = LiteralNode | TermNode | ExprNodeList | OperatorNode | ErrorNode;
+	export class Parser {
+		expect(...types: TokenType[]): Token | null {
+			if (this.peek(...types)) return this.input.shift();
+			return null;
+		}
+
+		debug(s: string, ...rest: any[]) {
+			if (this.options.debugParser) {
+				console.debug()
+			}
+		}
+
+		peek(...types: TokenType[]): boolean {
+			return (this.input.length > 0 && types.indexOf(this.input[0].type) >= 0);
+		}
+
+		evaluate(expr: IExpressionNode): string {
+			switch (expr.type) {
+				case IExprNodeType.LIST:
+					return "[" + expr.operands.map(s => this.evaluate(s)).join("") + "]";
+				case IExprNodeType.TERM:
+					return this.processor.lookup(null, expr.value.content as string);
+				case IExprNodeType.LITERAL:
+					return "" + expr.value.content;
+				case IExprNodeType.OPERATOR:
+					return "" + expr.value.content;
+				case IExprNodeType.ERROR:
+					return "" + expr.value;
+			}
+
+		}
+
+		produceExpression(closingTokens: TokenType[], consume: boolean): IExpressionNode {
+			let {processor, input} = this;
+			let expr: ExprNodeList = {type: IExprNodeType.LIST, operands: []};
+			let t: Token;
+			while (input.length > 0) {
+				if (closingTokens.indexOf(input[0].type) >= 0) {
+					if (consume) input.shift();
+					break;
+				} else if ((t = this.expect(TokenType.NUMBER, TokenType.STRING))) {
+					expr.operands.push({value: t, type: IExprNodeType.LITERAL});
+				} else if ((t = this.expect(TokenType.WORD))) {
+					expr.operands.push({value: t, type: IExprNodeType.TERM});
+				} else if ((t = this.expect(TokenType.DOT, TokenType.OPERATOR))) {
+					expr.operands.push({value: t, type: IExprNodeType.OPERATOR});
+				} else if ((t = this.expect(TokenType.PAROPEN))) {
+					expr.operands.push(this.produceExpression([TokenType.PARCLOSE], true));
+				} else {
+					expr.operands.push({
+						value: processor.handleError("Expected expression token", input.shift()),
+						type : IExprNodeType.ERROR
+					});
 					break;
 				}
-			} else {
-				brk = 0;
 			}
-			if (state.top == rslt.state.top && state.pos == rslt.state.pos) {
-				console.error("Lexer stuck in state", LexerStateType[state.top[0]], "at", state.pos);
-				break;
-			}
-			state = rslt.state;
+			return expr;
 		}
-		return tokens;
+
+		produceIf(): string {
+			let {processor, input} = this;
+			if (!this.expect(TokenType.PAROPEN)) return processor.handleError("Expected PAROPEN", input.shift());
+			let expr   = this.produceExpression([TokenType.PARCLOSE], true);
+			let iftrue = this.produceText([TokenType.SEPARATOR, TokenType.SBCLOSE]);
+			let iffalse: string;
+			if (this.expect(TokenType.SBCLOSE)) {
+				iffalse = "";
+			} else if (this.expect(TokenType.SEPARATOR)) {
+				iffalse = this.produceText([TokenType.SBCLOSE]);
+				if (!this.expect(TokenType.SBCLOSE)) return processor.handleError("Expected SEPARATOR or SBCLOSE", input.shift());
+			}
+			return processor.text(processor.toBoolean(this.evaluate(expr)) ? iftrue : iffalse);
+		}
+
+		produceTag(): string {
+			let {processor, input} = this;
+			let t                  = this.expect(TokenType.WORD);
+			if (!t) return processor.handleError("Expected WORD", input.shift());
+			let word = t.content as string;
+			switch (word) {
+				case "if":
+					return this.produceIf();
+				case "screen":
+				case "button": {
+					t = this.expect(TokenType.PAROPEN);
+					if (!t) return processor.handleError("Expected PAROPEN", input.shift());
+					t = this.expect(TokenType.WORD);
+					if (t == undefined) return processor.handleError("Expected WORD", input.shift());
+					let name = t.content as string;
+					t        = this.expect(TokenType.PARCLOSE);
+					if (!t) return processor.handleError("Expected PARCLOSE", input.shift());
+					let text = this.produceText([TokenType.SBCLOSE]);
+					if (word == "screen") {
+						return processor.screen(name, text);
+					} else if (word == "button") {
+						return processor.button(name, text);
+					}
+				}
+			}
+			if (this.expect(TokenType.SBCLOSE)) {
+				return processor.lookup(null, word);
+			} else if (this.peek(TokenType.WORD)) {
+				let word2 = input.shift().content as string;
+				if (!this.expect(TokenType.SBCLOSE)) return processor.handleError("Expected SBCLOSE", input.shift());
+				return processor.twoWordLookup(word, word2);
+			} else {
+				input.unshift(t);
+				return this.evaluate(this.produceExpression([TokenType.SBCLOSE], true));
+			}
+		}
+
+		produceText(closingTokens: TokenType[]): string {
+			let result             = "";
+			let {processor, input} = this;
+			while (input.length > 0) {
+				let type = input[0].type;
+				if (closingTokens.indexOf(type) >= 0) {
+					break;
+				} else if (type == TokenType.COMMENT) {
+					let t = input.shift();
+					result += processor.comment(t.content as string);
+				}
+				if (type == TokenType.TEXT) {
+					let t = input.shift();
+					result += processor.text(t.content as string);
+				} else if (type == TokenType.XMLOPEN || type == TokenType.XMLSINGLE) {
+					let t                 = input.shift() as XmlToken;
+					let [tag, attributes] = (t.content as [string, string]);
+					tag                   = tag.toLowerCase();
+					let body: string;
+					if (t.type == TokenType.XMLSINGLE || XmlSingleTags.indexOf(tag.toLowerCase()) >= 0) {
+						body = "";
+					} else {
+						body  = this.produceText([TokenType.XMLCLOSE]);
+						let t = this.expect(TokenType.XMLCLOSE);
+						if (!t) {
+							result += body;
+							result += processor.handleError("Expected XMLCLOSE", input.shift());
+							continue;
+						} else {
+							let tag2 = t.content[0].toLowerCase();
+							if (tag2 != tag) {
+								result += body;
+								result += processor.handleError("Expected XMLCLOSE tag " + tag + ", got " + tag2, t);
+								continue;
+							}
+						}
+					}
+					result += processor.xml(tag, attributes, body);
+				} else if (type == TokenType.XMLCLOSE) {
+					result += processor.handleError("Unmatched XMLOPEN", input.shift());
+				} else if (type == TokenType.SBOPEN) {
+					input.shift();
+					result += this.produceTag()
+				} else {
+					result += processor.handleError("Not a text-level token: " + TokenType[type], input.shift());
+					return result;
+				}
+			}
+			return result;
+		}
+
+		public constructor(public processor: Processor,
+						   {
+							   debugLexer = false,
+							   debugParser = false,
+							   allowNewlineEscape = true,
+							   convertNewlines = true
+						   }: ParserOptions) {
+			this.options = {
+				convertNewlines,
+				allowNewlineEscape,
+				debugLexer,
+				debugParser
+			}
+		}
+
+		public options: ParserOptions;
+		public depth          = 0;
+		public input: Token[] = [];
+
+		public runParser(input: Token[]): string {
+			this.processor.attach(this);
+			this.input = input;
+			return this.processor.wrapResult(this.produceText([]));
+		}
+
+		public parse(input: string): string {
+			return this.runParser(lexrun(input, this.options));
+		}
 	}
 }

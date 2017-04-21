@@ -1,3 +1,5 @@
+///<reference path="impl.ts"/>
+
 let textarea: JQuery;
 let previews: Preview[] = [];
 
@@ -16,14 +18,15 @@ interface PreviewUi {
 }
 interface Preview {
 	ui: PreviewUi;
-	parser: Parser;
+	parser_old: OldParser;
+	parser: Parser.Parser;
 	game: CoC;
 	seed: number;
 }
 namespace Preview {
 	export let template: JQuery;
 }
-function regenOne(preview) {
+function regenOne(preview: Preview) {
 	let src = textarea.val();
 	preview.ui.status.text("rendering...");
 	_.defer(() => {
@@ -34,9 +37,21 @@ function regenOne(preview) {
 			if (type == 'boolean') v = v === 'true';
 			attrSet(preview.game, a.name, v);
 		}
+		let format = $('#sourceformat').val();
 		kGAMECLASS = preview.game;
 		let t0     = new Date();
-		let s      = preview.parser.recursiveParser(src);
+		let s: string;
+		switch (format) {
+			case 'cocparser':
+				s = preview.parser_old.recursiveParser(src);
+				break;
+			case 'parser2':
+				s = preview.parser.parse(src);
+				break;
+			default:
+				console.error("Format not supported", format);
+		}
+
 		preview.ui.status.text("almost there");
 		_.defer(() => {
 			preview.ui.content.html(s);
@@ -51,7 +66,7 @@ function regen() {
 function setupPreview(container: JQuery, game: CoC = new CoC()): Preview {
 	container.html("").append(Preview.template.clone());
 	let p       = {
-		ui    : {
+		ui        : {
 			content  : container.find("[data-role=content]"),
 			container: container,
 			status   : container.find("[data-role=status]"),
@@ -61,9 +76,10 @@ function setupPreview(container: JQuery, game: CoC = new CoC()): Preview {
 				return {} as AttrList;
 			})
 		},
-		parser: new Parser(game, {}),
-		game  : game,
-		seed  : Rng.gen_state()
+		parser_old: new OldParser(game, {}),
+		parser    : new Parser.Parser(new Parser.SimpleProcessor(), {}),
+		game      : game,
+		seed      : Rng.gen_state()
 	} as Preview;
 	let updater = _.debounce(_.partial(regenOne, p), 300);
 	p.ui.seed.val(p.seed).on("input", updater);
@@ -136,17 +152,18 @@ let StartChars: ((Player, CoC) => any)[] = [
 ];
 $(() => {
 	textarea         = $("#source");
-	textarea.val($("#demo1").html());
+	textarea.val(
+		$("#demo1").html().trim() + '<hr>' +
+		$("#demo2").html().trim() + '<hr>' +
+		$("#demo3").html().trim() + '<hr>' +
+		$("#demo4").html().trim()
+	);
 	Preview.template = $("#preview-1 > *").clone();
 	for (let i = 0; i < StartChars.length; i++) {
 		let game = new CoC();
 		StartChars[i](game.player, game);
 		let preview = setupPreview($("#preview-" + (i + 1)), game);
 		previews.push(preview);
-		if (i == -1) {
-			preview.parser.debug = true;
-			regenOne(preview);
-		}
 	}
 	textarea.on("input change", _.debounce(regen, 300));
 	regen();

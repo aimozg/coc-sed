@@ -455,7 +455,7 @@ class Creature extends CreatureData {
 	}
 
 	cockDescriptShort(i_cockIndex: number = 0): string {
-		if (this.cocks.length == 0) return Parser.errstr("INVALID CREATURE SPECIFIED to cockDescriptShort");
+		if (this.cocks.length == 0) return errstr("INVALID CREATURE SPECIFIED to cockDescriptShort");
 
 		let description = "";
 		let cock        = this.cocks[i_cockIndex];
@@ -480,7 +480,7 @@ class Creature extends CreatureData {
 	}
 
 	breastDescript(row: number = 0): string {
-		if (row < 0 || row >= this.breastRows.length) return Parser.errstr("breastRows index out of range");
+		if (row < 0 || row >= this.breastRows.length) return errstr("breastRows index out of range");
 		return Appearance.breastDescript(this.breastRows[row].breastRating, this.breastRows[row].lactationMultiplier);
 	}
 
@@ -546,7 +546,7 @@ class Creature extends CreatureData {
 
 	cockHead(cockNum: number = 0): string {
 		if (cockNum < 0 || cockNum >= this.cocks.length) {
-			return Parser.errstr("cocks index out of bounds");
+			return errstr("cocks index out of bounds");
 		}
 		switch (this.cocks[cockNum].cockType) {
 			case CockTypesEnum.CAT:
@@ -610,7 +610,7 @@ class Creature extends CreatureData {
 	cockMultiLDescriptionShort(): string {
 		let cocks = this.cocks;
 		if (cocks.length < 1) {
-			return Parser.errstr("NO WANGS DETECTED for cockMultiLightDesc()");
+			return errstr("NO WANGS DETECTED for cockMultiLightDesc()");
 		}
 		if (cocks.length == 1) { //For a songle cock return the default description
 			return Appearance.cockDescript(this, 0);

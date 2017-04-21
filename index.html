@@ -137,14 +137,15 @@
 <body>
 <div class="container-fluid">
 	<h1>CoC Scene Editor
-		<small class="text-muted">v 0.3(alpha)</small>
+		<small class="text-muted">v 0.4(alpha)</small>
 	</h1>
 	<div class="row">
 		<div class="col-lg-4 col-md-6 d-flex flex-column">
 			<div class="form-inline">
 				<label for="sourceformat" class="form-control-label mx-2">Parse as:</label>
 				<select class="form-control" name="sourceformat" id="sourceformat">
-					<option value="cocparser" selected>CoC markup</option>
+					<option value="cocparser" selected>CoC markup (old)</option>
+					<option value="parser2">CoC markup (new)</option>
 					<option value="cocsource">CoC source code (not implemented)</option>
 					<option value="markdown">Markdown (not implemented)</option>
 				</select>
@@ -547,14 +548,18 @@ You began your journey as a [player startingRace], but gave that up as you explo
 You are a [tallness] tall [malefemaleherm] [race], with [bodytype]. \
 <b>You are currently wearing your [armor] and using your [weapon] as a weapon.</b>
 
+</script>
+<script type="text/plain" id="demo2">
 The minotaur's broad tongue licks and laps at your [butthole] as you writhe and moan, each lick twice as pleasant as the last, and you feel \
 [if (hasCock)[eachCock] twitching beneath you, painting the floor with dribbles of your pre. \
 [if (hasVagina)You also feel ]]your [vagorass] clenching and unclenching as your entire hips try to push against the Minotaur's searching tongue, dripping with his spit - along with your own juices.
 
+</script>
+<script type="text/plain" id="demo3">
 You make sure [monster a][monster short] is comfortably lying down, [monster pronoun3] [monster.cockDescriptShort] exposed to the air, \
 [if (monster.lust < 50)soft and not yet ready.  You purr throatily as you touch the burgeoning boner, tracing your thumb across the sensitive urethral bulge.  It pulses slowly at your touch, and the base begins to fill with blood, thickening against your palm.  You splay your remaining fingers just under the [monster.cockHead], tickling around the glans until that too is flooding with blood, expanding under your caresses until it slowly lifts away from [monster pronoun3] abdomen.\
 |[if (monster.lust < 100)nicely turgid but quite ready to feel the sensuous pleasure of your girls' tight squeeze.  You lean over the defeated foe and kiss the rod just under the [monster.cockHead], smiling when it expands under your slow kisses.  Your fingers move up to play with the sensitive, urethral bulge that runs along the underside, and in no time, [monster a][monster short] is hard as a rock, so ready that [monster pronoun3] member is lifting up on its own.\
-|[bouncing with each beat of [monster pronoun3] heart, thick beads of pre dribbling from [monster pronoun3] tip as you bat [monster pronoun3] hands away before [monster pronoun1] can waste the load [monster pronoun1]'s saved up for you.]]]
+|bouncing with each beat of [monster pronoun3] heart, thick beads of pre dribbling from [monster pronoun3] tip as you bat [monster pronoun3] hands away before [monster pronoun1] can waste the load [monster pronoun1]'s saved up for you.]]
 
 Your own moistness has risen to uncomfortable levels, and the sticky seal of your g-string's curvy front panel slips oh-so-slightly across your hot, hard clitty, something that makes your [legs] weak and your arms quake.  The leather fold on the front of your undergarments is so slippery that each movement has it shifting and shuffling across your nethers, a tiny bit at a time.  Already, you have your [butt] up in the air, shaking it back and forth for more of the delicious friction.  The motion only exacerbates the jiggling your [chest] are doing inside their tight containment.  [monster capitalA][monster short]'s head tilts up to watch, an unashamedly lusty look overtaking [monster pronoun3] features as [monster pronoun1] enjoys the inadvertent show you're giving.
 
@@ -592,6 +597,8 @@ You seize [monster a][monster short] by [monster pronoun3] base and jerk [monste
 
 The stink of sperm slowly fades as you move, almost seeming to absorb into your skin.  It leaves you with a healthy glow and a surety to your movements, sure that your revealing armor is going to protect you.
 
+</script>
+<script type="text/plain" id="demo4">
 <h4>Parser Tests!</h4>\
 
 <h5>Bracket escaping!</h5>\
@@ -738,5 +745,42 @@ The stink of sperm slowly fades as you move, almost seeming to absorb into your 
 <h5>FancyQuotes!</h5>\
 Apostrophes: It's a herm!
 Double quotes: "derp a herp"
+</script>
+<script type="text/plain" id="demo0">A [monster a][monster short] B [monster pronoun3] [monster.cockDescriptShort] C \
+[if (monster.lust < 50) D  [monster.cockHead] E [monster pronoun3] F\
+|[if (monster.lust < 100)G [monster.cockHead]H [monster a][monster short] I[monster pronoun3] J\
+|K[monster pronoun3] L [monster pronoun3] M [monster pronoun3] N[monster pronoun1] O[monster pronoun1]P]]
+
+Q [legs] R [butt] S [chest] T[monster capitalA][monster short]U [monster pronoun3] V [monster pronoun1] W
+
+"<i>X,</i>" Y [face].  Z [chest] AB[monster.cockDescriptShort] CD [skin] EF [monster pronoun2], GH  "<i>IJ \
+[if (player.hasVirginVagina==false)KL\
+|MN]!  \
+OP.</i>"
+
+[monster.capitalA][monster short] QR [monster pronoun3] ST [monster pronoun3] UV\
+[if (monster.balls > 0)WX[monster pronoun3] YZ [monster pronoun3] AC\
+|BD[monster pronoun3] CE[monster pronoun3] DF [monster pronoun3] EG].  \
+FH [monster pronoun3] GI[monster pronoun3] [monster.cockDescriptShort], HJ[monster.cockHead] IK.\
+[if (monster.cockArea >= 80)  JL.]  \
+KM [monster a][monster short] LN [chest] MO [nipples] NP");
+[if (player.hasFuckableNipples || player.lactationQ >= 100), OQ,] \
+PR [butt] is bouncing happily to the rhythm your corruption-devouring breasts have set, the thong digging tightly into your [vagina] in the most exquisite way.  You feel so hot and sensual, but still secure in the knowledge that you won't have to worry about such a creature ravaging your \
+[if (player.hasVirginVagina)maidenhead|sloppy gash].  \
+Still, you're not sure how much hotter you can get before you're cumming all over your g-string, letting your own dark thoughts seep into your magical underwear.
+
+Below you, [monster a][monster short] is moaning out loud and roughly thrusting [monster pronoun3] hips to meet your every motion, their tip expanding slightly in your mouth as [monster pronoun3] passion mounts.  You pull back \
+[if (monster.cockArea >= 80)with a messy cough to clear your throat] \
+and tease, "<i>Oh, you're going to cum already, aren't you?  Well, go ahead then.</i>"  You pump your [chest] faster against the twitching rod and smile when a thick bead of pre sloughs off into your squishy boobs, smearing across your [skin].  You kiss it, licking the dollop that slips out of the dilating cum-slit before commanding, "<i>Cum for me, [if (monster.hasVagina)girl|boy].  Let it allll out.</i>"
+
+[monster.capitalA][monster short] groans and shakes, \
+[if (monster.balls > 0)[monster pronoun3] balls pumping and bouncing in [monster pronoun3] sack], \
+[monster pronoun3] urethra swollen with the heavy load about to explode out of it.  "<i>Drain out all that nasty jizz,</i>" you quip as you bottom your breasts down on [monster pronoun2] and slurp the quivering cock-head into your sperm-hungry lips.  Salty warmth fires in a long rope into your well-prepared mouth and over your tongue.  The blissed out look on your captive foe's face combined with the feel of [monster pronoun2] giving up all [monster pronoun3] naughty thoughts thanks to your cleavage gets you so fucking hot that your [hips] begin to shake spastically.
+
+You do your best to hold on to the pumping cock while it fires spastic ropes into your mouth, but the way your undies are digging into your [vagina] and grinding across your [clit], you simply lack the control to keep it up.  You throw back your head and cry out ecstatically, taking the next ejaculation in a long line across your cheek, up your nose, and onto your forehead.  Again and again, long ropes of tainted jizz spatter all over your face, dripping messily over the exposed tops of your teats.  You lick your lips while you cream the inside of your [armor] with girlish love-goo, feeling such immense pleasure at letting your own impure desires out into the armor.  More jets, weaker than the early ones, crest from the bouncing cock-tip to fall weakly over your well-slicked mammaries.
+
+You seize [monster a][monster short] by [monster pronoun3] base and jerk [monster pronoun2] off with quick, sharp little strokes, commanding, "<i>All of it!  Give me all of your lusts and cruel desires!</i>".  [monster Pronoun3] back arches as [monster pronoun3] orgasm redoubles, and fresh ropes begin to spout out again, ensuring your face and breasts are soaked with the sloppy spooge.  It runs in moist, warm rivulets into your concealing top, and what doesn't drip down, you compulsively rub into your skin, feeling a positively healthy glow from the feeling.  You don't free the [monster.cockDescriptShort] from your chesty embrace until every single drop is splattered all over you, and when you do, you leave a thoroughly wiped-out [monster short] behind you.
+
+The stink of sperm slowly fades as you move, almost seeming to absorb into your skin.  It leaves you with a healthy glow and a surety to your movements, sure that your revealing armor is going to protect you.
 </script>
 </html>

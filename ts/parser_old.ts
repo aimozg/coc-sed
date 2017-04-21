@@ -1,6 +1,7 @@
 ///<reference path="conditionalConverters.ts"/>
 
-class Parser {
+let trace = console.trace;
+class OldParser {
 
 	public debug: boolean     = false;
 	public logErrors: boolean = true;
@@ -78,7 +79,7 @@ class Parser {
 			argResult = singleArgConverters[argLower](this.ownerClass);
 			if (this.debug) console.debug("      =>", argResult);
 			if (capitalize) argResult = this.capitalizeFirstWord(argResult);
-			return Parser.wrapeval(depth, argResult);
+			return wrapeval(depth, argResult);
 		} else {
 			let obj = this.getObjectFromString(this.ownerClass, arg);
 			if (obj != null) {
@@ -86,13 +87,13 @@ class Parser {
 				if (obj instanceof Function) {
 					let rslt = obj();
 					if (this.debug) console.debug("      is function =>", rslt);
-					return Parser.wrapeval(depth, rslt);
+					return wrapeval(depth, rslt);
 				} else {
-					return Parser.wrapeval(depth, obj);
+					return wrapeval(depth, obj);
 				}
 			} else {
 				if (this.debug || this.logErrors) console.warn("    No lookup found for", arg, "search result is:", typeof obj, obj);
-				return Parser.errstr("!Unknown tag \"" + arg + "\"!");
+				return errstr("!Unknown tag \"" + arg + "\"!");
 			}
 		}
 	}
@@ -106,7 +107,7 @@ class Parser {
 		const argTemp: string[] = inputArg.split(" ");
 		if (argTemp.length != 2) {
 			if (this.logErrors) console.warn("  Not a two word tag", inputArg, argTemp);
-			return Parser.errstr("!Not actually a two-word tag!\"" + inputArg + "\"!")
+			return errstr("!Not actually a two-word tag!\"" + inputArg + "\"!")
 		}
 		const subject: string      = argTemp[0];
 		let aspect: any            = argTemp[1];
@@ -124,7 +125,7 @@ class Parser {
 			argResult = twoWordNumericTagsLookup[subjectLower](this.ownerClass, aspectLower);
 			if (capitalize) argResult = this.capitalizeFirstWord(argResult);
 			if (this.debug) console.debug("      =>", argResult);
-			return Parser.wrapeval(depth, argResult);
+			return wrapeval(depth, argResult);
 		}
 
 		// aspect isn't a number. Look for subject in the normal twoWordTagsLookup
@@ -135,10 +136,10 @@ class Parser {
 				argResult = twoWordGroup[aspectLower](this.ownerClass);
 				if (capitalize) argResult = this.capitalizeFirstWord(argResult);
 				if (this.debug) console.debug("      =>", argResult);
-				return Parser.wrapeval(depth, argResult);
+				return wrapeval(depth, argResult);
 			} else {
 				if (this.logErrors) console.warn("    Is a two-word tag but not an aspect, Input:", inputArg, "Aspect:", aspectLower);
-				return Parser.errstr("!Unknown aspect in two-word tag \"" + inputArg + "\"! ASCII Aspect = \"" + aspectLower + "\"");
+				return errstr("!Unknown aspect in two-word tag \"" + inputArg + "\"! ASCII Aspect = \"" + aspectLower + "\"");
 			}
 		}
 		//if (this.debug) console.debug("    testing parent");
@@ -150,35 +151,35 @@ class Parser {
 			if (thing instanceof Function) {
 				let argResult = thing(aspect);
 				if (this.debug) console.debug("      is function", argResult);
-				return Parser.wrapeval(depth, argResult);
+				return wrapeval(depth, argResult);
 			} else if (Array.isArray(thing)) {
 				const index: number = +aspectLower;
 				if (isNaN(index)) {
 					if (this.logErrors) console.warn("      is array, but index is non-number, Input:", inputArg, "Subject:", subject, "Aspect:", aspect);
-					return Parser.errstr("Cannot use non-number as index to Array \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
+					return errstr("Cannot use non-number as index to Array \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
 				} else {
 					argResult = thing[index];
 					if (this.debug) console.debug("      is array =>", argResult);
-					return Parser.wrapeval(depth, argResult);
+					return wrapeval(depth, argResult);
 				}
 			} else if (typeof thing == "object") {
 				if (aspectLookup in thing) {
-					return Parser.wrapeval(depth, thing[aspectLookup]);
+					return wrapeval(depth, thing[aspectLookup]);
 				} else if (aspect in thing) {
-					return Parser.wrapeval(depth, thing[aspect]);
+					return wrapeval(depth, thing[aspect]);
 				} else {
 					if (this.logErrors) console.debug("WARNING: Object does not have aspect as a member. Arg: " + inputArg + " Subject: " + subject + " Aspect:" + aspect + " or " + aspectLookup);
-					return Parser.errstr("Object does not have aspect as a member \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + " or " + aspectLookup + "\"");
+					return errstr("Object does not have aspect as a member \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + " or " + aspectLookup + "\"");
 				}
 			} else {
 				if (this.debug) console.warn("      Non-container subject", thing, "with an aspect", aspect);
-				return Parser.wrapeval(depth, thing);
+				return wrapeval(depth, thing);
 			}
 		}
 
 
 		if (this.debug || this.logErrors) console.debug("WARNING: No lookup found for", inputArg, " search result is: ", thing);
-		return Parser.errstr("!Unknown subject in two-word tag \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
+		return errstr("!Unknown subject in two-word tag \"" + inputArg + "\"! Subject = \"" + subject + ", Aspect = " + aspect + "\"");
 		// return Parser.errstr("!Unknown tag \"" + arg + "\"!");
 	}
 
@@ -348,8 +349,8 @@ class Parser {
 						if (section == 1)  // barf if we hit a second "|" that's not in brackets
 						{
 							if (this.settingsClass.haltOnErrors) throw new Error("Nested IF statements still a WIP");
-							ret = [Parser.errstr("Error! Too many options in if statement!"),
-								Parser.errstr("Error! Too many options in if statement!")];
+							ret = [errstr("Error! Too many options in if statement!"),
+								errstr("Error! Too many options in if statement!")];
 						}
 						else {
 							ret[section] = textCtnt.substring(sectionStart, i);
@@ -451,15 +452,15 @@ class Parser {
 					if (this.debug) console.debug("WARNING: Item 2 = ", output[1]);
 					if (this.debug) console.debug("WARNING: -2--------------------------------------------------");
 
-					if (conditional) return Parser.wrapgroup(depth, this.recParser(output[0], depth));
-					else return Parser.wrapgroup(depth, this.recParser(output[1], depth));
+					if (conditional) return wrapgroup(depth, this.recParser(output[0], depth));
+					else return wrapgroup(depth, this.recParser(output[1], depth));
 
 				}
 			}
 		}
 		else {
 			if (this.settingsClass.haltOnErrors) throw "Invalid if statement! " + textCtnt;
-			return Parser.errstr("Invalid IF Statement " + textCtnt);
+			return errstr("Invalid IF Statement " + textCtnt);
 		}
 		return "";
 	}
@@ -515,7 +516,7 @@ class Parser {
 
 		const argTemp = inputArg.split(" ");
 		if (argTemp.length != 2) {
-			return Parser.errstr("!Not actually a valid insertSection tag:!\"" + inputArg + "\"!");
+			return errstr("!Not actually a valid insertSection tag:!\"" + inputArg + "\"!");
 		}
 		const callName: string      = argTemp[0];
 		const sceneName: any        = argTemp[1];
@@ -714,16 +715,16 @@ class Parser {
 
 		if (textCtnt.toLowerCase().indexOf("insertsection") == 0) {
 			if (this.debug) console.debug("WARNING: It's a scene section insert tag!");
-			retStr = Parser.tostr(this.getSceneSectionToInsert(textCtnt))
+			retStr = tostr(this.getSceneSectionToInsert(textCtnt))
 		} else if (singleWordTagRegExp.exec(textCtnt)) {
 			if (this.debug) console.debug("WARNING: It's a single word!");
 			retStr += this.convertSingleArg(depth, textCtnt);
 		} else if (doubleWordTagRegExp.exec(textCtnt)) {
 			if (this.debug) console.debug("WARNING: Two-word tag!");
-			retStr += Parser.tostr(this.convertDoubleArg(depth, textCtnt));
+			retStr += tostr(this.convertDoubleArg(depth, textCtnt));
 		} else {
 			if (this.debug) console.debug("WARNING: Cannot parse content. What?", textCtnt);
-			retStr += Parser.errstr("!Unknown multi-word tag \"" + retStr + "\"!");
+			retStr += errstr("!Unknown multi-word tag \"" + retStr + "\"!");
 		}
 
 		return retStr;
@@ -788,7 +789,7 @@ class Parser {
 						// Only prepend the prefix if it actually has content.
 						prefixTmp = textCtnt.substring(0, lastBracket);
 						if (this.debug) console.debug("WARNING: prefix content = ", prefixTmp);
-						if (prefixTmp) retStr += Parser.wrapgroup(depth - 1, prefixTmp);
+						if (prefixTmp) retStr += wrapgroup(depth - 1, prefixTmp);
 						// We know there aren't any brackets in the section before the first opening bracket.
 						// therefore, we just add it to the returned string
 
@@ -832,7 +833,7 @@ class Parser {
 						}
 						else {
 							if (this.debug) console.debug("WARNING: No brackets in trailing text", postfixTmp);
-							retStr += Parser.wrapgroup(depth, postfixTmp);
+							retStr += wrapgroup(depth, postfixTmp);
 						}
 
 						return retStr;
@@ -844,11 +845,11 @@ class Parser {
 				// to determine what type of parsing should be done do the tag.
 				if (this.debug) console.debug("WARNING: No brackets present in text passed to recParse", textCtnt);
 				if (depth > 1) retStr += textCtnt;
-				else retStr += Parser.wrapgroup(depth, retStr);
+				else retStr += wrapgroup(depth, retStr);
 			}
 		} catch (e) {
 			console.error(e);
-			retStr = Parser.errstr("" + e);
+			retStr = errstr("" + e);
 		} finally {
 			depth--;
 		}
@@ -987,46 +988,4 @@ class Parser {
 		return str;
 	}
 
-	public static tostr(s: any): string {
-		if (s === null || s === undefined) {
-			return Parser.errstr(s);
-		} else {
-			return "" + s;
-		}
-	}
-
-	public static errstr(s: any): string {
-		return "<span class='bg-danger text-white'>" + s + "</span>";
-	}
-
-	public static spanwrap(clazz: string, s: string): string {
-		let s0: string, s1: string, s2: string;
-		let i = s.indexOf('<');
-		if (i >= 0) {
-			s0    = s.slice(0, i);
-			s1    = s.slice(i);
-			let j = s1.lastIndexOf('>');
-			if (j > 0) {
-				s2 = s1.slice(j + 1);
-				s1 = s1.slice(0, j + 1);
-			} else {
-				s2 = "";
-			}
-		} else {
-			s0 = s;
-			s1 = "";
-			s2 = "";
-		}
-		let open  = "<span class='" + clazz + "'>";
-		let close = "</span>";
-		return (s0.length > 0 ? open + s0 + close : "") + s1 + (s2.length > 0 ? open + s2 + close : "");
-	}
-
-	public static wrapeval(depth: number, s: any): string {
-		return Parser.spanwrap("bg-eval bg-eval-depth-" + Math.min(10, depth | 0), '' + s);
-	}
-
-	public static wrapgroup(depth: number, s: any): string {
-		return Parser.spanwrap("bg-group bg-group-depth-" + Math.min(10, depth | 0), '' + s);
-	}
 }

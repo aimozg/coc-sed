@@ -275,10 +275,10 @@ namespace Appearance {
 	];
 
 	export function cockDescript(creature: Creature, cockIndex: number = 0): string {
-		if (creature.cocks.length == 0) return Parser.errstr("cockDescript Called But No Cock Present");
+		if (creature.cocks.length == 0) return errstr("cockDescript Called But No Cock Present");
 		let cockType: CockTypesEnum = CockTypesEnum.HUMAN;
 		if (cockIndex != 99) { //CockIndex 99 forces a human cock description
-			if (creature.cocks.length <= cockIndex) return Parser.errstr("ERROR: cockDescript called with index of " + cockIndex + " - out of BOUNDS");
+			if (creature.cocks.length <= cockIndex) return errstr("ERROR: cockDescript called with index of " + cockIndex + " - out of BOUNDS");
 			cockType = creature.cocks[cockIndex].cockType;
 		}
 		const isPierced: boolean = (creature.cocks.length == 1) && (creature.cocks[cockIndex].isPierced); //Only describe as pierced or sock covered if the creature has just one cock
@@ -748,7 +748,7 @@ namespace Appearance {
 								   i_vaginaIndex: number = 0,
 								   forceDesc: boolean    = false): string {
 		if (i_vaginaIndex > (i_creature.vaginas.length - 1) || i_vaginaIndex < 0) {
-			return Parser.errstr("Invalid vagina number (" + i_vaginaIndex + ") passed to vaginaDescript()");
+			return errstr("Invalid vagina number (" + i_vaginaIndex + ") passed to vaginaDescript()");
 		}
 
 		let description       = "";
@@ -1087,7 +1087,7 @@ namespace Appearance {
 	export function nippleDescription(i_creature: Creature, i_rowNum: number = 0): string {
 		//DEBUG SHIT!
 		if (i_rowNum > (i_creature.breastRows.length - 1) || i_rowNum < 0) {
-			return Parser.errstr("Error: Invalid breastRows (" + i_rowNum + ") passed to nippleDescription()");
+			return errstr("Error: Invalid breastRows (" + i_rowNum + ") passed to nippleDescription()");
 		}
 		let haveDescription: boolean = false;
 		let description: string      = "";
@@ -1513,7 +1513,7 @@ namespace Appearance {
 			}
 		}
 		else {
-			return Parser.errstr("clitDescript with no clit");
+			return errstr("clitDescript with no clit");
 		}
 
 		//Clit nouns
@@ -1537,7 +1537,7 @@ namespace Appearance {
 
 	export function multiCockDescriptLight(creature: Creature): string {
 		if (creature.cocks.length < 1) {
-			return Parser.errstr("multiCockDescriptLight() called with no penises present.");
+			return errstr("multiCockDescriptLight() called with no penises present.");
 
 		}
 		//Get cock counts
