@@ -22,15 +22,15 @@ namespace Parser {
 
 		abstract button(name: string, body: string): string;
 
-		abstract lookup(parent: any, item: string): string;
+		abstract phrase(terms: string[]): string;
 
-		abstract twoWordLookup(word1: string, word2: string): string;
+		abstract term(words: string[]): string;
 
 		abstract toBoolean(data: string): boolean;
 
 		abstract wrapResult(text: string): string;
 
-		abstract handleError(error: any, top: Token | undefined): string;
+		abstract handleError(error: any, arg: any): string;
 	}
 	export abstract class AbstractProcessor extends Processor {
 		public parser: Parser;
@@ -47,6 +47,18 @@ namespace Parser {
 			return '';
 		}
 
+		abstract topLevelTerm(word: string): any;
+
+		term(words: string[]): string {
+			if (words.length == 0) return this.handleError("Empty word list", words);
+			let o: any = this.topLevelTerm(words[0]);
+			for (let i = 1; i < words.length; i++) {
+				if (o === null || o === undefined) return this.handleError("Hit " + o + " at pos " + i, words);
+				o = o[words[i]];
+			}
+			return '' + o;
+		}
+
 		xml(tag: string, attributes: string, body: string): string {
 			attributes = attributes ? ' ' + attributes : '';
 			if (XmlSingleTags.indexOf(tag) >= 0) return '<' + tag + attributes + '/>';
@@ -61,37 +73,6 @@ namespace Parser {
 			return text;
 		}
 
-	}
-	export class SimpleProcessor extends AbstractProcessor {
-		text(text: string): string {
-			return wrapgroup(this.parser.depth, text);
-		}
-
-		comment(text: string): string {
-			return spanwrap('text-muted', '[#' + text + '#]');
-		}
-
-		screen(name: string, body: string): string {
-			return wrapeval(this.parser.depth, '[screen(' + name + ')' + body + ']');
-		}
-
-		button(name: string, body: string): string {
-			return '<button type="button">' + name + '/' + body + '</button>';
-		}
-
-		lookup(parent: any, item: string): string {
-			if (parent === null || parent === undefined) return wrapeval(this.parser.depth, "[" + parent + "." + item + "]");
-			return parent[item];
-		}
-
-		twoWordLookup(word1: string, word2: string): string {
-			return wrapeval(this.parser.depth, "[" + word1 + "." + word2 + "]");
-		}
-
-		handleError(error: any, top: Token | any): string {
-			console.warn(error, top);
-			return errstr(error);
-		}
 	}
 
 	enum IExprNodeType {
@@ -143,7 +124,7 @@ namespace Parser {
 				case IExprNodeType.LIST:
 					return "[" + expr.operands.map(s => this.evaluate(s)).join("") + "]";
 				case IExprNodeType.TERM:
-					return this.processor.lookup(null, expr.value.content as string);
+					return this.processor.term([expr.value.content]);
 				case IExprNodeType.LITERAL:
 					return "" + expr.value.content;
 				case IExprNodeType.OPERATOR:
@@ -184,9 +165,9 @@ namespace Parser {
 		produceIf(): string {
 			let {processor, input} = this;
 			if (!this.expect(TokenType.PAROPEN)) return processor.handleError("Expected PAROPEN", input.shift());
-			let expr   = this.produceExpression([TokenType.PARCLOSE], true);
-			let iftrue = this.produceText([TokenType.SEPARATOR, TokenType.SBCLOSE]);
-			let iffalse: string;
+			let expr    = this.produceExpression([TokenType.PARCLOSE], true);
+			let iftrue  = this.produceText([TokenType.SEPARATOR, TokenType.SBCLOSE]);
+			let iffalse = "";
 			if (this.expect(TokenType.SBCLOSE)) {
 				iffalse = "";
 			} else if (this.expect(TokenType.SEPARATOR)) {
@@ -196,21 +177,35 @@ namespace Parser {
 			return processor.text(processor.toBoolean(this.evaluate(expr)) ? iftrue : iffalse);
 		}
 
+		produceWordChain(): string[] {
+			let {processor, input} = this;
+			let words              = [] as string[];
+			do {
+				let t = this.expect(TokenType.WORD, TokenType.NUMBER);
+				if (!t) return [processor.handleError("Expected WORD or NUMBER", input.shift())];
+				words.push(t.content);
+			} while (this.expect(TokenType.DOT));
+			return words;
+		}
+
+		produceTerm(): string {
+			return this.processor.term(this.produceWordChain());
+		}
+
 		produceTag(): string {
 			let {processor, input} = this;
-			let t                  = this.expect(TokenType.WORD);
-			if (!t) return processor.handleError("Expected WORD", input.shift());
-			let word = t.content as string;
+			let words              = this.produceWordChain();
+			let word               = words[0];
 			switch (word) {
 				case "if":
 					return this.produceIf();
 				case "screen":
 				case "button": {
-					t = this.expect(TokenType.PAROPEN);
+					let t = this.expect(TokenType.PAROPEN);
 					if (!t) return processor.handleError("Expected PAROPEN", input.shift());
 					t = this.expect(TokenType.WORD);
 					if (t == undefined) return processor.handleError("Expected WORD", input.shift());
-					let name = t.content as string;
+					let name = t.content;
 					t        = this.expect(TokenType.PARCLOSE);
 					if (!t) return processor.handleError("Expected PARCLOSE", input.shift());
 					let text = this.produceText([TokenType.SBCLOSE]);
@@ -221,16 +216,11 @@ namespace Parser {
 					}
 				}
 			}
-			if (this.expect(TokenType.SBCLOSE)) {
-				return processor.lookup(null, word);
-			} else if (this.peek(TokenType.WORD)) {
-				let word2 = input.shift().content as string;
-				if (!this.expect(TokenType.SBCLOSE)) return processor.handleError("Expected SBCLOSE", input.shift());
-				return processor.twoWordLookup(word, word2);
-			} else {
-				input.unshift(t);
-				return this.evaluate(this.produceExpression([TokenType.SBCLOSE], true));
+			let terms = [this.processor.term(words)];
+			while (!this.expect(TokenType.SBCLOSE)) {
+				terms.push(this.produceTerm());
 			}
+			return this.processor.phrase(terms);
 		}
 
 		produceText(closingTokens: TokenType[]): string {
@@ -242,27 +232,25 @@ namespace Parser {
 					break;
 				} else if (type == TokenType.COMMENT) {
 					let t = input.shift();
-					result += processor.comment(t.content as string);
-				}
-				if (type == TokenType.TEXT) {
+					result += processor.comment(t.content);
+				} else if (type == TokenType.TEXT) {
 					let t = input.shift();
-					result += processor.text(t.content as string);
+					result += processor.text(t.content);
 				} else if (type == TokenType.XMLOPEN || type == TokenType.XMLSINGLE) {
-					let t                 = input.shift() as XmlToken;
-					let [tag, attributes] = (t.content as [string, string]);
-					tag                   = tag.toLowerCase();
+					let t                          = input.shift() as XmlToken;
+					let {content, tag, attributes} = t;
 					let body: string;
 					if (t.type == TokenType.XMLSINGLE || XmlSingleTags.indexOf(tag.toLowerCase()) >= 0) {
 						body = "";
 					} else {
 						body  = this.produceText([TokenType.XMLCLOSE]);
-						let t = this.expect(TokenType.XMLCLOSE);
+						let t = this.expect(TokenType.XMLCLOSE) as XmlToken;
 						if (!t) {
 							result += body;
 							result += processor.handleError("Expected XMLCLOSE", input.shift());
 							continue;
 						} else {
-							let tag2 = t.content[0].toLowerCase();
+							let tag2 = t.tag.toLowerCase();
 							if (tag2 != tag) {
 								result += body;
 								result += processor.handleError("Expected XMLCLOSE tag " + tag + ", got " + tag2, t);
@@ -285,12 +273,12 @@ namespace Parser {
 		}
 
 		public constructor(public processor: Processor,
-						   {
-							   debugLexer = false,
-							   debugParser = false,
-							   allowNewlineEscape = true,
-							   convertNewlines = true
-						   }: ParserOptions) {
+		                   {
+			                   debugLexer = false,
+			                   debugParser = false,
+			                   allowNewlineEscape = true,
+			                   convertNewlines = true
+		                   }: ParserOptions) {
 			this.options = {
 				convertNewlines,
 				allowNewlineEscape,

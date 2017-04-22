@@ -11,7 +11,7 @@ class OldParser {
 	 * @param settingsClass global static class used for shoving conf vars around
 	 */
 	constructor(private ownerClass: any,
-				private settingsClass: any) {
+	            private settingsClass: any) {
 	}
 
 	/*
@@ -70,15 +70,15 @@ class OldParser {
 	// ALWAYS returns a string
 	private convertSingleArg(depth: number, arg: string): string {
 		if (this.debug) console.debug("  convertSingleArg", arg);
-		let argResult: string     = null;
-		const capitalize: boolean = this.isUpperCase(arg.charAt(0));
+		let argResult: string         = null;
+		const mustCapitalize: boolean = isUpperCase(arg.charAt(0));
 		let argLower: string;
-		argLower = arg.toLowerCase();
+		argLower                      = arg.toLowerCase();
 		if (argLower in singleArgConverters) {
 			if (this.debug) console.debug("    is singleArgConverter", argLower);
 			argResult = singleArgConverters[argLower](this.ownerClass);
 			if (this.debug) console.debug("      =>", argResult);
-			if (capitalize) argResult = this.capitalizeFirstWord(argResult);
+			if (mustCapitalize) argResult = capitalize(argResult);
 			return wrapeval(depth, argResult);
 		} else {
 			let obj = this.getObjectFromString(this.ownerClass, arg);
@@ -117,13 +117,13 @@ class OldParser {
 		if (this.debug) console.debug("  convertDoubleArg, subject =", subject, ", aspect =", aspect);
 
 		// Figure out if we need to capitalize the resulting text
-		const capitalize: boolean = this.isUpperCase(aspect.charAt(0));
+		const mustCapitalize: boolean = isUpperCase(aspect.charAt(0));
 		// Only perform lookup in twoWordNumericTagsLookup if aspect can be cast to a valid number
 		if ((subjectLower in twoWordNumericTagsLookup) && !isNaN(+aspect)) {
 			aspectLower = +aspectLower;
 			if (this.debug) console.debug("    is twoWordNumericTag", aspectLower);
 			argResult = twoWordNumericTagsLookup[subjectLower](this.ownerClass, aspectLower);
-			if (capitalize) argResult = this.capitalizeFirstWord(argResult);
+			if (mustCapitalize) argResult = capitalize(argResult);
 			if (this.debug) console.debug("      =>", argResult);
 			return wrapeval(depth, argResult);
 		}
@@ -134,7 +134,7 @@ class OldParser {
 			if (aspectLower in twoWordGroup) {
 				if (this.debug) console.debug("    is twoWordTag", subjectLower, aspectLower);
 				argResult = twoWordGroup[aspectLower](this.ownerClass);
-				if (capitalize) argResult = this.capitalizeFirstWord(argResult);
+				if (mustCapitalize) argResult = capitalize(argResult);
 				if (this.debug) console.debug("      =>", argResult);
 				return wrapeval(depth, argResult);
 			} else {
@@ -144,8 +144,8 @@ class OldParser {
 		}
 		//if (this.debug) console.debug("    testing parent");
 		const descriptorArray: string[] = subject.split(".");
-		thing = this.getObjectFromString(this.ownerClass, descriptorArray[0]);
-		const aspectLookup: any = this.getObjectFromString(this.ownerClass, aspect);
+		thing                           = this.getObjectFromString(this.ownerClass, descriptorArray[0]);
+		const aspectLookup: any         = this.getObjectFromString(this.ownerClass, aspect);
 		if (thing != null) {
 			if (this.debug) console.debug("    in owner class:", typeof thing, thing);
 			if (thing instanceof Function) {
@@ -636,15 +636,13 @@ class OldParser {
 		sceneName = textCtnt.substring(textCtnt.indexOf(' '), textCtnt.indexOf('|'));
 		sceneCont = textCtnt.substr(textCtnt.indexOf('|') + 1);
 
-		sceneName = this.stripStr(sceneName);
+		sceneName = sceneName.trim();
 		if (this.debug) console.debug("WARNING: Adding scene with name \"" + sceneName + "\"");
 
 		// Cleanup the scene content from spurious leading and trailing space.
-		sceneCont = this.trimStr(sceneCont, "\n");
-		sceneCont = this.trimStr(sceneCont, "	");
+		sceneCont = sceneCont.replace(/^\s+/, '').replace(/\s+$/, '');
 
-
-		this.parserState[sceneName] = this.stripStr(sceneCont);
+		this.parserState[sceneName] = sceneCont.trim();
 
 	}
 
@@ -665,8 +663,8 @@ class OldParser {
 			throw new Error("Too many items in button")
 		}
 
-		const buttonName: string = this.stripStr(arr[1]);
-		const buttonFunc: string = this.stripStr(arr[0].substring(arr[0].indexOf(' ')));
+		const buttonName: string = arr[1].trim();
+		const buttonFunc: string = arr[0].substring(arr[0].indexOf(' ')).trim();
 		//console.debug("WARNING: adding a button with name\"" + buttonName + "\" and function \"" + buttonFunc + "\"");
 		this.ownerClass.addButton(this.buttonNum, buttonName, this.enterParserScene, buttonFunc);
 		this.buttonNum += 1;
@@ -927,65 +925,11 @@ class OldParser {
 	private makeQuotesPrettah(inStr: string): string {
 
 		inStr = inStr.replace(/(\w)'(\w)/g, "$1\u2019$2")	// Apostrophes
-					 .replace(/(^|[\r\n\t \.\!\,\?])"([a-zA-Z<>\.\!\,\?])/g, "$1\u201c$2")	// Opening doubles
-					 .replace(/([a-zA-Z<>\.\!\,\?])"([\r\n\t \.\!\,\?]|$)/g, "$1\u201d$2")	// Closing doubles
-					 .replace(/--/g, "\u2014");		// em-dashes
+		             .replace(/(^|[\r\n\t \.\!\,\?])"([a-zA-Z<>\.\!\,\?])/g, "$1\u201c$2")	// Opening doubles
+		             .replace(/([a-zA-Z<>\.\!\,\?])"([\r\n\t \.\!\,\?]|$)/g, "$1\u201d$2")	// Closing doubles
+		             .replace(/--/g, "\u2014");		// em-dashes
 		return inStr;
 	}
 
-
-// ---------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------------------------
-
-// Stupid string utility functions, because actionscript doesn't have them (WTF?)
-
-	public stripStr(str: string): string {
-		return this.trimStrBack(this.trimStrFront(str, " "), " ");
-	}
-
-	public trimStr(str: string, char: string = " "): string {
-		return this.trimStrBack(this.trimStrFront(str, char), char);
-	}
-
-	public trimStrFront(str: string, char: string = " "): string {
-		char = this.stringToCharacter(char);
-		if (str.charAt(0) == char) {
-			str = this.trimStrFront(str.substring(1), char);
-		}
-		return str;
-	}
-
-	public trimStrBack(str: string, char: string = " "): string {
-		char = this.stringToCharacter(char);
-		if (str.charAt(str.length - 1) == char) {
-			str = this.trimStrBack(str.substring(0, str.length - 1), char);
-		}
-		return str;
-	}
-
-	public stringToCharacter(str: string): string {
-		if (str.length == 1) {
-			return str;
-		}
-		return str.slice(0, 1);
-	}
-
-
-	public isUpperCase(char: string): boolean {
-		if (!isNaN(+char)) {
-			return false;
-		}
-		else if (char == char.toUpperCase()) {
-			return true;
-		}
-		return false;
-	}
-
-	public capitalizeFirstWord(str: string): string {
-
-		str = str.charAt(0).toUpperCase() + str.slice(1);
-		return str;
-	}
 
 }

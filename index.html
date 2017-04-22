@@ -53,84 +53,89 @@
 			display: none;
 		}
 
-		.bg-eval, .bg-group {
+		.tok-eval, .tok-group {
 			border: 2px transparent;
 			border-style: solid none;
 		}
 
-		.bg-eval-depth-1, .bg-group-depth-1 {
+		.tok-eval-depth-1, .tok-group-depth-1 {
 			background: #ddf;
 		}
 
-		.bg-eval-depth-2, .bg-group-depth-2 {
+		.tok-eval-depth-2, .tok-group-depth-2 {
 			background: #fdf;
 			border-color: #ddf;
 		}
 
-		.bg-eval-depth-3, .bg-group-depth-3 {
+		.tok-eval-depth-3, .tok-group-depth-3 {
 			background: #fdd;
 			border-color: #fdf;
 		}
 
-		.bg-eval-depth-4, .bg-group-depth-4 {
+		.tok-eval-depth-4, .tok-group-depth-4 {
 			background: #fed;
 			border-color: #fdd;
 		}
 
-		.bg-eval-depth-5, .bg-group-depth-5 {
+		.tok-eval-depth-5, .tok-group-depth-5 {
 			background: #ffd;
 		}
 
-		.bg-eval-depth-6, .bg-group-depth-6 {
+		.tok-eval-depth-6, .tok-group-depth-6 {
 			background: #dfd;
 		}
 
-		.bg-eval-depth-7, .bg-group-depth-7 {
+		.tok-eval-depth-7, .tok-group-depth-7 {
 			background: #dff;
 		}
 
-		.bg-eval-depth-8, .bg-group-depth-8 {
+		.tok-eval-depth-8, .tok-group-depth-8 {
 			background: #ddd;
 		}
 
-		.bg-eval-depth-9, .bg-group-depth-9 {
+		.tok-eval-depth-9, .tok-group-depth-9 {
 			background: #eee;
 		}
 
-		.bg-eval-depth-1 {
+		.tok-eval-depth-1 {
 			color: #228;
 		}
 
-		.bg-eval-depth-2 {
+		.tok-eval-depth-2 {
 			color: #828;
 		}
 
-		.bg-eval-depth-3 {
+		.tok-eval-depth-3 {
 			color: #822;
 		}
 
-		.bg-eval-depth-4 {
+		.tok-eval-depth-4 {
 			color: #862;
 		}
 
-		.bg-eval-depth-5 {
+		.tok-eval-depth-5 {
 			color: #882;
 		}
 
-		.bg-eval-depth-6 {
+		.tok-eval-depth-6 {
 			color: #282;
 		}
 
-		.bg-eval-depth-7 {
+		.tok-eval-depth-7 {
 			color: #288;
 		}
 
-		.bg-eval-depth-8 {
+		.tok-eval-depth-8 {
 			color: #222;
 		}
 
-		.bg-eval-depth-9 {
+		.tok-eval-depth-9 {
 			color: #888;
+		}
+
+		.tok-comment {
+			color: #ddd;
+			background: #222;
 		}
 	</style>
 </head>
@@ -144,8 +149,8 @@
 			<div class="form-inline">
 				<label for="sourceformat" class="form-control-label mx-2">Parse as:</label>
 				<select class="form-control" name="sourceformat" id="sourceformat">
-					<option value="cocparser" selected>CoC markup (old)</option>
-					<option value="parser2">CoC markup (new)</option>
+					<option value="cocparser">CoC markup (old)</option>
+					<option value="parser2" selected>CoC markup (new)</option>
 					<option value="cocsource">CoC source code (not implemented)</option>
 					<option value="markdown">Markdown (not implemented)</option>
 				</select>
@@ -547,7 +552,7 @@
 You began your journey as a [player startingRace], but gave that up as you explored the dangers of this realm. \
 You are a [tallness] tall [malefemaleherm] [race], with [bodytype]. \
 <b>You are currently wearing your [armor] and using your [weapon] as a weapon.</b>
-
+[# this is a comment #]
 </script>
 <script type="text/plain" id="demo2">
 The minotaur's broad tongue licks and laps at your [butthole] as you writhe and moan, each lick twice as pleasant as the last, and you feel \

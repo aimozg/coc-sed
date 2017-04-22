@@ -20,7 +20,7 @@ namespace Lexer {
 	}
 	export interface Token {
 		type: TokenType;
-		content: string | number | [string, string];
+		content: string;
 		from: number;
 		to: number;
 	}
@@ -35,13 +35,14 @@ namespace Lexer {
 		return strrpad(TokenType[t.type], 8) + s + "@" + t.from + ":" + t.to;
 	}
 
-	/*export interface TextToken extends Token {
-	 type: TokenType.TEXT;
-	 content: string;
-	 }*/
+	export interface NumericToken extends Token {
+		type: TokenType.NUMBER;
+		value: number;
+	}
 	export interface XmlToken extends Token {
 		type: TokenType.XMLOPEN | TokenType.XMLCLOSE | TokenType.XMLSINGLE;
-		content: [string, string];
+		tag: string;
+		attributes: string;
 	}
 	export const DecimalRex    = /^[+-]?(\d+\.\d*|\.\d+|\d+)(e[+-]?\d+)?/i;
 	export const HexRex        = /^[+-]?0x\d{1,8}/i;
@@ -87,11 +88,11 @@ namespace Lexer {
 		debugParser?: boolean;
 	}
 	export function lexstep(lexerState: LexerData,
-							{
-								allowNewlineEscape = true,
-								convertNewlines = true,
-								debugLexer = false,
-							}: LexerOptions): LexerResult {
+	                        {
+		                        allowNewlineEscape = true,
+		                        convertNewlines = true,
+		                        debugLexer = false,
+	                        }: LexerOptions): LexerResult {
 		let {input, pos, stack} = lexerState;
 		let stack0              = stack;
 		let pos0                = pos;
@@ -115,7 +116,13 @@ namespace Lexer {
 							case '\n':
 								if (convertNewlines) {
 									l    = (c0 == '\r' && c1 == '\n') ? 2 : 1;
-									next = {type: TokenType.XMLSINGLE, content: ["br", ""], from: pos, to: pos + l};
+									next = {type  : TokenType.XMLSINGLE,
+										content   : "<br/>",
+										tag       : "br",
+										attributes: "",
+										from      : pos,
+										to        : pos + l
+									} as XmlToken;
 								} else {
 									l = 1;
 									buffer += c0;
@@ -154,7 +161,13 @@ namespace Lexer {
 									break;
 								}
 								l    = x[0].length;
-								next = {type: ttype, content: [x[1], x[2] || ""], from: pos, to: pos + l};
+								next = {type  : ttype,
+									content   : x[0],
+									tag       : x[1],
+									attributes: x[2] || "",
+									from      : pos,
+									to        : pos + l
+								} as XmlToken;
 								break;
 							case '\\':
 								switch (c1) {
@@ -181,6 +194,12 @@ namespace Lexer {
 								if (c1 == '#') { // is a comment
 									l = s.indexOf('#]');
 									if (l >= 0) {
+										next = {
+											type   : TokenType.COMMENT,
+											content: s.slice(2, l),
+											from   : pos,
+											to     : pos + l + 2
+										};
 										l += 2;
 									} else {
 										console.warn("Comment not closed, state=", LexerStateType[top], " pos=", pos, " buffer.length=", buffer.length, " c0=", c0);
@@ -222,7 +241,7 @@ namespace Lexer {
 					});
 				} else if ((x = s.match(DecimalRex)) || (x = s.match(HexRex))) {
 					l = (y = x[0]).length;
-					rslt.push({type: TokenType.NUMBER, content: +y, from: pos, to: pos + l});
+					rslt.push({type: TokenType.NUMBER, content: y, value: +y, from: pos, to: pos + l} as NumericToken);
 				} else if ((y = Operators.filter(i => s3.indexOf(i) === 0)[0])) {
 					l = y.length;
 					rslt.push({

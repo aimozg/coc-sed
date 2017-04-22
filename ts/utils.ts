@@ -108,9 +108,12 @@ function spanwrap(clazz: string, s: string): string {
 }
 
 function wrapeval(depth: number, s: any): string {
-	return spanwrap("bg-eval bg-eval-depth-" + Math.min(10, depth | 0), '' + s);
+	return spanwrap("tok-eval tok-eval-depth-" + Math.min(10, depth | 0), '' + s);
 }
 
 function wrapgroup(depth: number, s: any): string {
-	return spanwrap("bg-group bg-group-depth-" + Math.min(10, depth | 0), '' + s);
+	return spanwrap("tok-group tok-group-depth-" + Math.min(10, depth | 0), '' + s);
+}
+function isUpperCase(char: string): boolean {
+	return char != char.toLowerCase();
 }

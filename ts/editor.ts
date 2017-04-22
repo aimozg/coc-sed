@@ -77,7 +77,7 @@ function setupPreview(container: JQuery, game: CoC = new CoC()): Preview {
 			})
 		},
 		parser_old: new OldParser(game, {}),
-		parser    : new Parser.Parser(new Parser.SimpleProcessor(), {}),
+		parser    : new Parser.Parser(new CoCProcessor(game), {}),
 		game      : game,
 		seed      : Rng.gen_state()
 	} as Preview;
