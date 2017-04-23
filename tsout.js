@@ -2503,6 +2503,23 @@ var Creature = (function (_super) {
         enumerable: true,
         configurable: true
     });
+	Creature.prototype.armorDescript = function (nakedText) {
+		if (nakedText === void 0) { nakedText = "gear"; }
+		var textArray = [];
+		var text = "";
+		//if (armor != ArmorLib.NOTHING) text += armorName;
+		//Join text.
+		if (this.armorName != "nothing")
+			textArray.push(this.armorName);
+		//if (upperGarment != UndergarmentLib.NOTHING) textArray.push(upperGarmentName);
+		//if (lowerGarment != UndergarmentLib.NOTHING) textArray.push(lowerGarmentName);
+		if (textArray.length > 0)
+			text = formatStringArray(textArray);
+		//Naked?
+		if (this.armorName == "NOTHING")
+			text = nakedText;
+		return text;
+	};
     Creature.prototype.createPerk = function (name) {
         this.perks.push(name);
     };
@@ -2723,6 +2740,53 @@ var Creature = (function (_super) {
     Creature.prototype.hairOrFur = function () {
         return Appearance.hairOrFur(this);
     };
+	Creature.prototype.faceDesc = function () {
+		var femininity = this.femininity;
+		var faceo = "";
+		//0-10
+		if (femininity < 10) {
+			faceo = "a square chin";
+			//if (!this.hasBeard()) TODO
+			faceo += " and chiseled jawline";
+            /*else
+             faceo += ", chiseled jawline, and " + this.beard();*/
+		}
+		else if (femininity < 20) {
+			//10+ -20
+			faceo = "a rugged looking " + this.face() + " ";
+            /*if (this.hasBeard()) TODO
+             faceo += "and " + this.beard();*/
+			faceo += "that's surely handsome";
+		}
+		else if (femininity < 28) {
+			faceo = "a well-defined jawline and a fairly masculine profile";
+		}
+		else if (femininity < 35) {
+			faceo = "a somewhat masculine, angular jawline";
+		}
+		else if (femininity < 45) {
+			faceo = "the barest hint of masculinity on its features";
+		}
+		else if (femininity <= 55) {
+			faceo = "an androgynous set of features that would look normal on a male or female";
+		}
+		else if (femininity <= 65) {
+			faceo = "a tiny touch of femininity to it, with gentle curves";
+		}
+		else if (femininity <= 72) {
+			faceo = "a nice set of cheekbones and lips that have the barest hint of pout";
+		}
+		else if (femininity <= 80) {
+			faceo = "a beautiful, feminine shapeliness that's sure to draw the attention of males";
+		}
+		else if (femininity <= 90) {
+			faceo = "a gorgeous profile with full lips, a button nose, and noticeable eyelashes";
+		}
+		else {
+			faceo = "a jaw-droppingly feminine shape with full, pouting lips, an adorable nose, and long, beautiful eyelashes";
+		}
+		return faceo;
+	};
     Creature.prototype.skinFurScales = function () {
         var skinzilla = "";
         if (this.skinAdj != "")
@@ -2862,7 +2926,8 @@ var Creature = (function (_super) {
             CockTypesEnum.HORSE,
             CockTypesEnum.KANGAROO,
             CockTypesEnum.AVIAN,
-            CockTypesEnum.ECHIDNA].indexOf(cock.cockType) >= 0; });
+				CockTypesEnum.ECHIDNA].indexOf(+cock.cockType) >= 0;
+		});
     };
     Creature.prototype.cockTotal = function () {
         return this.cocks.length;
@@ -3201,7 +3266,7 @@ var Creature = (function (_super) {
         return _.any(this.breastRows, function (b) { return b.fuckable; });
     };
     Creature.prototype.canFly = function () {
-        return !this.hasStatusEffect("Web") && canFlyWings.indexOf(this.wingType) != -1;
+		return !this.hasStatusEffect("Web") && canFlyWings.indexOf(+this.wingType) != -1;
     };
     Creature.prototype.ballsDescriptLight = function (forcedSize) {
         if (forcedSize === void 0) { forcedSize = true; }
@@ -3212,7 +3277,7 @@ var Creature = (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             types[_i] = arguments[_i];
         }
-        return this.cocks.filter(function (c) { return types.indexOf(c.cockType) >= 0; }).length;
+		return this.cocks.filter(function (c) { return types.indexOf(+c.cockType) >= 0; }).length;
     };
     Creature.prototype.dogCocks = function () {
         return this.countCocksOfType(CockTypesEnum.DOG, CockTypesEnum.FOX);
@@ -3238,27 +3303,27 @@ var Creature = (function (_super) {
         return (!fourHorns && this.horns > 0 && this.hornType == HORNS_DRACONIC_X2) || this.hornType == HORNS_DRACONIC_X4_12_INCH_LONG;
     };
     Creature.prototype.hasReptileEyes = function () {
-        return [EYES_LIZARD, EYES_DRAGON, EYES_BASILISK].indexOf(this.eyeType) != -1;
+		return [EYES_LIZARD, EYES_DRAGON, EYES_BASILISK].indexOf(+this.eyeType) != -1;
     };
     Creature.prototype.hasLizardEyes = function () {
-        return [EYES_LIZARD, EYES_BASILISK].indexOf(this.eyeType) != -1;
+		return [EYES_LIZARD, EYES_BASILISK].indexOf(+this.eyeType) != -1;
     };
     Creature.prototype.hasReptileFace = function () {
-        return [FACE_SNAKE_FANGS, FACE_LIZARD, FACE_DRAGON].indexOf(this.faceType) != -1;
+		return [FACE_SNAKE_FANGS, FACE_LIZARD, FACE_DRAGON].indexOf(+this.faceType) != -1;
     };
     Creature.prototype.hasDragonWings = function (large) {
         if (large === void 0) { large = false; }
         if (large)
             return this.wingType == WING_TYPE_DRACONIC_LARGE;
         else
-            return [WING_TYPE_DRACONIC_SMALL, WING_TYPE_DRACONIC_LARGE].indexOf(this.wingType) != -1;
+			return [WING_TYPE_DRACONIC_SMALL, WING_TYPE_DRACONIC_LARGE].indexOf(+this.wingType) != -1;
     };
     Creature.prototype.hasBatLikeWings = function (large) {
         if (large === void 0) { large = false; }
         if (large)
             return this.wingType == WING_TYPE_BAT_LIKE_LARGE;
         else
-            return [WING_TYPE_BAT_LIKE_TINY, WING_TYPE_BAT_LIKE_LARGE].indexOf(this.wingType) != -1;
+			return [WING_TYPE_BAT_LIKE_TINY, WING_TYPE_BAT_LIKE_LARGE].indexOf(+this.wingType) != -1;
     };
     Creature.prototype.hasLeatheryWings = function (large) {
         if (large === void 0) { large = false; }
@@ -3288,10 +3353,10 @@ var Creature = (function (_super) {
         return 0;
     };
     Creature.prototype.hasScales = function () {
-        return [SKIN_TYPE_LIZARD_SCALES, SKIN_TYPE_DRAGON_SCALES, SKIN_TYPE_FISH_SCALES].indexOf(this.skinType) != -1;
+		return [SKIN_TYPE_LIZARD_SCALES, SKIN_TYPE_DRAGON_SCALES, SKIN_TYPE_FISH_SCALES].indexOf(+this.skinType) != -1;
     };
     Creature.prototype.hasReptileScales = function () {
-        return [SKIN_TYPE_LIZARD_SCALES, SKIN_TYPE_DRAGON_SCALES].indexOf(this.skinType) != -1;
+		return [SKIN_TYPE_LIZARD_SCALES, SKIN_TYPE_DRAGON_SCALES].indexOf(+this.skinType) != -1;
     };
     Creature.prototype.hasDragonScales = function () {
         return this.skinType == SKIN_TYPE_DRAGON_SCALES;
@@ -7814,9 +7879,10 @@ function regenOne(preview) {
                 v = v === 'true';
             attrSet(preview.game, a.name, v);
         }
+		var options = {};
 		for (var _b = 0, _c = preview.ui.flags.toArray(); _b < _c.length; _b++) {
 			var a = _c[_b];
-			preview.parser.options[a.name] = a.checked;
+			options[a.name] = a.checked;
 		}
         var format = $('#sourceformat').val();
         kGAMECLASS = preview.game;
@@ -7827,7 +7893,7 @@ function regenOne(preview) {
                 s = preview.parser_old.recursiveParser(src);
                 break;
             case 'parser2':
-                s = preview.parser.parse(src);
+				s = evalText(new GameContext(preview.game, undefined), parse(Lexer.lexrun(src, options), options));
                 break;
             default:
                 console.error("Format not supported", format);
@@ -7859,7 +7925,6 @@ function setupPreview(container, game) {
             })
         },
         parser_old: new OldParser(game, {}),
-		parser: new Parser(new CoCProcessor(game), {}),
         game: game,
         seed: Rng.gen_state()
     };
@@ -7890,7 +7955,18 @@ var StartChars = [
         player.lowerBody = LOWER_BODY_TYPE_DEMONIC_HIGH_HEELS;
         player.skinTone = "pink";
         player.skinType = SKIN_TYPE_FUR;
+		player.skinAdj = "sexy";
         player.skinDesc = "fur";
+		player["oldskin"] = player.skin;
+		player["skin"] = _.extend(function () { return player["oldskin"](); }, {
+			noun: function () { return player.skinDesc; },
+			long: function () { return player["oldskin"](); },
+			full: function () { return player["oldskin"](); },
+			is: "is",
+			color: function () { return player.skinTone; },
+			extra: 0,
+			neck: function () { return player["skin"]; }
+		});
         player.furColor = "pink";
         player.hairColor = "pink";
         player.hairLength = 50;
@@ -7923,6 +7999,22 @@ var StartChars = [
         player.earType = EARS_FOX;
         player.tailType = TAIL_TYPE_FOX;
         player.tailVenom = 1;
+		player["oldskin"] = player.skin;
+		player["skin"] = _.extend(function () { return player["oldskin"](); }, {
+			noun: function () { return player.skinDesc; },
+			long: function () { return player["oldskin"](); },
+			full: function () { return player["oldskin"](); },
+			is: "is",
+			color: function () { return player.skinTone; },
+			extra: _.extend(function () { return 'green scales'; }, {
+				noun: 'scales',
+				long: 'green scales',
+				full: 'green scales',
+				is: 'are',
+				color: 'green'
+			}),
+			neck: function () { return player["skin"]["extra"]; }
+		});
         if (player.biggestTitSize() > 1)
             player.breastRows[0].breastRating = 1;
         if (!player.hasCock()) {
@@ -7940,14 +8032,13 @@ $(function () {
     textarea = $("#source");
 	textarea.val(textarea.data("init").split(',').map(function (i) {
 		return ($(i).html() || "").trim();
-	}).join("\\\n<hr>\\\n"));
+	}).join("\n<hr>\n"));
     Preview.template = $("#preview-1 > *").clone();
     for (var i = 0; i < StartChars.length; i++) {
         var game = new CoC();
         StartChars[i](game.player, game);
         var preview = setupPreview($("#preview-" + (i + 1)), game);
         previews.push(preview);
-		break;
     }
     textarea.on("input change", _.debounce(regen, 300));
     regen();
@@ -8214,12 +8305,7 @@ var Lexer;
                             }
 							break;
 						case ':':
-							l = 1;
-							rslt.push({type: TokenType.COLON, content: ':', from: pos, to: pos + 1});
-							if (flags['('] == 0) {
-								stack.push([LexerStateType.SUBTEXT, LexerStateFlags()]);
-							}
-                            break;
+						case ',':
                         case '.':
 						case ';':
 						case '?':
@@ -8227,8 +8313,10 @@ var Lexer;
 							rslt.push({
 								type: {
 									'.': TokenType.DOT,
+									',': TokenType.COMMA,
 									';': TokenType.SEMICOLON,
-									'?': TokenType.QUESTION
+									'?': TokenType.QUESTION,
+									':': TokenType.COLON,
 								}[c0], content: c0, from: pos, to: pos + l
 							});
                             break;
@@ -9170,32 +9258,12 @@ var OldParser = (function () {
 }());
 ///<reference path="lexer.ts"/>
 var XmlSingleTags = ["br", "hr", "input"];
-var PreProcessor = (function () {
-	function PreProcessor() {
-	}
-
-	PreProcessor.prototype.attach = function (parser) {
-		this.parser = parser;
-	};
-	PreProcessor.prototype.text = function (text) {
-		return text;
-	};
-	PreProcessor.prototype.comment = function (text) {
-		return '';
-	};
-	PreProcessor.prototype.textOrError = function (t, reason) {
-		if (t === null || t === undefined)
-			throw argthrow(new Error("" + t + " in " + reason), t);
-		return this.text(t);
-	};
-	PreProcessor.prototype.xml = function (tag, attributes, body) {
-		attributes = attributes ? ' ' + attributes : '';
-		if (XmlSingleTags.indexOf(tag) >= 0)
-			return '<' + tag + attributes + '/>';
-		return '<' + tag + attributes + '>' + body + '</' + tag + '>';
-	};
-	return PreProcessor;
-}());
+function xmlWrap(tag, attributes, body) {
+	attributes = attributes ? ' ' + attributes : '';
+	if (XmlSingleTags.indexOf(tag) >= 0)
+		return '<' + tag + attributes + '/>';
+	return '<' + tag + attributes + '>' + body + '</' + tag + '>';
+}
 var Priorities = {};
 (function (src, dst) {
 	for (var i = 0; i < src.length; i++) {
@@ -9216,266 +9284,221 @@ var Priorities = {};
 	['^'],
 	['||'] //10
 ], Priorities);
-var Parser = (function () {
-	function Parser(preproc, _a) {
-		var _b = _a.debugLexer, debugLexer = _b === void 0 ? false : _b, _c = _a.debugParser,
-			debugParser = _c === void 0 ? false : _c, _d = _a.allowNewlineEscape,
-			allowNewlineEscape = _d === void 0 ? true : _d, _e = _a.convertNewlines,
-			convertNewlines = _e === void 0 ? true : _e;
-		this.preproc = preproc;
-		this.depth = 0;
-		this.depths = {};
-		this.input = [];
-		this.options = {
-			convertNewlines: convertNewlines,
-			allowNewlineEscape: allowNewlineEscape,
-			debugLexer: debugLexer,
-			debugParser: debugParser
-		};
-	}
-
-	Parser.prototype.makeErrstr = function (e) {
-		var error;
-		var arg1;
-		if (Array.isArray(e)) {
-			error = e[0];
-			arg1 = e[1];
-        }
-		else if (typeof e == 'object' && 'data' in e) {
-			error = e;
-			arg1 = e['data'];
-		}
-		else {
-			error = e;
-			arg1 = null;
-		}
-		return this.preproc.error(error, arg1);
-	};
-	Parser.prototype.node = function (nodeType, body) {
+function parse(input, _a) {
+	var _b = _a.debugParser, debugParser = _b === void 0 ? true : _b;
+	var depth = 0;
+	input = input.slice();
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Utilities
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	function node(nodeType, body) {
 		var rslt = undefined;
 		try {
-			this.depth++;
-			if (!(nodeType in this.depths))
-				this.depths[nodeType] = 1;
-			else
-				this.depths[nodeType]++;
-			if (this.options.debugParser) {
-				console.debug(strlpad('', this.depth), '{', nodeType);
-			}
-			this.preproc.startNode(nodeType);
+			depth++;
+			if (debugParser)
+				console.debug(strlpad('', depth), '{', nodeType);
 			rslt = body();
 			return rslt;
 		}
 		catch (e) {
 			console.error(e);
 			return {
-				type: "error", error: e, errstr: this.makeErrstr(e)
+				type: "error", error: e, errstr: errstr(e)
 			};
 		}
 		finally {
-			if (this.options.debugParser) {
-				console.debug(strlpad('', this.depth), '}', nodeType, rslt);
-			}
-			this.depth--;
-			this.depths[nodeType]--;
-			this.preproc.endNode(nodeType, rslt);
+			if (debugParser)
+				console.debug(strlpad('', depth), '}', nodeType, rslt);
+			depth--;
 		}
-	};
-	Parser.prototype.expect = function () {
+	}
+
+	function expect() {
 		var types = [];
 		for (var _i = 0; _i < arguments.length; _i++) {
 			types[_i] = arguments[_i];
 		}
-		if (this.peek.apply(this, types))
-			return this.input.shift();
+		if (peek.apply(void 0, types))
+			return input.shift();
 		return null;
-	};
-	Parser.prototype.empty = function () {
-		var input = this.input;
+	}
+
+	function empty() {
 		while (input.length > 0 && input[0].type == TokenType.COMMENT)
 			input.shift();
 		return input.length == 0;
-	};
-	Parser.prototype.peek = function () {
+	}
+
+	function peek() {
 		var types = [];
 		for (var _i = 0; _i < arguments.length; _i++) {
 			types[_i] = arguments[_i];
 		}
-		return (!this.empty() && types.indexOf(this.input[0].type) >= 0);
-	};
-	Parser.prototype.pop = function () {
-		return this.input.shift();
-	};
-	Parser.prototype.produceExpression = function (closingTokens, consume, maxprio) {
-		var _this = this;
-		return this.node("expr", function () { return _this.doProduceExpression(closingTokens, consume, maxprio); });
-	};
-	Parser.prototype.doProduceExpression = function (closingTokens, consume, maxprio) {
-		var _this = this;
-		var expect = function () {
-			var types = [];
-			for (var _i = 0; _i < arguments.length; _i++) {
-				types[_i] = arguments[_i];
+		if (empty())
+			return false;
+		var tok = input[0];
+		for (var _a = 0, types_1 = types; _a < types_1.length; _a++) {
+			var t = types_1[_a];
+			if (typeof t == 'string') {
+				if (t === tok.content)
+					return true;
             }
-			return _this.expect.apply(_this, types);
-        };
-		var peek = function () {
-			var types = [];
-			for (var _i = 0; _i < arguments.length; _i++) {
-				types[_i] = arguments[_i];
+			else {
+				if (t === tok.type)
+					return true;
 			}
-			return _this.peek.apply(_this, types);
-		};
-		if (expect(TokenType.PAROPEN)) {
-			return this.produceExpression([TokenType.PARCLOSE], true, 0);
 		}
-		var t;
-		var x;
-		if ((t = expect(TokenType.OPERATOR))) {
-			// Unary operator
-			throw argthrow(new Error("TODO expr"), t);
-		}
-		else if ((t = expect(TokenType.WORD))) {
-			x = {type: "term", term: t.content};
-		}
-		else if ((t = expect(TokenType.STRING, TokenType.NUMBER))) {
-			x = {type: "const", value: t.content};
-		}
-		else if (peek.apply(void 0, closingTokens)) {
-			throw argthrow(new Error("Abnormal expression termination"), this.pop());
-		}
-		else {
-			throw argthrow(new Error("TODO expr"), this.pop());
-		}
-		while (true) {
-			var t_1 = void 0;
-			if (peek.apply(void 0, closingTokens)) {
-				if (consume)
-					this.pop();
-				break;
+		return false;
+	}
+
+	function produceExpression(closingTokens, consume, allowSpace) {
+		return node("expr", function () {
+			if (expect('(')) {
+				return produceExpression([')'], true, allowSpace);
 			}
-			else if (expect(TokenType.DOT)) {
-				var y = peek(TokenType.WORD);
-				if (!y)
-					y = peek(TokenType.NUMBER);
-				if (!y)
-					throw argthrow(new Error("Word or number expected after dot"), this.pop());
-				x = {
-					type: "bop",
-					left: x,
-					right: this.produceExpression(closingTokens, consume, Priorities['.']),
-					prio: Priorities['.'],
-					op: '.'
-				};
+			var t;
+			var x;
+			if ((t = expect(TokenType.OPERATOR))) {
+				// Unary operator
+				throw argthrow(new Error("TODO expr"), t);
 			}
-			else if (peek(TokenType.WORD)) {
-				if (x.type == "term") {
+			else if ((t = expect(TokenType.WORD))) {
+				x = {type: "term", term: t.content};
+			}
+			else if ((t = expect(TokenType.STRING, TokenType.NUMBER))) {
+				x = {type: "const", value: t.content};
+			}
+			else if (peek.apply(void 0, closingTokens)) {
+				throw argthrow(new Error("Abnormal expression termination"), input.shift());
+			}
+			else {
+				throw argthrow(new Error("TODO expr"), input.shift());
+			}
+			var limit = 9999;
+			while (limit-- > 0) {
+				if (peek.apply(void 0, closingTokens)) {
+					if (consume)
+						input.shift();
+					break;
+				}
+				else if (expect('.')) {
+					var y = peek(TokenType.WORD);
+					if (!y)
+						y = peek(TokenType.NUMBER);
+					if (!y)
+						throw argthrow(new Error("Word or number expected after dot"), input.shift());
 					x = {
 						type: "bop",
 						left: x,
-						right: this.produceExpression(closingTokens, consume, Priorities[' ']),
-						prio: Priorities[' '],
-						op: ' '
+						right: produceExpression(closingTokens, false, allowSpace),
+						prio: Priorities['.'],
+						op: '.'
 					};
-                }
-				else
-					throw argthrow(new Error("Illegal expression token"), t_1);
+				}
+				else if (peek(TokenType.WORD)) {
+					if (!allowSpace)
+						break;
+					if (x.type == "term") {
+						x = {
+							type: "bop",
+							left: x,
+							right: produceExpression(closingTokens, false, allowSpace),
+							prio: Priorities[' '],
+							op: ' '
+						};
+					}
+					else
+						throw argthrow(new Error("Illegal expression token after " + x.type), input.shift());
+				}
+				else if ((t = expect(TokenType.OPERATOR))) {
+					if (x.type == "term") {
+						x = {
+							type: "bop",
+							left: x,
+							right: produceExpression(closingTokens, false, false),
+							prio: Priorities[t.content],
+							op: t.content
+						};
+					}
+					else
+						throw argthrow(new Error("Illegal expression token after " + x.type), input.shift());
+				}
+				else {
+					throw argthrow(new Error("Illegal expression token after " + x.type), input.shift());
+				}
 			}
-			else {
-				throw argthrow(new Error("Illegal expression token"), this.pop());
-			}
-		}
-		/*if (inline) {
-		 let ret = this.evalExpression(x,true);
-		 return {
-		 type:"const",
-		 value:ret
-		 }
-		 } else return x*/
-		return x;
-	};
-	Parser.prototype.produceArguments = function () {
+			return x;
+		});
+	}
+
+	function produceArguments() {
 		var rslt = [];
-		if (this.expect(TokenType.PARCLOSE))
+		if (expect(')'))
 			return rslt;
-		while (true) {
-			rslt.push(this.produceExpression([TokenType.COMMA, TokenType.PARCLOSE], false, 0));
-			if (this.expect(TokenType.PARCLOSE))
+		var limit = 9999;
+		while (limit-- > 0) {
+			rslt.push(produceExpression([',', ')'], false, true));
+			if (expect(')'))
 				return rslt;
-			if (!this.expect(TokenType.COMMA))
-				throw argthrow(new Error("Expected ',' or ')'"), this.pop());
+			if (!expect(','))
+				throw argthrow(new Error("Expected ',' or ')'"), input.shift());
 		}
-	};
-	Parser.prototype.produceTrail = function () {
+	}
+
+	function produceTrail() {
 		var rslt = [];
-		while (true) {
-			rslt.push(this.produceText([TokenType.SBCLOSE, TokenType.SEPARATOR]));
-			if (this.expect(TokenType.SBCLOSE))
+		var limit = 9999;
+		while (limit-- > 0) {
+			rslt.push(produceText([']', '|']));
+			if (expect(']'))
 				break;
-			if (!this.expect(TokenType.SEPARATOR))
-				throw argthrow(new Error("Expected Textable, '[', or '|'"), this.pop());
+			if (!expect('|'))
+				throw argthrow(new Error("Expected Textable, '[', or '|'"), input.shift());
 		}
 		return rslt;
-	};
-	Parser.prototype.produceTag = function () {
-		var _this = this;
-		return this.node("tag", function () { return _this.doProduceTag(); });
-	};
-	Parser.prototype.doProduceTag = function () {
-		var _this = this;
-		var expr = this.produceExpression([TokenType.SBCLOSE, TokenType.PAROPEN, TokenType.SEMICOLON], false, 0);
-		var expect = function () {
-			var types = [];
-			for (var _i = 0; _i < arguments.length; _i++) {
-				types[_i] = arguments[_i];
+	}
+
+	function produceTag() {
+		return node("tag", function () {
+			var ctx = produceExpression([']', '(', ':'], false, true);
+			if (expect(']')) {
+				return {type: "expr", ctx: ctx};
 			}
-			return _this.expect.apply(_this, types);
-		};
-		if (expect(TokenType.SBCLOSE)) {
-			return {type: "tag", prefix: expr, call: null};
-		}
-		var args;
-		if (expect(TokenType.PAROPEN)) {
-			args = this.produceArguments();
-		}
-		else if (expect(TokenType.COLON)) {
-			args = [];
-		}
-		else
-			throw argthrow(new Error("Expected ']', '(', or ':'"), this.pop());
-		var trail = this.produceTrail();
-		/*let tag   = {type: "tag", prefix: expr, call: {args, trail}} as ITagNode;
-		 return inline ? this.evalTag(tag) : tag;*/
-		return {type: "tag", prefix: expr, call: {args: args, trail: trail}};
-	};
-	Parser.prototype.produceTextItem = function () {
-		var _this = this;
-		var processor = this.preproc;
-		var expect = function () {
-			var types = [];
-			for (var _i = 0; _i < arguments.length; _i++) {
-				types[_i] = arguments[_i];
+			if (expect('(')) {
+				var args = produceArguments();
+				var trail = produceTrail();
+				return {type: "call", ctx: ctx, args: args, trail: trail};
 			}
-			return _this.expect.apply(_this, types);
-		};
+			else if (expect(':')) {
+				var content = [];
+				while (!empty()) {
+					if (expect(']'))
+						break;
+					content.push(produceExpression([']'], false, false));
+				}
+				return {type: "phrase", ctx: ctx, content: content};
+			}
+			else
+				throw argthrow(new Error("Expected ']', '(', or ':'"), input.shift());
+		});
+	}
+
+	function produceTextable() {
 		var t;
-		if ((t = expect(TokenType.COMMENT))) {
-			return processor.comment(t.content);
-		}
-		else if ((t = expect(TokenType.TEXT))) {
-			return processor.text(t.content);
+		if ((t = expect(TokenType.TEXT))) {
+			return t.content;
 		}
 		else if ((t = expect(TokenType.XMLOPEN, TokenType.XMLSINGLE))) {
 			var _a = t, tag_1 = _a.tag, attributes_1 = _a.attributes;
 			if (t.type == TokenType.XMLSINGLE || XmlSingleTags.indexOf(tag_1) >= 0) {
-				return processor.xml(tag_1, attributes_1, "");
+				return xmlWrap(tag_1, attributes_1, "");
 			}
 			else {
-				return this.node("xml", function () {
-					var body = _this.produceText([TokenType.XMLCLOSE]);
+				return node("xml", function () {
+					var body = produceText([TokenType.XMLCLOSE]);
 					var t = expect(TokenType.XMLCLOSE);
                     if (!t)
-						throw argthrow(new Error("Expected XMLCLOSE"), _this.pop());
+						throw argthrow(new Error("Expected XMLCLOSE"), input.shift());
 					var tag2 = t.tag;
 					if (tag2 != tag_1)
 						throw argthrow(new Error("Expected XMLCLOSE tag " + tag_1 + ", got " + tag2), t);
@@ -9486,20 +9509,20 @@ var Parser = (function () {
 		else if ((t = expect(TokenType.XMLCLOSE))) {
 			throw argthrow(new Error("Unmatched XMLOPEN"), t);
 		}
-		else if (expect(TokenType.SBOPEN)) {
-			return this.produceTag();
+		else if (expect('[')) {
+			return produceTag();
 		}
 		else {
-			throw argthrow(new Error("Not a text-level token"), this.pop());
+			throw argthrow(new Error("Not a text-level token"), input.shift());
 		}
-	};
-	Parser.prototype.produceText = function (closingTokens) {
-		var _this = this;
+	}
+
+	function produceText(closingTokens) {
 		var result = [];
-		while (!this.empty()) {
-			if (this.peek.apply(this, closingTokens))
+		while (!empty()) {
+			if (peek.apply(void 0, closingTokens))
 				break;
-			var item = this.node("text", function () { return _this.produceTextItem(); });
+			var item = node("text", function () { return produceTextable(); });
 			if (typeof item === "object" && item.type == "error"
 				&& Array.isArray(item.error)
 				&& Array.isArray(item.error[2])) {
@@ -9511,225 +9534,447 @@ var Parser = (function () {
 			return result[0];
 		}
 		return {type: "text", content: result};
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Root
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	var text = [];
+	while (!empty()) {
+		text.push(produceText([]));
+	}
+	if (text.length == 0)
+		return "";
+	if (text.length == 1)
+		return text[0];
+	return {type: "text", content: text};
+}
+///<reference path="parser.ts"/>
+function maybeCap(key, val) {
+	return (isUpperCase(key[0]) && typeof val == "string") ? capitalize(val) : val;
+}
+var EvalContext = (function () {
+	function EvalContext(parent) {
+		this.parent = parent;
+	}
+
+	EvalContext.prototype.term = function (word) {
+		var val = this.doTerm(word);
+		console.debug('term', word, '->', typeof val, val);
+		return maybeCap(word, val);
 	};
-	Parser.prototype.textize = function (src) {
-		var _this = this;
-		if (typeof src == 'string')
-			return src;
-		if (src === null || src === undefined)
-			return this.preproc.error(src, null);
-		switch (src.type) {
-			case "tag":
-				return this.evalTag(src);
-			case "text":
-				return src.content.map(function (i) { return _this.textize(i); }).join("");
-			case "xml":
-				return this.preproc.xml(src.tag, src.attributes, this.textize(src.body));
-			case "error":
-				return src.errstr;
-		}
+	EvalContext.prototype.lookup = function (where, what) {
+		var val = this.doLookup(where, what);
+		console.debug('lookup', what, 'in', where, '->', typeof val, val);
+		return maybeCap(what, val);
 	};
-	Parser.prototype.evalTag = function (node) {
+	return EvalContext;
+}());
+function CoCtopLevelTerm(word) {
+	var game = kGAMECLASS;
+	var player = game.player;
+	var w2 = word.toLowerCase();
+	if (word in topLevelFns)
+		return topLevelFns[word];
+	if (w2 in topLevelFns)
+		return topLevelFns[word];
+	if (word in singleArgConverters)
+		return singleArgConverters[word](kGAMECLASS);
+	if (w2 in singleArgConverters)
+		return singleArgConverters[w2](kGAMECLASS);
+	if (word in game)
+		return lookupAndBind(game, word);
+	if (word in player)
+		return lookupAndBind(player, word);
+	if (isUpperCase(word) && word in window) {
+		var v = window[word];
+		if (typeof v === "number")
+			return v;
+	}
+	throw ("Unknown term " + word);
+}
+var topLevelFns = {
+	"if": function (condition) {
 		var _this = this;
-		return this.textize(this.node("tag", function () { return _this.doEvalTag(node); }));
-	};
-	Parser.prototype.doEvalTag = function (node) {
-		var _this = this;
-		var prefix = (typeof node.prefix == "string") ? {
-			type: "term",
-			term: node.prefix
-		} : node.prefix;
-		if (node.call == null) {
-			return this.preproc.textOrError(this.evalExpression(prefix, true), "eval tag");
-		}
-		else {
-			var pfxterm = this.evalExpression(prefix, false);
-			if (typeof pfxterm == "function") {
-				var pfxval = pfxterm.apply(null, node.call.args.map(function (e) { return _this.evalExpression(e, true); }));
-				var result = void 0;
-				if (typeof pfxval == "function") {
-					result = pfxval.apply(null, node.call.trail.map(function (f) { return function () { return _this.textize(f); }; }));
+		console.debug.apply(console, ["if", this, "("].concat(Array["from"](arguments), [")"]));
+		condition = !!condition && condition != "false" && condition != "False";
+		return function (ifpart, elsepart) {
+			if (ifpart === void 0) { ifpart = function () { return ""; }; }
+			if (elsepart === void 0) { elsepart = function () { return ""; }; }
+			return condition ? ifpart.call(_this) : elsepart.call(_this);
+		};
+	}
+};
+///////////////////////////////////////////////////////
+// The Big Eval
+///////////////////////////////////////////////////////
+function finalExpr(doit, thiz, e) {
+	while (doit && typeof e === "function") {
+		console.debug("finalize", e, "->", (e = e.call(thiz)));
+	}
+	return e;
+}
+function evalOp(ctx, left, op, right) {
+	console.debug(left, op, right);
+	switch (op) {
+		case '.':
+			return ctx.lookup(left, right);
+		case ' ':
+			return ctx.lookup(left, right);
+		case '**':
+			return Math.pow((+left), +right);
+		case '*':
+			return +left * +right;
+		case '/':
+			return +left / +right;
+		case '%':
+			return +left % +right;
+		case '-':
+			return +left - +right;
+		case '<<':
+			return +left << +right;
+		case '>>':
+			return +left >> +right;
+		case '>>>':
+			return +left >>> +right;
+		case '^':
+			return +left ^ +right;
+		case '+':
+			return left + right;
+		case '>':
+			return left > right;
+		case '<':
+			return left < right;
+		case '<=':
+			return left <= right;
+		case '>=':
+			return +left >= right;
+		case '===':
+			return left === right;
+		case '!==':
+			return left !== right;
+		case '==':
+			return left == right;
+		case '=':
+			return left == right;
+		case '<>':
+			return +left != right;
+		case '!=':
+			return left != right;
+		case '&&':
+			return left && right;
+		case '||':
+			return left || right;
+		default:
+			throw "Unknown operator " + op;
+	}
+}
+function evalExpr(ctx, expr, final) {
+	console.log('evalExpr', expr.type, final);
+	var rslt;
+	switch (expr.type) {
+		case "const":
+			rslt = expr.value;
+			break;
+		case "term":
+			rslt = ctx.term(expr.term.toString());
+			break;
+		case "bop": {
+			var left = evalExpr(ctx, expr.left, false);
+			var xright = expr.right;
+			if (expr.op == '.' || expr.op == ' ') {
+				if (xright.type == 'const') {
+					rslt = left[xright.value];
+				}
+				else if (xright.type == 'term') {
+					rslt = left[xright.term];
 				}
 				else
-					result = pfxval;
-				return this.preproc.textOrError(result, "eval tag");
+					throw "Invalid index " + xright.type;
 			}
-			else
-				throw argthrow(new Error("Not a function in call-expression"), pfxterm);
+			else {
+				left = finalExpr(true, ctx, left);
+				var right = evalExpr(ctx, xright, true);
+				rslt = evalOp(ctx, left, expr.op, right);
+			}
+			break;
 		}
-	};
-	Parser.prototype.evalExpression = function (expr, stringify) {
-		var _this = this;
-		return this.node("eval " + expr.type, function () { return _this.doEvalExpression(expr, stringify); });
-	};
-	Parser.prototype.doEvalExpression = function (expr, stringify) {
-		var rslt;
-		switch (expr.type) {
-			case 'error':
-				return expr.errstr;
-			case 'bop':
-				var left = this.evalExpression(expr.left, false);
-				var xright = expr.right;
-				switch (expr.op) {
-					case ' ':
-					case '.':
-						var right = (xright.type == 'term') ? xright.term : this.evalExpression(expr.right, true);
-						if (left === null || left === undefined)
-							throw argthrow(new Error("Encountered " + left), expr);
-						if (typeof left == 'function') {
-							rslt = left(right);
-                        }
-                        else {
-							rslt = left[right];
-                        }
-						if (typeof rslt == 'function')
-							rslt = rslt.apply(left, []);
-						break;
-					default:
-						throw argthrow(new Error("TODO eval bop"), expr.op);
-                }
-				break;
-			case 'const':
-				return expr.value;
-			case 'term':
-				var lookup = this.preproc.topLevelTerm(expr.term);
-				if (lookup !== undefined) {
-					rslt = lookup;
-                }
-                else {
-					rslt = function () { console.log(expr, arguments); };
-                }
-				break;
-			default:
-				throw argthrow(new Error("TODO eval"), expr['type']);
+		default:
+			throw "TODO not supported " + expr.type;
+	}
+	return finalExpr(final, ctx, rslt);
+}
+function evalCall(ctx, src) {
+	var base = evalExpr(ctx, src.ctx, false);
+	if (typeof base != "function") {
+		throw "Not a function";
+	}
+	var rslt;
+	rslt = base.apply(ctx, src.args.map(function (e) { return evalExpr(ctx, e, true); }));
+	if (typeof rslt == "function") {
+		rslt = rslt.apply(ctx, src.trail.map(function (t) { return function () { return evalText(ctx, t); }; }));
+	}
+	return ctx.text(rslt);
+}
+function evalPhrase(ctx, src) {
+	var base = evalExpr(ctx, src.ctx, false);
+	if (!base)
+		return "";
+	var rslt = [];
+	for (var _i = 0, _a = src.content; _i < _a.length; _i++) {
+		var obj = _a[_i];
+		var x = void 0;
+		if (obj.type == "term") {
+			x = ctx.lookup(base, obj.term);
 		}
-		if (typeof rslt == 'function' && stringify)
-			rslt = rslt();
-		return rslt;
-		// return stringify? this.preproc.textOrError(rslt,"Evaluation failed") : rslt;
-	};
-	Parser.prototype.runParser = function (input) {
-		this.preproc.attach(this);
-		this.input = input;
-		this.depth = 0;
-		this.depths = {};
-		var text = [];
-		while (!this.empty()) {
-			text.push(this.textize(this.produceText([])));
+		else {
+			x = evalExpr(ctx, obj, true);
 		}
-		return text.join("");
-	};
-	Parser.prototype.parse = function (input) {
-		return this.runParser(Lexer.lexrun(input, this.options));
-	};
-	return Parser;
-}());
-///<reference path="parser.ts"/>
-var SimpleProcessor = (function (_super) {
-    __extends(SimpleProcessor, _super);
-    function SimpleProcessor(root) {
-        var _this = _super.call(this) || this;
-        _this.root = root;
-        return _this;
-    }
+		rslt.push(ctx.text(finalExpr(true, base, x)));
+	}
+	return rslt.join(" ");
+}
+function evalText(ctx, src) {
+	if (typeof src == 'string')
+		return ctx.text(src);
+	if (src === null || src === undefined)
+		return ctx.text(src);
+	switch (src.type) {
+		case "call":
+			return evalCall(ctx, src);
+		case "expr":
+			return evalExpr(ctx, src.ctx, true);
+		case "phrase":
+			return evalPhrase(ctx, src);
+		case "text":
+			return src.content.map(function (i) {
+				try {
+					return evalText(ctx, i);
+				}
+				catch (e) {
+					return ctx.error(e);
+				}
+			}).join("");
+		case "xml":
+			return ctx.text(xmlWrap(src.tag, src.attributes, evalText(ctx, src.body)));
+		case "error":
+			return src.errstr;
+		default:
+			throw "Not supported " + src["type"];
+	}
+}
+/*
+ class Processor {
+ public depth: number  = 0;
+ public debug: boolean = false;
 
-	SimpleProcessor.prototype.startNode = function (nodeType) {
-	};
-	SimpleProcessor.prototype.endNode = function (nodeType, result) {
-	};
-    SimpleProcessor.prototype.text = function (text) {
-		//return wrapgroup(this.parser.depth, text);
-		return wrapgroup(this.parser.depths['tag'] | 0, text);
-    };
-    SimpleProcessor.prototype.comment = function (text) {
-        return spanwrap('tok-comment', '[#' + text + '#]');
-    };
-    SimpleProcessor.prototype.topLevelTerm = function (word) {
-        var o = this.root;
-        if (o === null || o === undefined)
-			return this.error("Cannot lookup with " + o + "root", word);
-		return lookupAndBind(o, word);
-    };
-	SimpleProcessor.prototype.error = function (error, arg) {
-		var ermsg = '' + ((typeof error == "object" && 'message' in error) ? error['message'] : error);
-		if (arg !== undefined && arg !== null) {
-			ermsg += ' ' + (isToken(arg) ? tok2str(arg) : arg);
-		}
-		console.error(ermsg);
-		//console.error(error);
-		return errstr(ermsg);
-    };
-    return SimpleProcessor;
-}(PreProcessor));
+ private makeErrstr(e: any): string {
+ let error: any;
+ let arg1: any;
+ if (Array.isArray(e)) {
+ error = e[0];
+ arg1  = e[1];
+ } else if (typeof e == 'object' && 'data' in e) {
+ error = e;
+ arg1  = e['data'];
+ } else {
+ error = e;
+ arg1  = null;
+ }
+ return this.error(error, arg1);
+ }
+
+ private node<R>(nodeType: string, body: () => R): R | IErrorNode {
+ let rslt: R = undefined;
+ try {
+ this.depth++;
+ if (this.debug) {
+ console.debug(strlpad('', this.depth), '{', nodeType);
+ }
+ rslt = body();
+ return rslt;
+ } catch (e) {
+ console.error(e);
+ return {
+ type: "error", error: e, errstr: this.makeErrstr(e)
+ } as IErrorNode;
+ } finally {
+ if (this.debug) {
+ console.debug(strlpad('', this.depth), '}', nodeType, rslt);
+ }
+ this.depth--;
+ }
+ }
+
+ error(error: any, arg: any): string {
+ let ermsg = '' + ((typeof error == "object" && 'message' in error) ? error['message'] : error);
+ if (arg !== undefined && arg !== null) {
+ ermsg += ' ' + (isToken(arg) ? tok2str(arg) : arg);
+ }
+ console.error(ermsg);
+ return errstr(ermsg);
+ }
+
+
+ public evalTag(node: ITagNode): string {
+ let t = this.node("tag", () => this.doEvalTag(node));
+ if (typeof t === 'string') return t;
+ return t.errstr;
+ }
+
+ private doEvalTag(node: ITagNode): string {
+ let prefix: IExpression = (typeof node.prefix == "string") ? {
+ type: "term",
+ term: node.prefix
+ } : node.prefix;
+ if (node.call == null) {
+ return this.textOrError(this.evalExpression(prefix, true), "eval tag");
+ } else {
+ let pfxterm = this.evalExpression(prefix, false);
+ if (typeof pfxterm == "function") {
+ let pfxval = pfxterm.apply(null, node.call.args.map(e => this.evalExpression(e, true)));
+ let result: any;
+ if (typeof pfxval == "function") {
+ result = pfxval.apply(null, node.call.trail.map(f => () => this.textize(f)));
+ } else result = pfxval;
+ return this.preproc.textOrError(result, "eval tag");
+ } else throw argthrow(new Error("Not a function in call-expression"), pfxterm);
+ }
+ }
+
+ public evalExpression(context: EvalContext, expr: IExpression, stringify: boolean): any {
+ return this.node("eval " + expr.type, () => this.doEvalExpression(context, expr, stringify));
+ }
+
+ private doEvalExpression(context: EvalContext, expr: IExpression, stringify: boolean): any {
+ let rslt: any;
+ switch (expr.type) {
+ case 'error':
+ return expr.errstr;
+ case 'bop':
+ let left   = this.evalExpression(context, expr.left, false);
+ let xright = expr.right;
+ switch (expr.op) {
+ case ' ': {
+ let right = (xright.type == 'term') ? xright.term : this.evalExpression(left, expr.right, true);
+ if (left === null || left === undefined) throw argthrow(new Error("Encountered " + left), expr);
+ if (typeof left == 'function') {
+ rslt = left(right);
+ } else {
+ rslt = left[right];
+                        }
+ if (typeof rslt == 'function') rslt = rslt.apply(left, []);
+ } break;
+ case '.': {
+
+ } break;
+ default:
+ throw argthrow(new Error("TODO eval bop"), expr.op);
+                }
+ break;
+ case 'const':
+ return expr.value;
+ case 'term':
+ let lookup = context.term(expr.term);
+ if (lookup !== undefined) {
+ rslt = lookup;
+ } else {
+ rslt = function () {console.log(expr, arguments)};
+                }
+ break;
+ default:
+ throw argthrow(new Error("TODO eval"), expr['type']);
+ }
+ if (typeof rslt == 'function' && stringify) rslt = rslt();
+ return rslt;
+ // return stringify? this.preproc.textOrError(rslt,"Evaluation failed") : rslt;
+ }
+ }
+
+
+ */ ///////////////////////////////////////////////////////
+// The API
+///////////////////////////////////////////////////////
 function lookupAndBind(obj, key) {
 	if (key in obj) {
 		var v_1 = obj[key];
 		if (typeof v_1 == 'function')
-			return function () {
+			return _.extend(function () {
 				var rest = [];
 				for (var _i = 0; _i < arguments.length; _i++) {
 					rest[_i] = arguments[_i];
 				}
 				//console.log(obj, key, ...rest);
 				return v_1.apply(obj, rest);
-			};
+			}, v_1);
 		return v_1;
 	}
 	return undefined;
 }
-var CoCProcessor = (function (_super) {
-    __extends(CoCProcessor, _super);
-	/*startNode(nodeType: string) {
-	 if (this.parser.options.debugParser) {
-	 console.debug(strlpad('',this.parser.depth),'{',nodeType);
-	 }
-	 }
-
-	 endNode(nodeType: string,result:any) {
-	 if (this.parser.options.debugParser) {
-	 console.debug(strlpad('',this.parser.depth+1),'}',nodeType,result);
-	 }
-	 }*/
-	function CoCProcessor(root) {
-		return _super.call(this, root) || this;
-    }
-    CoCProcessor.prototype.topLevelTerm = function (word) {
-		var game = this.root;
-		var player = game.player;
-		if (word in topLevelFns) {
-			return _.partial(topLevelFns[word], game);
-		}
-        if (word in singleArgConverters) {
-			return singleArgConverters[word](this.root);
-        }
-		if (word in game)
-			return lookupAndBind(game, word);
-		if (word in player)
-			return lookupAndBind(player, word);
-		return this.textOrError(_super.prototype.topLevelTerm.call(this, word), word);
-    };
-    return CoCProcessor;
-}(SimpleProcessor));
-var topLevelFns = {
-	"if": function (game, condition) {
-		var x = !!condition && condition !== 'false' || condition !== 'false';
-		return function (iftext, elsetext) {
-			if (iftext === void 0) { iftext = function () { return ""; }; }
-			if (elsetext === void 0) { elsetext = function () { return ""; }; }
-			return x ? iftext() : elsetext();
-		};
-	},
-	"skin": function (game) {
-		var parts = [];
-		for (var _i = 1; _i < arguments.length; _i++) {
-			parts[_i - 1] = arguments[_i];
-		}
-		var player = game.player;
-		if (parts.length == 0)
-			return player.skinDesc;
-		return parts.map(function (p) { return ({})['' + p] || p; });
+function wrapComment(text) {
+	return spanwrap('tok-comment', '[#' + text + '#]');
+}
+var SimpleContext = (function (_super) {
+	__extends(SimpleContext, _super);
+	function SimpleContext(basis, parent) {
+		var _this = _super.call(this, parent) || this;
+		_this.basis = basis;
+		_this.depth = 0;
+		if (parent instanceof SimpleContext)
+			_this.depth = parent.depth + 1;
+		return _this;
 	}
-};
+
+	SimpleContext.prototype.text = function (input) {
+		return '' + input;
+	};
+	SimpleContext.prototype.doLookup = function (where, what) {
+		var w2 = what.toLowerCase();
+		if ((typeof where === "object" || typeof where === "function") && where !== null) {
+			if (what in where)
+				return where[what];
+			if (w2 in where)
+				return where[w2];
+		}
+		if (what in this.basis)
+			return this.basis[what];
+		if (w2 in this.basis)
+			return this.basis[w2];
+		if (this.parent)
+			return this.parent.doLookup(where, what);
+		return undefined;
+	};
+	SimpleContext.prototype.doTerm = function (word) {
+		return this.doLookup(null, word);
+	};
+	return SimpleContext;
+}(EvalContext));
+var GameContext = (function (_super) {
+	__extends(GameContext, _super);
+	function GameContext(basis, root) {
+		return _super.call(this, basis, root) || this;
+    }
+
+	GameContext.prototype.doTerm = function (word) {
+		var k = _super.prototype.doTerm.call(this, word);
+		if (k !== undefined)
+			return k;
+		return CoCtopLevelTerm(word);
+    };
+	GameContext.prototype.error = function (e) {
+		console.error(e);
+		return errstr(e);
+	};
+	GameContext.prototype.text = function (input) {
+		if (input === null || input === undefined) {
+			return errstr(input);
+		}
+		else {
+			return wrapgroup(this.depth, input);
+		}
+	};
+	return GameContext;
+}(SimpleContext));
 var KitsuneScene;
 (function (KitsuneScene) {
     KitsuneScene.basicKitsuneFur = ["orange and white", "black", "black and white", "red", "red and white", "white"];
@@ -9823,7 +10068,6 @@ var singleArgConverters = {
 	"sack": function () { return kGAMECLASS.player.sackDescript(); },
 	"sheath": function () { return kGAMECLASS.player.sheathDescript(); },
 	"shield": function () { return kGAMECLASS.player.shieldName; },
-	"skin": function () { return kGAMECLASS.player.skin(); },
 	"skin.noadj": function () { return kGAMECLASS.player.skin(true); },
 	"skinfurscales": function () { return kGAMECLASS.player.skinFurScales(); },
 	"tallness": function () { return kGAMECLASS.measurements.footInchOrMetres(kGAMECLASS.player.tallness); },
@@ -9986,6 +10230,23 @@ function isUpperCase(char) {
 }
 function argthrow(e, data) {
 	e["data"] = data;
+	if (isToken(data))
+		e.message += " " + tok2str(data);
 	return e;
+}
+function formatStringArray(stringList) {
+	switch (stringList.length) {
+		case 0:
+			return "";
+		case 1:
+			return stringList[0];
+		case 2:
+			return stringList[0] + " and " + stringList[1];
+		default:
+	}
+	var concat = stringList[0];
+	for (var x = 1; x < stringList.length - 1; x++)
+		concat += ", " + stringList[x];
+	return concat + " and " + stringList[stringList.length - 1];
 }
 //# sourceMappingURL=tsout.js.map

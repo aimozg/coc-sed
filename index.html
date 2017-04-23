@@ -132,7 +132,7 @@
 <body>
 <div class="container-fluid">
 	<h1>CoC Scene Editor
-		<small class="text-muted">v 0.4-dev (alpha)</small>
+		<small class="text-muted">v 0.5 (alpha)</small>
 	</h1>
 	<div class="row">
 		<div class="col-lg-4 col-md-6 d-flex flex-column">
@@ -145,7 +145,7 @@
 					<option value="markdown">Markdown (not implemented)</option>
 				</select>
 			</div>
-			<textarea id="source" class="form-control mt-2" data-init="#demo0"></textarea>
+			<textarea id="source" class="form-control mt-2" data-init="#demo0,#demo1,#demo2,#demo3,#demo4"></textarea>
 		</div>
 		<div class="col-lg-4 col-md-6" id="preview-1">
 			<div class="card">
@@ -350,6 +350,53 @@
 								<option value="4">&mdash; (4)</option>
 								<option value="5">DRAGON_SCALES (5)</option>
 								<option value="6">FISH_SCALES (6)</option>
+							</select>
+						</div>
+						<div class="input-group col-12">
+							<label class="form-control-label">Face:</label>
+							<select name="player.faceType" data-role="attr" class="form-control form-control-sm">
+								<option value="0">HUMAN (0)</option>
+								<option value="1">HORSE (1)</option>
+								<option value="2">DOG (2)</option>
+								<option value="3">COW_MINOTAUR (3)</option>
+								<option value="4">SHARK_TEETH (4)</option>
+								<option value="5">SNAKE_FANGS (5)</option>
+								<option value="6">CAT (6)</option>
+								<option value="7">LIZARD (7)</option>
+								<option value="8">BUNNY (8)</option>
+								<option value="9">KANGAROO (9)</option>
+								<option value="10">SPIDER_FANGS (10)</option>
+								<option value="11">FOX (11)</option>
+								<option value="12">DRAGON (12)</option>
+								<option value="13">RACCOON_MASK (13)</option>
+								<option value="14">RACCOON (14)</option>
+								<option value="15">BUCKTEETH (15)</option>
+								<option value="16">MOUSE (16)</option>
+								<option value="17">FERRET_MASK (17)</option>
+								<option value="18">FERRET (18)</option>
+								<option value="19">PIG (19)</option>
+								<option value="20">BOAR (20)</option>
+								<option value="21">RHINO (21)</option>
+								<option value="22">ECHIDNA (22)</option>
+								<option value="23">DEER (23)</option>
+							</select>
+							<label class="form-control-label">Tongue:</label>
+							<select name="player.tongueType" data-role="attr" class="form-control form-control-sm">
+								<option value="0">HUMAN (0)</option>
+								<option value="1">SNAKE (1)</option>
+								<option value="2">DEMONIC (2)</option>
+								<option value="3">DRACONIC (3)</option>
+								<option value="4">ECHIDNA (4)</option>
+								<option value="5">LIZARD (5)</option>
+							</select>
+							<label class="form-control-label">Eyes:</label>
+							<select name="player.eyeType" data-role="attr" class="form-control form-control-sm">
+								<option value="0">HUMAN (0)</option>
+								<option value="1">FOUR_SPIDER_EYES (1)</option>
+								<option value="2">BLACK_EYES_SAND_TRAP (2)</option>
+								<option value="3">LIZARD (3)</option>
+								<option value="4">DRAGON (4)</option>
+								<option value="5">BASILISK (5)</option>
 							</select>
 						</div>
 					</div>
@@ -561,12 +608,39 @@
 
 </body>
 <script type="text/plain" id="demo1">
-You began your journey as a [player startingRace], but gave that up as you explored the dangers of this realm. \
-You are a [tallness] tall [malefemaleherm] [race], with [bodytype]. \
-<b>You are currently wearing your [armor] and using your [weapon] as a weapon.</b>
-[# this is a comment #]
-
-
+[# Discuss race #]\
+[if (race != player.startingRace)\
+  You began your journey as a [player.startingRace], but gave that up as you explored the dangers of this realm.  ]\
+\
+[# Height and race. #]\
+You are a [tallness] tall [malefemaleherm] [race], with [bodytype].\
+<b>You are currently [if (armorDescript != 'gear') wearing your [armorDescript]|naked] and using your [weaponName] as a weapon.</b>\
+\
+[# Face #]\
+[if (hasPlainSkin || hasGooSkin)\
+  Your face is human in shape and structure, with [skin].]\
+[if (hasFur)\
+  Under your [skinFurScales] you have a human-shaped head with [skin.noadj].]\
+[if (hasScales)\
+  Your face is fairly human in shape, but is covered in [skin].]\
+\
+[# M/F stuff! #]\
+  It has [faceDesc].\
+\
+[# Eyes #]\
+[if (eyeType == EYES_FOUR_SPIDER_EYES)\
+  In addition to your primary two eyes, you have a second, smaller pair on your forehead.]\
+[if (eyeType == EYES_BLACK_EYES_SAND_TRAP)\
+  Your eyes are solid spheres of inky, alien darkness.]\
+[if (hasReptileEyes && (faceType != FACE_CAT))\
+  Your eyes are\
+  [if (eyeType==EYES_DRAGON) prideful, fierce dragon eyes with vertically slitted pupils and burning orange irises. They glitter even in the darkness and they]\
+  [if (eyeType==EYES_LIZARD) those of a lizard with vertically slitted pupils and green-yellowish irises. They]\
+  [if (eyeType==EYES_BASILISK) basilisk eyes, grey reptilian pools with vertically slitted pupils. They]\
+  come with the typical second set of eyelids, allowing you to blink twice as much as others.\
+  [if (eyeType == EYES_BASILISK)\
+    Others seem compelled to look into them.]\
+]
 </script>
 <script type="text/plain" id="demo2">
 The minotaur's broad tongue licks and laps at your [butthole] as you writhe and moan, each lick twice as pleasant as the last, and you feel \
@@ -772,10 +846,6 @@ Double quotes: "derp a herp"
 
 </script>
 <script type="text/plain" id="demo0">
-"Your [skin(noun,is,color)]"
-"Your body is covered with [skin(long noun)]"
-I have [skin(long noun)][skin(extra 'with' long noun)]
-She paints your [skin(extra noun plural)] with [skin(colour)] paint, making it look as if you had have just a [skin(long noun)]
-He pokes your [skin(belly full noun)] with one hand, denting [skin(neck full plural)] on your neck with another
+
 </script>
 </html>

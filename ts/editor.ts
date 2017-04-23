@@ -20,7 +20,6 @@ interface PreviewUi {
 interface Preview {
 	ui: PreviewUi;
 	parser_old: OldParser;
-	parser: Parser;
 	game: CoC;
 	seed: number;
 }
@@ -38,8 +37,9 @@ function regenOne(preview: Preview) {
 			if (type == 'boolean') v = v === 'true';
 			attrSet(preview.game, a.name, v);
 		}
+		let options = {};
 		for (let a of preview.ui.flags.toArray() as HTMLInputElement[]) {
-			preview.parser.options[a.name] = a.checked;
+			options[a.name] = a.checked;
 		}
 		let format = $('#sourceformat').val();
 		kGAMECLASS = preview.game;
@@ -50,7 +50,8 @@ function regenOne(preview: Preview) {
 				s = preview.parser_old.recursiveParser(src);
 				break;
 			case 'parser2':
-				s = preview.parser.parse(src);
+				s = evalText(new GameContext(preview.game, undefined),
+					parse(Lexer.lexrun(src, options as LexerOptions), options as ParserOptions));
 				break;
 			default:
 				console.error("Format not supported", format);
@@ -82,7 +83,6 @@ function setupPreview(container: JQuery, game: CoC = new CoC()): Preview {
 			})
 		},
 		parser_old: new OldParser(game, {}),
-		parser    : new Parser(new CoCProcessor(game), {}),
 		game      : game,
 		seed      : Rng.gen_state()
 	} as Preview;
@@ -111,7 +111,18 @@ let StartChars: ((Player, CoC) => any)[] = [
 		player.lowerBody                  = LOWER_BODY_TYPE_DEMONIC_HIGH_HEELS;
 		player.skinTone                   = "pink";
 		player.skinType                   = SKIN_TYPE_FUR;
+		player.skinAdj                    = "sexy";
 		player.skinDesc                   = "fur";
+		player["oldskin"]                 = player.skin;
+		player["skin"]                    = _.extend(() => player["oldskin"](), {
+			noun : () => player.skinDesc,
+			long : () => player["oldskin"](),
+			full : () => player["oldskin"](),
+			is   : "is",
+			color: () => player.skinTone,
+			extra: 0,
+			neck : () => player["skin"]
+		});
 		player.furColor                   = "pink";
 		player.hairColor                  = "pink";
 		player.hairLength                 = 50;
@@ -140,10 +151,26 @@ let StartChars: ((Player, CoC) => any)[] = [
 		player.armorName  = "skimpy nurse's outfit";
 	},
 	(player: Player) => {
-		player.short     = "Betram";
-		player.earType   = EARS_FOX;
-		player.tailType  = TAIL_TYPE_FOX;
-		player.tailVenom = 1;
+		player.short      = "Betram";
+		player.earType    = EARS_FOX;
+		player.tailType   = TAIL_TYPE_FOX;
+		player.tailVenom  = 1;
+		player["oldskin"] = player.skin;
+		player["skin"]    = _.extend(() => player["oldskin"](), {
+			noun : () => player.skinDesc,
+			long : () => player["oldskin"](),
+			full : () => player["oldskin"](),
+			is   : "is",
+			color: () => player.skinTone,
+			extra: _.extend(() => 'green scales', {
+				noun : 'scales',
+				long : 'green scales',
+				full : 'green scales',
+				is   : 'are',
+				color: 'green'
+			}),
+			neck : () => player["skin"]["extra"]
+		});
 		if (player.biggestTitSize() > 1) player.breastRows[0].breastRating = 1;
 		if (!player.hasCock()) {
 			player.createCock(CockTypesEnum.DOG, 8, 1);
@@ -160,7 +187,7 @@ $(() => {
 	textarea = $("#source");
 	textarea.val(
 		textarea.data("init").split(',').map(i =>
-			($(i).html() || "").trim()).join("\\\n<hr>\\\n")
+			($(i).html() || "").trim()).join("\n<hr>\n")
 	);
 	Preview.template = $("#preview-1 > *").clone();
 	for (let i = 0; i < StartChars.length; i++) {
@@ -168,7 +195,6 @@ $(() => {
 		StartChars[i](game.player, game);
 		let preview = setupPreview($("#preview-" + (i + 1)), game);
 		previews.push(preview);
-		break;
 	}
 	textarea.on("input change", _.debounce(regen, 300));
 	regen();

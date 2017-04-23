@@ -143,8 +143,23 @@ class Creature extends CreatureData {
 	get pronoun3(): string {
 		return this.mf("his", "her");
 	}
+
 	get flags() {
 		return kGAMECLASS.flags;
+	}
+
+	armorDescript(nakedText: string = "gear"): string {
+		let textArray: string[] = [];
+		let text                = "";
+		//if (armor != ArmorLib.NOTHING) text += armorName;
+		//Join text.
+		if (this.armorName != "nothing") textArray.push(this.armorName);
+		//if (upperGarment != UndergarmentLib.NOTHING) textArray.push(upperGarmentName);
+		//if (lowerGarment != UndergarmentLib.NOTHING) textArray.push(lowerGarmentName);
+		if (textArray.length > 0) text = formatStringArray(textArray);
+		//Naked?
+		if (/*upperGarment == UndergarmentLib.NOTHING && lowerGarment == UndergarmentLib.NOTHING &&*/ this.armorName == "NOTHING") text = nakedText;
+		return text;
 	}
 
 	createPerk(name: string) {
@@ -398,6 +413,44 @@ class Creature extends CreatureData {
 		return Appearance.hairOrFur(this);
 	}
 
+	faceDesc(): string {
+		let {femininity} = this;
+		let faceo        = "";
+		//0-10
+		if (femininity < 10) {
+			faceo = "a square chin";
+			//if (!this.hasBeard()) TODO
+			faceo += " and chiseled jawline";
+			/*else
+			 faceo += ", chiseled jawline, and " + this.beard();*/
+		} else if (femininity < 20) {
+			//10+ -20
+			faceo = "a rugged looking " + this.face() + " ";
+			/*if (this.hasBeard()) TODO
+			 faceo += "and " + this.beard();*/
+			faceo += "that's surely handsome";
+		} else if (femininity < 28) {
+			faceo = "a well-defined jawline and a fairly masculine profile";
+		} else if (femininity < 35) {
+			faceo = "a somewhat masculine, angular jawline";
+		} else if (femininity < 45) {
+			faceo = "the barest hint of masculinity on its features";
+		} else if (femininity <= 55) {
+			faceo = "an androgynous set of features that would look normal on a male or female";
+		} else if (femininity <= 65) {
+			faceo = "a tiny touch of femininity to it, with gentle curves";
+		} else if (femininity <= 72) {
+			faceo = "a nice set of cheekbones and lips that have the barest hint of pout";
+		} else if (femininity <= 80) {
+			faceo = "a beautiful, feminine shapeliness that's sure to draw the attention of males";
+		} else if (femininity <= 90) {
+			faceo = "a gorgeous profile with full lips, a button nose, and noticeable eyelashes";
+		} else {
+			faceo = "a jaw-droppingly feminine shape with full, pouting lips, an adorable nose, and long, beautiful eyelashes";
+		}
+		return faceo;
+	}
+
 	skinFurScales(): string {
 		let skinzilla = "";
 		if (this.skinAdj != "") skinzilla += this.skinAdj + ", ";
@@ -531,13 +584,13 @@ class Creature extends CreatureData {
 
 	hasSheath(): boolean {
 		return _.any(this.cocks, cock => [CockTypesEnum.CAT,
-			CockTypesEnum.DISPLACER,
-			CockTypesEnum.DOG,
-			CockTypesEnum.FOX,
-			CockTypesEnum.HORSE,
-			CockTypesEnum.KANGAROO,
-			CockTypesEnum.AVIAN,
-			CockTypesEnum.ECHIDNA].indexOf(cock.cockType) >= 0);
+											 CockTypesEnum.DISPLACER,
+											 CockTypesEnum.DOG,
+											 CockTypesEnum.FOX,
+											 CockTypesEnum.HORSE,
+											 CockTypesEnum.KANGAROO,
+											 CockTypesEnum.AVIAN,
+											 CockTypesEnum.ECHIDNA].indexOf(+cock.cockType) >= 0);
 	}
 
 	cockTotal(): number {
@@ -853,7 +906,7 @@ class Creature extends CreatureData {
 	}
 
 	canFly(): boolean {
-		return !this.hasStatusEffect("Web") && canFlyWings.indexOf(this.wingType) != -1;
+		return !this.hasStatusEffect("Web") && canFlyWings.indexOf(+this.wingType) != -1;
 	}
 
 	ballsDescriptLight(forcedSize: boolean = true): string {
@@ -861,7 +914,7 @@ class Creature extends CreatureData {
 	}
 
 	countCocksOfType(...types: CockTypesEnum[]): number {
-		return this.cocks.filter(c => types.indexOf(c.cockType) >= 0).length;
+		return this.cocks.filter(c => types.indexOf(+c.cockType) >= 0).length;
 	}
 
 	dogCocks(): number {
@@ -894,25 +947,25 @@ class Creature extends CreatureData {
 	}
 
 	hasReptileEyes(): boolean {
-		return [EYES_LIZARD, EYES_DRAGON, EYES_BASILISK].indexOf(this.eyeType) != -1;
+		return [EYES_LIZARD, EYES_DRAGON, EYES_BASILISK].indexOf(+this.eyeType) != -1;
 	}
 
 	hasLizardEyes(): boolean {
-		return [EYES_LIZARD, EYES_BASILISK].indexOf(this.eyeType) != -1;
+		return [EYES_LIZARD, EYES_BASILISK].indexOf(+this.eyeType) != -1;
 	}
 
 	hasReptileFace(): boolean {
-		return [FACE_SNAKE_FANGS, FACE_LIZARD, FACE_DRAGON].indexOf(this.faceType) != -1;
+		return [FACE_SNAKE_FANGS, FACE_LIZARD, FACE_DRAGON].indexOf(+this.faceType) != -1;
 	}
 
 	hasDragonWings(large: boolean = false): boolean {
 		if (large) return this.wingType == WING_TYPE_DRACONIC_LARGE;
-		else return [WING_TYPE_DRACONIC_SMALL, WING_TYPE_DRACONIC_LARGE].indexOf(this.wingType) != -1;
+		else return [WING_TYPE_DRACONIC_SMALL, WING_TYPE_DRACONIC_LARGE].indexOf(+this.wingType) != -1;
 	}
 
 	hasBatLikeWings(large: boolean = false): boolean {
 		if (large) return this.wingType == WING_TYPE_BAT_LIKE_LARGE;
-		else return [WING_TYPE_BAT_LIKE_TINY, WING_TYPE_BAT_LIKE_LARGE].indexOf(this.wingType) != -1;
+		else return [WING_TYPE_BAT_LIKE_TINY, WING_TYPE_BAT_LIKE_LARGE].indexOf(+this.wingType) != -1;
 	}
 
 	hasLeatheryWings(large: boolean = false): boolean {
@@ -949,11 +1002,11 @@ class Creature extends CreatureData {
 	}
 
 	hasScales(): boolean {
-		return [SKIN_TYPE_LIZARD_SCALES, SKIN_TYPE_DRAGON_SCALES, SKIN_TYPE_FISH_SCALES].indexOf(this.skinType) != -1;
+		return [SKIN_TYPE_LIZARD_SCALES, SKIN_TYPE_DRAGON_SCALES, SKIN_TYPE_FISH_SCALES].indexOf(+this.skinType) != -1;
 	}
 
 	hasReptileScales(): boolean {
-		return [SKIN_TYPE_LIZARD_SCALES, SKIN_TYPE_DRAGON_SCALES].indexOf(this.skinType) != -1;
+		return [SKIN_TYPE_LIZARD_SCALES, SKIN_TYPE_DRAGON_SCALES].indexOf(+this.skinType) != -1;
 	}
 
 	hasDragonScales(): boolean {

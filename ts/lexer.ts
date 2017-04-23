@@ -270,12 +270,7 @@ namespace Lexer {
 							}
 							break;
 						case ':':
-							l = 1;
-							rslt.push({type: TokenType.COLON, content: ':', from: pos, to: pos + 1});
-							if (flags['('] == 0) {
-								stack.push([LexerStateType.SUBTEXT, LexerStateFlags()]);
-							}
-							break;
+						case ',':
 						case '.':
 						case ';':
 						case '?':
@@ -283,8 +278,10 @@ namespace Lexer {
 							rslt.push({
 								type          : {
 									'.': TokenType.DOT,
+									',': TokenType.COMMA,
 									';': TokenType.SEMICOLON,
-									'?': TokenType.QUESTION
+									'?': TokenType.QUESTION,
+									':': TokenType.COLON,
 								}[c0], content: c0, from: pos, to: pos + l
 							});
 							break;

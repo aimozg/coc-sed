@@ -70,7 +70,6 @@ const singleArgConverters: { [index: string]: (thiz: any) => any } = {
 	"sack"                  : () => kGAMECLASS.player.sackDescript(),
 	"sheath"                : () => kGAMECLASS.player.sheathDescript(),
 	"shield"                : () => kGAMECLASS.player.shieldName,
-	"skin"                  : () => kGAMECLASS.player.skin(),
 	"skin.noadj"            : () => kGAMECLASS.player.skin(true),
 	"skinfurscales"         : () => kGAMECLASS.player.skinFurScales(),
 	"tallness"              : () => kGAMECLASS.measurements.footInchOrMetres(kGAMECLASS.player.tallness),

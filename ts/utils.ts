@@ -121,5 +121,20 @@ function isUpperCase(char: string): boolean {
 }
 function argthrow(e: Error, data: any): Error {
 	e["data"] = data;
+	if (isToken(data)) e.message += " " + tok2str(data);
 	return e;
+}
+function formatStringArray(stringList: string[]): string { //Changes an array of values into "1", "1 and 2" or "1, (x, )y and z"
+	switch (stringList.length) {
+		case  0:
+			return "";
+		case  1:
+			return stringList[0];
+		case  2:
+			return stringList[0] + " and " + stringList[1];
+		default:
+	}
+	let concat = stringList[0];
+	for (let x = 1; x < stringList.length - 1; x++) concat += ", " + stringList[x];
+	return concat + " and " + stringList[stringList.length - 1];
 }
