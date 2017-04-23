@@ -15,11 +15,12 @@ interface PreviewUi {
 	seed: JQuery;
 	attrs: JQuery;
 	attrLists: AttrList[];
+	flags: JQuery;
 }
 interface Preview {
 	ui: PreviewUi;
 	parser_old: OldParser;
-	parser: Parser.Parser;
+	parser: Parser;
 	game: CoC;
 	seed: number;
 }
@@ -36,6 +37,9 @@ function regenOne(preview: Preview) {
 			let type   = a.dataset.type;
 			if (type == 'boolean') v = v === 'true';
 			attrSet(preview.game, a.name, v);
+		}
+		for (let a of preview.ui.flags.toArray() as HTMLInputElement[]) {
+			preview.parser.options[a.name] = a.checked;
 		}
 		let format = $('#sourceformat').val();
 		kGAMECLASS = preview.game;
@@ -71,19 +75,21 @@ function setupPreview(container: JQuery, game: CoC = new CoC()): Preview {
 			container: container,
 			status   : container.find("[data-role=status]"),
 			seed     : container.find("[name=seed]"),
+			flags    : container.find("[data-role=flag]"),
 			attrs    : container.find("[data-role=attr]"),
 			attrLists: container.find("[data-role=attrlist]").toArray().map(element => {
 				return {} as AttrList;
 			})
 		},
 		parser_old: new OldParser(game, {}),
-		parser    : new Parser.Parser(new CoCProcessor(game), {}),
+		parser    : new Parser(new CoCProcessor(game), {}),
 		game      : game,
 		seed      : Rng.gen_state()
 	} as Preview;
 	let updater = _.debounce(_.partial(regenOne, p), 300);
 	p.ui.seed.val(p.seed).on("input", updater);
 	p.ui.attrs.on("input", updater);
+	p.ui.flags.on("change", updater);
 	for (let a of p.ui.attrs.toArray() as HTMLInputElement[]) {
 		a.value = attrGet(p.game, a.name)
 	}
@@ -151,12 +157,10 @@ let StartChars: ((Player, CoC) => any)[] = [
 	}
 ];
 $(() => {
-	textarea         = $("#source");
+	textarea = $("#source");
 	textarea.val(
-		$("#demo1").html().trim() + '<hr>' +
-		$("#demo2").html().trim() + '<hr>' +
-		$("#demo3").html().trim() + '<hr>' +
-		$("#demo4").html().trim()
+		textarea.data("init").split(',').map(i =>
+			($(i).html() || "").trim()).join("\\\n<hr>\\\n")
 	);
 	Preview.template = $("#preview-1 > *").clone();
 	for (let i = 0; i < StartChars.length; i++) {
@@ -164,6 +168,7 @@ $(() => {
 		StartChars[i](game.player, game);
 		let preview = setupPreview($("#preview-" + (i + 1)), game);
 		previews.push(preview);
+		break;
 	}
 	textarea.on("input change", _.debounce(regen, 300));
 	regen();

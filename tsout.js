@@ -7814,6 +7814,10 @@ function regenOne(preview) {
                 v = v === 'true';
             attrSet(preview.game, a.name, v);
         }
+		for (var _b = 0, _c = preview.ui.flags.toArray(); _b < _c.length; _b++) {
+			var a = _c[_b];
+			preview.parser.options[a.name] = a.checked;
+		}
         var format = $('#sourceformat').val();
         kGAMECLASS = preview.game;
         var t0 = new Date();
@@ -7848,19 +7852,21 @@ function setupPreview(container, game) {
             container: container,
             status: container.find("[data-role=status]"),
             seed: container.find("[name=seed]"),
+			flags: container.find("[data-role=flag]"),
             attrs: container.find("[data-role=attr]"),
             attrLists: container.find("[data-role=attrlist]").toArray().map(function (element) {
                 return {};
             })
         },
         parser_old: new OldParser(game, {}),
-        parser: new Parser.Parser(new CoCProcessor(game), {}),
+		parser: new Parser(new CoCProcessor(game), {}),
         game: game,
         seed: Rng.gen_state()
     };
     var updater = _.debounce(_.partial(regenOne, p), 300);
     p.ui.seed.val(p.seed).on("input", updater);
     p.ui.attrs.on("input", updater);
+	p.ui.flags.on("change", updater);
     for (var _i = 0, _a = p.ui.attrs.toArray(); _i < _a.length; _i++) {
         var a = _a[_i];
         a.value = attrGet(p.game, a.name);
@@ -7932,56 +7938,69 @@ var StartChars = [
 ];
 $(function () {
     textarea = $("#source");
-    textarea.val($("#demo1").html().trim() + '<hr>' +
-        $("#demo2").html().trim() + '<hr>' +
-        $("#demo3").html().trim() + '<hr>' +
-        $("#demo4").html().trim());
+	textarea.val(textarea.data("init").split(',').map(function (i) {
+		return ($(i).html() || "").trim();
+	}).join("\\\n<hr>\\\n"));
     Preview.template = $("#preview-1 > *").clone();
     for (var i = 0; i < StartChars.length; i++) {
         var game = new CoC();
         StartChars[i](game.player, game);
         var preview = setupPreview($("#preview-" + (i + 1)), game);
         previews.push(preview);
+		break;
     }
     textarea.on("input change", _.debounce(regen, 300));
     regen();
 });
+var TokenType;
+(function (TokenType) {
+	TokenType[TokenType["TEXT"] = 0] = "TEXT";
+	TokenType[TokenType["SEPARATOR"] = 1] = "SEPARATOR";
+	TokenType[TokenType["XMLOPEN"] = 2] = "XMLOPEN";
+	TokenType[TokenType["XMLCLOSE"] = 3] = "XMLCLOSE";
+	TokenType[TokenType["XMLSINGLE"] = 4] = "XMLSINGLE";
+	TokenType[TokenType["NUMBER"] = 5] = "NUMBER";
+	TokenType[TokenType["WORD"] = 6] = "WORD";
+	TokenType[TokenType["DOT"] = 7] = "DOT";
+	TokenType[TokenType["COLON"] = 8] = "COLON";
+	TokenType[TokenType["SEMICOLON"] = 9] = "SEMICOLON";
+	TokenType[TokenType["QUESTION"] = 10] = "QUESTION";
+	TokenType[TokenType["COMMA"] = 11] = "COMMA";
+	TokenType[TokenType["STRING"] = 12] = "STRING";
+	TokenType[TokenType["OPERATOR"] = 13] = "OPERATOR";
+	TokenType[TokenType["SBOPEN"] = 14] = "SBOPEN";
+	TokenType[TokenType["SBCLOSE"] = 15] = "SBCLOSE";
+	//CBOPEN, // {
+	//CBCLOSE, // }
+	TokenType[TokenType["PAROPEN"] = 16] = "PAROPEN";
+	TokenType[TokenType["PARCLOSE"] = 17] = "PARCLOSE";
+	TokenType[TokenType["COMMENT"] = 18] = "COMMENT"; // [# ... #]
+})(TokenType || (TokenType = {}));
+function isToken(t) {
+	return typeof t === "object"
+		&& t !== null
+		&& 'type' in t
+		&& 'content' in t
+		&& 'from' in t
+		&& 'to' in t;
+}
+function tok2str(t, pad, limit) {
+	if (pad === void 0) { pad = false; }
+	if (limit === void 0) { limit = 20; }
+	var c = t.content;
+	var s;
+	if (typeof c == "string") {
+		s = (c.length > limit) ? c.substr(0, limit - 1) + "…" : strrpad(c, pad ? limit : 0);
+	}
+	else if (Array.isArray(c)) {
+		s = c[0] + (c[1] ? ' ' + c[1] : c[1]);
+	}
+	else
+		s = "" + c;
+	return strrpad(TokenType[t.type], pad ? 8 : 0) + ' ' + s + "@" + t.from + ":" + t.to;
+}
 var Lexer;
 (function (Lexer) {
-    var TokenType;
-    (function (TokenType) {
-        TokenType[TokenType["TEXT"] = 0] = "TEXT";
-        TokenType[TokenType["SEPARATOR"] = 1] = "SEPARATOR";
-        TokenType[TokenType["XMLOPEN"] = 2] = "XMLOPEN";
-        TokenType[TokenType["XMLCLOSE"] = 3] = "XMLCLOSE";
-        TokenType[TokenType["XMLSINGLE"] = 4] = "XMLSINGLE";
-        TokenType[TokenType["NUMBER"] = 5] = "NUMBER";
-        TokenType[TokenType["WORD"] = 6] = "WORD";
-        TokenType[TokenType["DOT"] = 7] = "DOT";
-        TokenType[TokenType["STRING"] = 8] = "STRING";
-        TokenType[TokenType["OPERATOR"] = 9] = "OPERATOR";
-        TokenType[TokenType["SBOPEN"] = 10] = "SBOPEN";
-        TokenType[TokenType["SBCLOSE"] = 11] = "SBCLOSE";
-        //CBOPEN, // {
-        //CBCLOSE, // }
-        TokenType[TokenType["PAROPEN"] = 12] = "PAROPEN";
-        TokenType[TokenType["PARCLOSE"] = 13] = "PARCLOSE";
-        TokenType[TokenType["COMMENT"] = 14] = "COMMENT"; // [# ... #]
-    })(TokenType = Lexer.TokenType || (Lexer.TokenType = {}));
-    function tok2str(t) {
-        var c = t.content;
-        var s;
-        if (typeof c == "string") {
-            s = (c.length > 10) ? c.substr(0, 9) + "…" : strrpad(c, 10);
-        }
-        else if (Array.isArray(c)) {
-            s = c[0] + (c[1] ? ' ' + c[1] : c[1]);
-        }
-        else
-            s = "" + c;
-        return strrpad(TokenType[t.type], 8) + s + "@" + t.from + ":" + t.to;
-    }
-    Lexer.tok2str = tok2str;
     Lexer.DecimalRex = /^[+-]?(\d+\.\d*|\.\d+|\d+)(e[+-]?\d+)?/i;
     Lexer.HexRex = /^[+-]?0x\d{1,8}/i;
     Lexer.IdentifierRex = /^[a-z_$][a-z_$0-9]*/i;
@@ -7989,11 +8008,7 @@ var Lexer;
     Lexer.XmlSingleRex = /^<([a-z0-9_-]+) *([^[\]\n<>])*\/>/i;
     Lexer.XmlCloseRex = /^<\/([a-z0-9_-]+) *([^[\]\n<>])*>/i;
     Lexer.TextRex = /^[^<\\[|\]\n]+/;
-    Lexer.Operators = ['===', '!==', '==', '!=', '<=', '>=', '>', '<',
-        '++', '--', '**', '&&', '||',
-        '+', '-', '~', '*', '/', '%', '^', '&', '|', '=',
-        '?', ':', ';', ','];
-    Lexer.XmlSingleTags = ["br", "hr", "input"];
+	Lexer.Operators = ['===', '>>>', '<<', '>>', '!==', '==', '!=', '<=', '>=', '>', '<', '++', '--', '**', '&&', '||', '+', '-', '~', '*', '/', '%', '^', '=', '!'];
     Lexer.ReservedWords = ["if", "screen", "button"];
     var LexerStateType;
     (function (LexerStateType) {
@@ -8032,7 +8047,14 @@ var Lexer;
                             case '\n':
                                 if (convertNewlines) {
                                     l_1 = (c0_1 == '\r' && c1_1 == '\n') ? 2 : 1;
-                                    next = { type: TokenType.XMLSINGLE, content: "<br/>", tag: "br", attributes: "", from: pos, to: pos + l_1 };
+									next = {
+										type: TokenType.XMLSINGLE,
+										content: "<br/>",
+										tag: "br",
+										attributes: "",
+										from: pos,
+										to: pos + l_1
+									};
                                 }
                                 else {
                                     l_1 = 1;
@@ -8077,7 +8099,14 @@ var Lexer;
                                     break;
                                 }
                                 l_1 = x[0].length;
-                                next = { type: ttype, content: x[0], tag: x[1], attributes: x[2] || "", from: pos, to: pos + l_1 };
+								next = {
+									type: ttype,
+									content: x[0],
+									tag: x[1].toLowerCase(),
+									attributes: x[2] || "",
+									from: pos,
+									to: pos + l_1
+								};
                                 break;
                             case '\\':
                                 switch (c1_1) {
@@ -8105,10 +8134,10 @@ var Lexer;
                                     l_1 = s.indexOf('#]');
                                     if (l_1 >= 0) {
                                         next = {
-                                            type: TokenType.COMMENT,
-                                            content: s.slice(2, l_1),
-                                            from: pos,
-                                            to: pos + l_1 + 2
+											type: TokenType.COMMENT,
+											content: s.slice(2, l_1),
+											from: pos,
+											to: pos + l_1 + 2
                                         };
                                         l_1 += 2;
                                     }
@@ -8151,8 +8180,7 @@ var Lexer;
                 else if ((x = s.match(Lexer.IdentifierRex))) {
                     l = (y = x[0]).length;
                     rslt.push({
-                        type: TokenType.WORD,
-                        content: y, from: pos, to: pos + l
+						type: TokenType.WORD, content: y, from: pos, to: pos + l
                     });
                 }
                 else if ((x = s.match(Lexer.DecimalRex)) || (x = s.match(Lexer.HexRex))) {
@@ -8174,7 +8202,7 @@ var Lexer;
                             break;
                         case '(':
                             l = 1;
-                            rslt.push({ type: TokenType.PAROPEN, content: '(', from: pos, to: pos + l });
+							rslt.push({type: TokenType.PAROPEN, content: '(', from: pos, to: pos + 1});
                             flags['(']++;
                             break;
                         case ')':
@@ -8184,10 +8212,25 @@ var Lexer;
                             if (flags['('] == 0) {
                                 stack.push([LexerStateType.SUBTEXT, LexerStateFlags()]);
                             }
+							break;
+						case ':':
+							l = 1;
+							rslt.push({type: TokenType.COLON, content: ':', from: pos, to: pos + 1});
+							if (flags['('] == 0) {
+								stack.push([LexerStateType.SUBTEXT, LexerStateFlags()]);
+							}
                             break;
                         case '.':
+						case ';':
+						case '?':
                             l = 1;
-                            rslt.push({ type: TokenType.DOT, content: '.', from: pos, to: pos + l });
+							rslt.push({
+								type: {
+									'.': TokenType.DOT,
+									';': TokenType.SEMICOLON,
+									'?': TokenType.QUESTION
+								}[c0], content: c0, from: pos, to: pos + l
+							});
                             break;
                         case '"':
                         case "'":
@@ -8223,12 +8266,10 @@ var Lexer;
             stack.push([LexerStateType.EOF, LexerStateFlags()]);
         }
         if (debugLexer) {
-            console.debug.apply(console, ["Lexer @", strrpad(pos0, 5),
-                "["].concat(stack0.map(function (i) { return LexerStateType[i[0]]; }), ["] => "], (rslt.map(tok2str))));
+			console.debug.apply(console, ["Lexer @", strrpad(pos0, 5), "["].concat(stack0.map(function (i) { return LexerStateType[i[0]]; }), ["] => "], (rslt.map(tok2str))));
         }
         return {
-            tokens: rslt,
-            state: { input: input, pos: pos, stack: stack, top: stack[stack.length - 1] }
+			tokens: rslt, state: {input: input, pos: pos, stack: stack, top: stack[stack.length - 1]}
         };
     }
     Lexer.lexstep = lexstep;
@@ -9128,284 +9169,462 @@ var OldParser = (function () {
     return OldParser;
 }());
 ///<reference path="lexer.ts"/>
-var Parser;
-(function (Parser_1) {
-    var XmlSingleTags = Lexer.XmlSingleTags;
-    var TokenType = Lexer.TokenType;
-    var lexrun = Lexer.lexrun;
-    var Processor = (function () {
-        function Processor() {
+var XmlSingleTags = ["br", "hr", "input"];
+var PreProcessor = (function () {
+	function PreProcessor() {
+	}
+
+	PreProcessor.prototype.attach = function (parser) {
+		this.parser = parser;
+	};
+	PreProcessor.prototype.text = function (text) {
+		return text;
+	};
+	PreProcessor.prototype.comment = function (text) {
+		return '';
+	};
+	PreProcessor.prototype.textOrError = function (t, reason) {
+		if (t === null || t === undefined)
+			throw argthrow(new Error("" + t + " in " + reason), t);
+		return this.text(t);
+	};
+	PreProcessor.prototype.xml = function (tag, attributes, body) {
+		attributes = attributes ? ' ' + attributes : '';
+		if (XmlSingleTags.indexOf(tag) >= 0)
+			return '<' + tag + attributes + '/>';
+		return '<' + tag + attributes + '>' + body + '</' + tag + '>';
+	};
+	return PreProcessor;
+}());
+var Priorities = {};
+(function (src, dst) {
+	for (var i = 0; i < src.length; i++) {
+		for (var op in src[i]) {
+			dst[op] = i;
+		}
+	}
+})([
+	['.'],
+	[' '],
+	['**'],
+	['*', '/', '%'],
+	['+', '-'],
+	['<<', '>>', '>>>'],
+	['>', '<', '<=', '>='],
+	['===', '!==', '==', '!=', '=', '<>'],
+	['&&'],
+	['^'],
+	['||'] //10
+], Priorities);
+var Parser = (function () {
+	function Parser(preproc, _a) {
+		var _b = _a.debugLexer, debugLexer = _b === void 0 ? false : _b, _c = _a.debugParser,
+			debugParser = _c === void 0 ? false : _c, _d = _a.allowNewlineEscape,
+			allowNewlineEscape = _d === void 0 ? true : _d, _e = _a.convertNewlines,
+			convertNewlines = _e === void 0 ? true : _e;
+		this.preproc = preproc;
+		this.depth = 0;
+		this.depths = {};
+		this.input = [];
+		this.options = {
+			convertNewlines: convertNewlines,
+			allowNewlineEscape: allowNewlineEscape,
+			debugLexer: debugLexer,
+			debugParser: debugParser
+		};
+	}
+
+	Parser.prototype.makeErrstr = function (e) {
+		var error;
+		var arg1;
+		if (Array.isArray(e)) {
+			error = e[0];
+			arg1 = e[1];
         }
-        return Processor;
-    }());
-    Parser_1.Processor = Processor;
-    var AbstractProcessor = (function (_super) {
-        __extends(AbstractProcessor, _super);
-        function AbstractProcessor() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        AbstractProcessor.prototype.attach = function (parser) {
-            this.parser = parser;
-        };
-        AbstractProcessor.prototype.text = function (text) {
-            return text;
-        };
-        AbstractProcessor.prototype.comment = function (text) {
-            return '';
-        };
-        AbstractProcessor.prototype.term = function (words) {
-            if (words.length == 0)
-                return this.handleError("Empty word list", words);
-            var o = this.topLevelTerm(words[0]);
-            for (var i = 1; i < words.length; i++) {
-                if (o === null || o === undefined)
-                    return this.handleError("Hit " + o + " at pos " + i, words);
-                o = o[words[i]];
+		else if (typeof e == 'object' && 'data' in e) {
+			error = e;
+			arg1 = e['data'];
+		}
+		else {
+			error = e;
+			arg1 = null;
+		}
+		return this.preproc.error(error, arg1);
+	};
+	Parser.prototype.node = function (nodeType, body) {
+		var rslt = undefined;
+		try {
+			this.depth++;
+			if (!(nodeType in this.depths))
+				this.depths[nodeType] = 1;
+			else
+				this.depths[nodeType]++;
+			if (this.options.debugParser) {
+				console.debug(strlpad('', this.depth), '{', nodeType);
+			}
+			this.preproc.startNode(nodeType);
+			rslt = body();
+			return rslt;
+		}
+		catch (e) {
+			console.error(e);
+			return {
+				type: "error", error: e, errstr: this.makeErrstr(e)
+			};
+		}
+		finally {
+			if (this.options.debugParser) {
+				console.debug(strlpad('', this.depth), '}', nodeType, rslt);
+			}
+			this.depth--;
+			this.depths[nodeType]--;
+			this.preproc.endNode(nodeType, rslt);
+		}
+	};
+	Parser.prototype.expect = function () {
+		var types = [];
+		for (var _i = 0; _i < arguments.length; _i++) {
+			types[_i] = arguments[_i];
+		}
+		if (this.peek.apply(this, types))
+			return this.input.shift();
+		return null;
+	};
+	Parser.prototype.empty = function () {
+		var input = this.input;
+		while (input.length > 0 && input[0].type == TokenType.COMMENT)
+			input.shift();
+		return input.length == 0;
+	};
+	Parser.prototype.peek = function () {
+		var types = [];
+		for (var _i = 0; _i < arguments.length; _i++) {
+			types[_i] = arguments[_i];
+		}
+		return (!this.empty() && types.indexOf(this.input[0].type) >= 0);
+	};
+	Parser.prototype.pop = function () {
+		return this.input.shift();
+	};
+	Parser.prototype.produceExpression = function (closingTokens, consume, maxprio) {
+		var _this = this;
+		return this.node("expr", function () { return _this.doProduceExpression(closingTokens, consume, maxprio); });
+	};
+	Parser.prototype.doProduceExpression = function (closingTokens, consume, maxprio) {
+		var _this = this;
+		var expect = function () {
+			var types = [];
+			for (var _i = 0; _i < arguments.length; _i++) {
+				types[_i] = arguments[_i];
             }
-            return '' + o;
+			return _this.expect.apply(_this, types);
         };
-        AbstractProcessor.prototype.xml = function (tag, attributes, body) {
-            attributes = attributes ? ' ' + attributes : '';
-            if (XmlSingleTags.indexOf(tag) >= 0)
-                return '<' + tag + attributes + '/>';
-            return '<' + tag + attributes + '>' + body + '</' + tag + '>';
-        };
-        AbstractProcessor.prototype.toBoolean = function (data) {
-            return data !== "false" && data !== "true" && +data !== 0 && data !== "";
-        };
-        AbstractProcessor.prototype.wrapResult = function (text) {
-            return text;
-        };
-        return AbstractProcessor;
-    }(Processor));
-    Parser_1.AbstractProcessor = AbstractProcessor;
-    var IExprNodeType;
-    (function (IExprNodeType) {
-        IExprNodeType[IExprNodeType["LITERAL"] = 0] = "LITERAL";
-        IExprNodeType[IExprNodeType["TERM"] = 1] = "TERM";
-        IExprNodeType[IExprNodeType["LIST"] = 2] = "LIST";
-        IExprNodeType[IExprNodeType["OPERATOR"] = 3] = "OPERATOR";
-        IExprNodeType[IExprNodeType["ERROR"] = 4] = "ERROR";
-    })(IExprNodeType || (IExprNodeType = {}));
-    var Parser = (function () {
-        function Parser(processor, _a) {
-            var _b = _a.debugLexer, debugLexer = _b === void 0 ? false : _b, _c = _a.debugParser, debugParser = _c === void 0 ? false : _c, _d = _a.allowNewlineEscape, allowNewlineEscape = _d === void 0 ? true : _d, _e = _a.convertNewlines, convertNewlines = _e === void 0 ? true : _e;
-            this.processor = processor;
-            this.depth = 0;
-            this.input = [];
-            this.options = {
-                convertNewlines: convertNewlines,
-                allowNewlineEscape: allowNewlineEscape,
-                debugLexer: debugLexer,
-                debugParser: debugParser
-            };
-        }
-        Parser.prototype.expect = function () {
-            var types = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                types[_i] = arguments[_i];
-            }
-            if (this.peek.apply(this, types))
-                return this.input.shift();
-            return null;
-        };
-        Parser.prototype.debug = function (s) {
-            var rest = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                rest[_i - 1] = arguments[_i];
-            }
-            if (this.options.debugParser) {
-                console.debug();
-            }
-        };
-        Parser.prototype.peek = function () {
-            var types = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                types[_i] = arguments[_i];
-            }
-            return (this.input.length > 0 && types.indexOf(this.input[0].type) >= 0);
-        };
-        Parser.prototype.evaluate = function (expr) {
-            var _this = this;
-            switch (expr.type) {
-                case IExprNodeType.LIST:
-                    return "[" + expr.operands.map(function (s) { return _this.evaluate(s); }).join("") + "]";
-                case IExprNodeType.TERM:
-                    return this.processor.term([expr.value.content]);
-                case IExprNodeType.LITERAL:
-                    return "" + expr.value.content;
-                case IExprNodeType.OPERATOR:
-                    return "" + expr.value.content;
-                case IExprNodeType.ERROR:
-                    return "" + expr.value;
-            }
-        };
-        Parser.prototype.produceExpression = function (closingTokens, consume) {
-            var _a = this, processor = _a.processor, input = _a.input;
-            var expr = { type: IExprNodeType.LIST, operands: [] };
-            var t;
-            while (input.length > 0) {
-                if (closingTokens.indexOf(input[0].type) >= 0) {
-                    if (consume)
-                        input.shift();
-                    break;
+		var peek = function () {
+			var types = [];
+			for (var _i = 0; _i < arguments.length; _i++) {
+				types[_i] = arguments[_i];
+			}
+			return _this.peek.apply(_this, types);
+		};
+		if (expect(TokenType.PAROPEN)) {
+			return this.produceExpression([TokenType.PARCLOSE], true, 0);
+		}
+		var t;
+		var x;
+		if ((t = expect(TokenType.OPERATOR))) {
+			// Unary operator
+			throw argthrow(new Error("TODO expr"), t);
+		}
+		else if ((t = expect(TokenType.WORD))) {
+			x = {type: "term", term: t.content};
+		}
+		else if ((t = expect(TokenType.STRING, TokenType.NUMBER))) {
+			x = {type: "const", value: t.content};
+		}
+		else if (peek.apply(void 0, closingTokens)) {
+			throw argthrow(new Error("Abnormal expression termination"), this.pop());
+		}
+		else {
+			throw argthrow(new Error("TODO expr"), this.pop());
+		}
+		while (true) {
+			var t_1 = void 0;
+			if (peek.apply(void 0, closingTokens)) {
+				if (consume)
+					this.pop();
+				break;
+			}
+			else if (expect(TokenType.DOT)) {
+				var y = peek(TokenType.WORD);
+				if (!y)
+					y = peek(TokenType.NUMBER);
+				if (!y)
+					throw argthrow(new Error("Word or number expected after dot"), this.pop());
+				x = {
+					type: "bop",
+					left: x,
+					right: this.produceExpression(closingTokens, consume, Priorities['.']),
+					prio: Priorities['.'],
+					op: '.'
+				};
+			}
+			else if (peek(TokenType.WORD)) {
+				if (x.type == "term") {
+					x = {
+						type: "bop",
+						left: x,
+						right: this.produceExpression(closingTokens, consume, Priorities[' ']),
+						prio: Priorities[' '],
+						op: ' '
+					};
                 }
-                else if ((t = this.expect(TokenType.NUMBER, TokenType.STRING))) {
-                    expr.operands.push({ value: t, type: IExprNodeType.LITERAL });
-                }
-                else if ((t = this.expect(TokenType.WORD))) {
-                    expr.operands.push({ value: t, type: IExprNodeType.TERM });
-                }
-                else if ((t = this.expect(TokenType.DOT, TokenType.OPERATOR))) {
-                    expr.operands.push({ value: t, type: IExprNodeType.OPERATOR });
-                }
-                else if ((t = this.expect(TokenType.PAROPEN))) {
-                    expr.operands.push(this.produceExpression([TokenType.PARCLOSE], true));
-                }
-                else {
-                    expr.operands.push({
-                        value: processor.handleError("Expected expression token", input.shift()),
-                        type: IExprNodeType.ERROR
-                    });
-                    break;
-                }
-            }
-            return expr;
-        };
-        Parser.prototype.produceIf = function () {
-            var _a = this, processor = _a.processor, input = _a.input;
-            if (!this.expect(TokenType.PAROPEN))
-                return processor.handleError("Expected PAROPEN", input.shift());
-            var expr = this.produceExpression([TokenType.PARCLOSE], true);
-            var iftrue = this.produceText([TokenType.SEPARATOR, TokenType.SBCLOSE]);
-            var iffalse = "";
-            if (this.expect(TokenType.SBCLOSE)) {
-                iffalse = "";
-            }
-            else if (this.expect(TokenType.SEPARATOR)) {
-                iffalse = this.produceText([TokenType.SBCLOSE]);
-                if (!this.expect(TokenType.SBCLOSE))
-                    return processor.handleError("Expected SEPARATOR or SBCLOSE", input.shift());
-            }
-            return processor.text(processor.toBoolean(this.evaluate(expr)) ? iftrue : iffalse);
-        };
-        Parser.prototype.produceWordChain = function () {
-            var _a = this, processor = _a.processor, input = _a.input;
-            var words = [];
-            do {
-                var t = this.expect(TokenType.WORD, TokenType.NUMBER);
-                if (!t)
-                    return [processor.handleError("Expected WORD or NUMBER", input.shift())];
-                words.push(t.content);
-            } while (this.expect(TokenType.DOT));
-            return words;
-        };
-        Parser.prototype.produceTerm = function () {
-            return this.processor.term(this.produceWordChain());
-        };
-        Parser.prototype.produceTag = function () {
-            var _a = this, processor = _a.processor, input = _a.input;
-            var words = this.produceWordChain();
-            var word = words[0];
-            switch (word) {
-                case "if":
-                    return this.produceIf();
-                case "screen":
-                case "button": {
-                    var t = this.expect(TokenType.PAROPEN);
+				else
+					throw argthrow(new Error("Illegal expression token"), t_1);
+			}
+			else {
+				throw argthrow(new Error("Illegal expression token"), this.pop());
+			}
+		}
+		/*if (inline) {
+		 let ret = this.evalExpression(x,true);
+		 return {
+		 type:"const",
+		 value:ret
+		 }
+		 } else return x*/
+		return x;
+	};
+	Parser.prototype.produceArguments = function () {
+		var rslt = [];
+		if (this.expect(TokenType.PARCLOSE))
+			return rslt;
+		while (true) {
+			rslt.push(this.produceExpression([TokenType.COMMA, TokenType.PARCLOSE], false, 0));
+			if (this.expect(TokenType.PARCLOSE))
+				return rslt;
+			if (!this.expect(TokenType.COMMA))
+				throw argthrow(new Error("Expected ',' or ')'"), this.pop());
+		}
+	};
+	Parser.prototype.produceTrail = function () {
+		var rslt = [];
+		while (true) {
+			rslt.push(this.produceText([TokenType.SBCLOSE, TokenType.SEPARATOR]));
+			if (this.expect(TokenType.SBCLOSE))
+				break;
+			if (!this.expect(TokenType.SEPARATOR))
+				throw argthrow(new Error("Expected Textable, '[', or '|'"), this.pop());
+		}
+		return rslt;
+	};
+	Parser.prototype.produceTag = function () {
+		var _this = this;
+		return this.node("tag", function () { return _this.doProduceTag(); });
+	};
+	Parser.prototype.doProduceTag = function () {
+		var _this = this;
+		var expr = this.produceExpression([TokenType.SBCLOSE, TokenType.PAROPEN, TokenType.SEMICOLON], false, 0);
+		var expect = function () {
+			var types = [];
+			for (var _i = 0; _i < arguments.length; _i++) {
+				types[_i] = arguments[_i];
+			}
+			return _this.expect.apply(_this, types);
+		};
+		if (expect(TokenType.SBCLOSE)) {
+			return {type: "tag", prefix: expr, call: null};
+		}
+		var args;
+		if (expect(TokenType.PAROPEN)) {
+			args = this.produceArguments();
+		}
+		else if (expect(TokenType.COLON)) {
+			args = [];
+		}
+		else
+			throw argthrow(new Error("Expected ']', '(', or ':'"), this.pop());
+		var trail = this.produceTrail();
+		/*let tag   = {type: "tag", prefix: expr, call: {args, trail}} as ITagNode;
+		 return inline ? this.evalTag(tag) : tag;*/
+		return {type: "tag", prefix: expr, call: {args: args, trail: trail}};
+	};
+	Parser.prototype.produceTextItem = function () {
+		var _this = this;
+		var processor = this.preproc;
+		var expect = function () {
+			var types = [];
+			for (var _i = 0; _i < arguments.length; _i++) {
+				types[_i] = arguments[_i];
+			}
+			return _this.expect.apply(_this, types);
+		};
+		var t;
+		if ((t = expect(TokenType.COMMENT))) {
+			return processor.comment(t.content);
+		}
+		else if ((t = expect(TokenType.TEXT))) {
+			return processor.text(t.content);
+		}
+		else if ((t = expect(TokenType.XMLOPEN, TokenType.XMLSINGLE))) {
+			var _a = t, tag_1 = _a.tag, attributes_1 = _a.attributes;
+			if (t.type == TokenType.XMLSINGLE || XmlSingleTags.indexOf(tag_1) >= 0) {
+				return processor.xml(tag_1, attributes_1, "");
+			}
+			else {
+				return this.node("xml", function () {
+					var body = _this.produceText([TokenType.XMLCLOSE]);
+					var t = expect(TokenType.XMLCLOSE);
                     if (!t)
-                        return processor.handleError("Expected PAROPEN", input.shift());
-                    t = this.expect(TokenType.WORD);
-                    if (t == undefined)
-                        return processor.handleError("Expected WORD", input.shift());
-                    var name_1 = t.content;
-                    t = this.expect(TokenType.PARCLOSE);
-                    if (!t)
-                        return processor.handleError("Expected PARCLOSE", input.shift());
-                    var text = this.produceText([TokenType.SBCLOSE]);
-                    if (word == "screen") {
-                        return processor.screen(name_1, text);
-                    }
-                    else if (word == "button") {
-                        return processor.button(name_1, text);
-                    }
-                }
-            }
-            var terms = [this.processor.term(words)];
-            while (!this.expect(TokenType.SBCLOSE)) {
-                terms.push(this.produceTerm());
-            }
-            return this.processor.phrase(terms);
-        };
-        Parser.prototype.produceText = function (closingTokens) {
-            var result = "";
-            var _a = this, processor = _a.processor, input = _a.input;
-            while (input.length > 0) {
-                var type = input[0].type;
-                if (closingTokens.indexOf(type) >= 0) {
-                    break;
-                }
-                else if (type == TokenType.COMMENT) {
-                    var t = input.shift();
-                    result += processor.comment(t.content);
-                }
-                else if (type == TokenType.TEXT) {
-                    var t = input.shift();
-                    result += processor.text(t.content);
-                }
-                else if (type == TokenType.XMLOPEN || type == TokenType.XMLSINGLE) {
-                    var t = input.shift();
-                    var content = t.content, tag = t.tag, attributes = t.attributes;
-                    var body = void 0;
-                    if (t.type == TokenType.XMLSINGLE || XmlSingleTags.indexOf(tag.toLowerCase()) >= 0) {
-                        body = "";
-                    }
-                    else {
-                        body = this.produceText([TokenType.XMLCLOSE]);
-                        var t_1 = this.expect(TokenType.XMLCLOSE);
-                        if (!t_1) {
-                            result += body;
-                            result += processor.handleError("Expected XMLCLOSE", input.shift());
-                            continue;
+						throw argthrow(new Error("Expected XMLCLOSE"), _this.pop());
+					var tag2 = t.tag;
+					if (tag2 != tag_1)
+						throw argthrow(new Error("Expected XMLCLOSE tag " + tag_1 + ", got " + tag2), t);
+					return {type: "xml", tag: tag_1, attributes: attributes_1, body: body};
+				});
+			}
+		}
+		else if ((t = expect(TokenType.XMLCLOSE))) {
+			throw argthrow(new Error("Unmatched XMLOPEN"), t);
+		}
+		else if (expect(TokenType.SBOPEN)) {
+			return this.produceTag();
+		}
+		else {
+			throw argthrow(new Error("Not a text-level token"), this.pop());
+		}
+	};
+	Parser.prototype.produceText = function (closingTokens) {
+		var _this = this;
+		var result = [];
+		while (!this.empty()) {
+			if (this.peek.apply(this, closingTokens))
+				break;
+			var item = this.node("text", function () { return _this.produceTextItem(); });
+			if (typeof item === "object" && item.type == "error"
+				&& Array.isArray(item.error)
+				&& Array.isArray(item.error[2])) {
+				item.error[2].push(item);
+			}
+			result.push(item);
+		}
+		if (result.length == 1) {
+			return result[0];
+		}
+		return {type: "text", content: result};
+	};
+	Parser.prototype.textize = function (src) {
+		var _this = this;
+		if (typeof src == 'string')
+			return src;
+		if (src === null || src === undefined)
+			return this.preproc.error(src, null);
+		switch (src.type) {
+			case "tag":
+				return this.evalTag(src);
+			case "text":
+				return src.content.map(function (i) { return _this.textize(i); }).join("");
+			case "xml":
+				return this.preproc.xml(src.tag, src.attributes, this.textize(src.body));
+			case "error":
+				return src.errstr;
+		}
+	};
+	Parser.prototype.evalTag = function (node) {
+		var _this = this;
+		return this.textize(this.node("tag", function () { return _this.doEvalTag(node); }));
+	};
+	Parser.prototype.doEvalTag = function (node) {
+		var _this = this;
+		var prefix = (typeof node.prefix == "string") ? {
+			type: "term",
+			term: node.prefix
+		} : node.prefix;
+		if (node.call == null) {
+			return this.preproc.textOrError(this.evalExpression(prefix, true), "eval tag");
+		}
+		else {
+			var pfxterm = this.evalExpression(prefix, false);
+			if (typeof pfxterm == "function") {
+				var pfxval = pfxterm.apply(null, node.call.args.map(function (e) { return _this.evalExpression(e, true); }));
+				var result = void 0;
+				if (typeof pfxval == "function") {
+					result = pfxval.apply(null, node.call.trail.map(function (f) { return function () { return _this.textize(f); }; }));
+				}
+				else
+					result = pfxval;
+				return this.preproc.textOrError(result, "eval tag");
+			}
+			else
+				throw argthrow(new Error("Not a function in call-expression"), pfxterm);
+		}
+	};
+	Parser.prototype.evalExpression = function (expr, stringify) {
+		var _this = this;
+		return this.node("eval " + expr.type, function () { return _this.doEvalExpression(expr, stringify); });
+	};
+	Parser.prototype.doEvalExpression = function (expr, stringify) {
+		var rslt;
+		switch (expr.type) {
+			case 'error':
+				return expr.errstr;
+			case 'bop':
+				var left = this.evalExpression(expr.left, false);
+				var xright = expr.right;
+				switch (expr.op) {
+					case ' ':
+					case '.':
+						var right = (xright.type == 'term') ? xright.term : this.evalExpression(expr.right, true);
+						if (left === null || left === undefined)
+							throw argthrow(new Error("Encountered " + left), expr);
+						if (typeof left == 'function') {
+							rslt = left(right);
                         }
                         else {
-                            var tag2 = t_1.tag.toLowerCase();
-                            if (tag2 != tag) {
-                                result += body;
-                                result += processor.handleError("Expected XMLCLOSE tag " + tag + ", got " + tag2, t_1);
-                                continue;
-                            }
+							rslt = left[right];
                         }
-                    }
-                    result += processor.xml(tag, attributes, body);
+						if (typeof rslt == 'function')
+							rslt = rslt.apply(left, []);
+						break;
+					default:
+						throw argthrow(new Error("TODO eval bop"), expr.op);
                 }
-                else if (type == TokenType.XMLCLOSE) {
-                    result += processor.handleError("Unmatched XMLOPEN", input.shift());
-                }
-                else if (type == TokenType.SBOPEN) {
-                    input.shift();
-                    result += this.produceTag();
+				break;
+			case 'const':
+				return expr.value;
+			case 'term':
+				var lookup = this.preproc.topLevelTerm(expr.term);
+				if (lookup !== undefined) {
+					rslt = lookup;
                 }
                 else {
-                    result += processor.handleError("Not a text-level token: " + TokenType[type], input.shift());
-                    return result;
+					rslt = function () { console.log(expr, arguments); };
                 }
-            }
-            return result;
-        };
-        Parser.prototype.runParser = function (input) {
-            this.processor.attach(this);
-            this.input = input;
-            return this.processor.wrapResult(this.produceText([]));
-        };
-        Parser.prototype.parse = function (input) {
-            return this.runParser(lexrun(input, this.options));
-        };
-        return Parser;
-    }());
-    Parser_1.Parser = Parser;
-})(Parser || (Parser = {}));
-var AbstractProcessor = Parser.AbstractProcessor;
+				break;
+			default:
+				throw argthrow(new Error("TODO eval"), expr['type']);
+		}
+		if (typeof rslt == 'function' && stringify)
+			rslt = rslt();
+		return rslt;
+		// return stringify? this.preproc.textOrError(rslt,"Evaluation failed") : rslt;
+	};
+	Parser.prototype.runParser = function (input) {
+		this.preproc.attach(this);
+		this.input = input;
+		this.depth = 0;
+		this.depths = {};
+		var text = [];
+		while (!this.empty()) {
+			text.push(this.textize(this.produceText([])));
+		}
+		return text.join("");
+	};
+	Parser.prototype.parse = function (input) {
+		return this.runParser(Lexer.lexrun(input, this.options));
+	};
+	return Parser;
+}());
+///<reference path="parser.ts"/>
 var SimpleProcessor = (function (_super) {
     __extends(SimpleProcessor, _super);
     function SimpleProcessor(root) {
@@ -9413,56 +9632,104 @@ var SimpleProcessor = (function (_super) {
         _this.root = root;
         return _this;
     }
+
+	SimpleProcessor.prototype.startNode = function (nodeType) {
+	};
+	SimpleProcessor.prototype.endNode = function (nodeType, result) {
+	};
     SimpleProcessor.prototype.text = function (text) {
-        return wrapgroup(this.parser.depth, text);
+		//return wrapgroup(this.parser.depth, text);
+		return wrapgroup(this.parser.depths['tag'] | 0, text);
     };
     SimpleProcessor.prototype.comment = function (text) {
         return spanwrap('tok-comment', '[#' + text + '#]');
     };
-    SimpleProcessor.prototype.screen = function (name, body) {
-        return wrapeval(this.parser.depth, '[screen(' + name + ')' + body + ']');
-    };
-    SimpleProcessor.prototype.button = function (name, body) {
-        return '<button type="button">' + name + '/' + body + '</button>';
-    };
-    SimpleProcessor.prototype.phrase = function (terms) {
-        return null;
-    };
     SimpleProcessor.prototype.topLevelTerm = function (word) {
         var o = this.root;
         if (o === null || o === undefined)
-            return this.handleError("Cannot lookup with " + o + "root", word);
-        return o[word];
+			return this.error("Cannot lookup with " + o + "root", word);
+		return lookupAndBind(o, word);
     };
-    SimpleProcessor.prototype.lookup = function (parent, item) {
-        if (parent === null || parent === undefined)
-            parent = this.root;
-        if (parent === null || parent === undefined)
-            return this.handleError("Missing element " + item, parent);
-        return parent[item];
-    };
-    SimpleProcessor.prototype.twoWordLookup = function (word1, word2) {
-        return this.lookup(this.lookup(null, word1), word2);
-    };
-    SimpleProcessor.prototype.handleError = function (error, top) {
-        console.warn(error, top);
-        return errstr(error);
+	SimpleProcessor.prototype.error = function (error, arg) {
+		var ermsg = '' + ((typeof error == "object" && 'message' in error) ? error['message'] : error);
+		if (arg !== undefined && arg !== null) {
+			ermsg += ' ' + (isToken(arg) ? tok2str(arg) : arg);
+		}
+		console.error(ermsg);
+		//console.error(error);
+		return errstr(ermsg);
     };
     return SimpleProcessor;
-}(AbstractProcessor));
+}(PreProcessor));
+function lookupAndBind(obj, key) {
+	if (key in obj) {
+		var v_1 = obj[key];
+		if (typeof v_1 == 'function')
+			return function () {
+				var rest = [];
+				for (var _i = 0; _i < arguments.length; _i++) {
+					rest[_i] = arguments[_i];
+				}
+				//console.log(obj, key, ...rest);
+				return v_1.apply(obj, rest);
+			};
+		return v_1;
+	}
+	return undefined;
+}
 var CoCProcessor = (function (_super) {
     __extends(CoCProcessor, _super);
-    function CoCProcessor() {
-        return _super !== null && _super.apply(this, arguments) || this;
+	/*startNode(nodeType: string) {
+	 if (this.parser.options.debugParser) {
+	 console.debug(strlpad('',this.parser.depth),'{',nodeType);
+	 }
+	 }
+
+	 endNode(nodeType: string,result:any) {
+	 if (this.parser.options.debugParser) {
+	 console.debug(strlpad('',this.parser.depth+1),'}',nodeType,result);
+	 }
+	 }*/
+	function CoCProcessor(root) {
+		return _super.call(this, root) || this;
     }
     CoCProcessor.prototype.topLevelTerm = function (word) {
+		var game = this.root;
+		var player = game.player;
+		if (word in topLevelFns) {
+			return _.partial(topLevelFns[word], game);
+		}
         if (word in singleArgConverters) {
-            return singleArgConverters[word]();
+			return singleArgConverters[word](this.root);
         }
-        return _super.prototype.topLevelTerm.call(this, word);
+		if (word in game)
+			return lookupAndBind(game, word);
+		if (word in player)
+			return lookupAndBind(player, word);
+		return this.textOrError(_super.prototype.topLevelTerm.call(this, word), word);
     };
     return CoCProcessor;
 }(SimpleProcessor));
+var topLevelFns = {
+	"if": function (game, condition) {
+		var x = !!condition && condition !== 'false' || condition !== 'false';
+		return function (iftext, elsetext) {
+			if (iftext === void 0) { iftext = function () { return ""; }; }
+			if (elsetext === void 0) { elsetext = function () { return ""; }; }
+			return x ? iftext() : elsetext();
+		};
+	},
+	"skin": function (game) {
+		var parts = [];
+		for (var _i = 1; _i < arguments.length; _i++) {
+			parts[_i - 1] = arguments[_i];
+		}
+		var player = game.player;
+		if (parts.length == 0)
+			return player.skinDesc;
+		return parts.map(function (p) { return ({})['' + p] || p; });
+	}
+};
 var KitsuneScene;
 (function (KitsuneScene) {
     KitsuneScene.basicKitsuneFur = ["orange and white", "black", "black and white", "red", "red and white", "white"];
@@ -9496,271 +9763,95 @@ var FetishManager;
 // no need to duplicate them.
 // Note: all key strings MUST be ENTIRELY lowercase.
 var singleArgConverters = {
-    "agility": function () {
-        return "[Agility]";
-    },
-    "allbreasts": function () {
-        return kGAMECLASS.player.allBreastsDescript();
-    },
-    "alltits": function () {
-        return kGAMECLASS.player.allBreastsDescript();
-    },
-    "armor": function () {
-        return kGAMECLASS.player.armorName;
-    },
-    "armorname": function () {
-        return kGAMECLASS.player.armorName;
-    },
-    "ass": function () {
-        return kGAMECLASS.player.buttDescript();
-    },
-    "asshole": function () {
-        return kGAMECLASS.player.assholeDescript();
-    },
-    "balls": function () {
-        return kGAMECLASS.player.ballsDescriptLight();
-    },
-    "bodytype": function () {
-        return kGAMECLASS.player.bodyType();
-    },
-    "boyfriend": function () {
-        return kGAMECLASS.player.mf("boyfriend", "girlfriend");
-    },
-    "breasts": function () {
-        return kGAMECLASS.player.breastDescript(0);
-    },
-    "butt": function () {
-        return kGAMECLASS.player.buttDescript();
-    },
-    "butthole": function () {
-        return kGAMECLASS.player.assholeDescript();
-    },
-    "chest": function () {
-        return kGAMECLASS.player.chestDesc();
-    },
-    "claws": function () {
-        return kGAMECLASS.player.claws();
-    },
-    "clit": function () {
-        return kGAMECLASS.player.clitDescript();
-    },
-    "cock": function () {
-        return kGAMECLASS.player.cockDescript(0);
-    },
-    "cockhead": function () {
-        return kGAMECLASS.player.cockHead(0);
-    },
-    "cocks": function () {
-        return kGAMECLASS.player.multiCockDescriptLight();
-    },
-    "cunt": function () {
-        return kGAMECLASS.player.vaginaDescript();
-    },
-    "eachcock": function () {
-        return kGAMECLASS.player.sMultiCockDesc();
-    },
-    "evade": function () {
-        return "[Evade]";
-    },
-    "eyes": function () {
-        return kGAMECLASS.player.eyesDescript();
-    },
-    "face": function () {
-        return kGAMECLASS.player.face();
-    },
-    "feet": function () {
-        return kGAMECLASS.player.feet();
-    },
-    "foot": function () {
-        return kGAMECLASS.player.foot();
-    },
-    "fullchest": function () {
-        return kGAMECLASS.player.allChestDesc();
-    },
-    "hair": function () {
-        return kGAMECLASS.player.hairDescript();
-    },
-    "haircolor": function () {
-        return kGAMECLASS.player.hairColor;
-    },
-    "hairorfur": function () {
-        return kGAMECLASS.player.hairOrFur();
-    },
-    "he": function () {
-        return kGAMECLASS.player.mf("he", "she");
-    },
-    "he2": function () {
-        return kGAMECLASS.player2.mf("he", "she");
-    },
-    "him": function () {
-        return kGAMECLASS.player.mf("him", "her");
-    },
-    "him2": function () {
-        return kGAMECLASS.player2.mf("him", "her");
-    },
-    "himself": function () {
-        return kGAMECLASS.player.mf("himself", "herself");
-    },
-    "herself": function () {
-        return kGAMECLASS.player.mf("himself", "herself");
-    },
-    "hips": function () {
-        return kGAMECLASS.player.hipDescript();
-    },
-    "his": function () {
-        return kGAMECLASS.player.mf("his", "her");
-    },
-    "his2": function () {
-        return kGAMECLASS.player2.mf("his", "her");
-    },
-    "horns": function () {
-        return kGAMECLASS.player.hornDescript();
-    },
-    "leg": function () {
-        return kGAMECLASS.player.leg();
-    },
-    "legs": function () {
-        return kGAMECLASS.player.legs();
-    },
-    "lowergarment": function () {
-        return kGAMECLASS.player.lowerGarmentName;
-    },
-    "man": function () {
-        return kGAMECLASS.player.mf("man", "woman");
-    },
-    "men": function () {
-        return kGAMECLASS.player.mf("men", "women");
-    },
-    "malefemaleherm": function () {
-        return kGAMECLASS.player.maleFemaleHerm();
-    },
-    "master": function () {
-        return kGAMECLASS.player.mf("master", "mistress");
-    },
-    "misdirection": function () {
-        return "[Misdirection]";
-    },
-    "multicock": function () {
-        return kGAMECLASS.player.multiCockDescriptLight();
-    },
-    "multicockdescriptlight": function () {
-        return kGAMECLASS.player.multiCockDescriptLight();
-    },
-    "name": function () {
-        return kGAMECLASS.player.short;
-    },
-    "nipple": function () {
-        return kGAMECLASS.player.nippleDescript(0);
-    },
-    "nipples": function () {
-        return kGAMECLASS.player.nippleDescript(0) + "s";
-    },
-    "onecock": function () {
-        return kGAMECLASS.player.oMultiCockDesc();
-    },
-    "pg": function () {
-        return "\n\n";
-    },
-    "pussy": function () {
-        return kGAMECLASS.player.vaginaDescript();
-    },
-    "race": function () {
-        return kGAMECLASS.player.race();
-    },
-    "sack": function () {
-        return kGAMECLASS.player.sackDescript();
-    },
-    "sheath": function () {
-        return kGAMECLASS.player.sheathDescript();
-    },
-    "shield": function () {
-        return kGAMECLASS.player.shieldName;
-    },
-    "skin": function () {
-        return kGAMECLASS.player.skin();
-    },
-    "skin.noadj": function () {
-        return kGAMECLASS.player.skin(true);
-    },
-    "skinfurscales": function () {
-        return kGAMECLASS.player.skinFurScales();
-    },
-    "tallness": function () {
-        return kGAMECLASS.measurements.footInchOrMetres(kGAMECLASS.player.tallness);
-    },
-    "tits": function () {
-        return kGAMECLASS.player.breastDescript(0);
-    },
-    "tongue": function () {
-        return kGAMECLASS.player.tongueDescript();
-    },
-    "uppergarment": function () {
-        return kGAMECLASS.player.upperGarmentName;
-    },
-    "vag": function () {
-        return kGAMECLASS.player.vaginaDescript();
-    },
-    "vagina": function () {
-        return kGAMECLASS.player.vaginaDescript();
-    },
-    "vagorass": function () {
-        return (kGAMECLASS.player.hasVagina() ? kGAMECLASS.player.vaginaDescript() : kGAMECLASS.player.assholeDescript());
-    },
-    "weapon": function () {
-        return kGAMECLASS.player.weaponName;
-    },
-    "weaponname": function () {
-        return kGAMECLASS.player.weaponName;
-    },
-    "latexyname": function () {
-        return kGAMECLASS.flags[kFLAGS.GOO_NAME];
-    },
-    "bathgirlname": function () {
-        return kGAMECLASS.flags[kFLAGS.MILK_NAME];
-    },
-    "cockplural": function () {
-        return (kGAMECLASS.player.cocks.length == 1) ? "cock" : "cocks";
-    },
-    "dickplural": function () {
-        return (kGAMECLASS.player.cocks.length == 1) ? "dick" : "dicks";
-    },
-    "headplural": function () {
-        return (kGAMECLASS.player.cocks.length == 1) ? "head" : "heads";
-    },
-    "prickplural": function () {
-        return (kGAMECLASS.player.cocks.length == 1) ? "prick" : "pricks";
-    },
-    "boy": function () {
-        return kGAMECLASS.player.mf("boy", "girl");
-    },
-    "guy": function () {
-        return kGAMECLASS.player.mf("guy", "girl");
-    },
-    "wings": function () {
-        return kGAMECLASS.player.wingsDescript();
-    },
-    "tail": function () {
-        return kGAMECLASS.player.tailDescript();
-    },
-    "onetail": function () {
-        return kGAMECLASS.player.oneTailDescript();
-    },
+	"agility": function () { return "[Agility]"; },
+	"allbreasts": function () { return kGAMECLASS.player.allBreastsDescript(); },
+	"alltits": function () { return kGAMECLASS.player.allBreastsDescript(); },
+	"armor": function () { return kGAMECLASS.player.armorName; },
+	"armorname": function () { return kGAMECLASS.player.armorName; },
+	"ass": function () { return kGAMECLASS.player.buttDescript(); },
+	"asshole": function () { return kGAMECLASS.player.assholeDescript(); },
+	"balls": function () { return kGAMECLASS.player.ballsDescriptLight(); },
+	"bodytype": function () { return kGAMECLASS.player.bodyType(); },
+	"boyfriend": function () { return kGAMECLASS.player.mf("boyfriend", "girlfriend"); },
+	"breasts": function () { return kGAMECLASS.player.breastDescript(0); },
+	"butt": function () { return kGAMECLASS.player.buttDescript(); },
+	"butthole": function () { return kGAMECLASS.player.assholeDescript(); },
+	"chest": function () { return kGAMECLASS.player.chestDesc(); },
+	"claws": function () { return kGAMECLASS.player.claws(); },
+	"clit": function () { return kGAMECLASS.player.clitDescript(); },
+	"cock": function () { return kGAMECLASS.player.cockDescript(0); },
+	"cockhead": function () { return kGAMECLASS.player.cockHead(0); },
+	"cocks": function () { return kGAMECLASS.player.multiCockDescriptLight(); },
+	"cunt": function () { return kGAMECLASS.player.vaginaDescript(); },
+	"eachcock": function () { return kGAMECLASS.player.sMultiCockDesc(); },
+	"evade": function () { return "[Evade]"; },
+	"eyes": function () { return kGAMECLASS.player.eyesDescript(); },
+	"face": function () { return kGAMECLASS.player.face(); },
+	"feet": function () { return kGAMECLASS.player.feet(); },
+	"foot": function () { return kGAMECLASS.player.foot(); },
+	"fullchest": function () { return kGAMECLASS.player.allChestDesc(); },
+	"hair": function () { return kGAMECLASS.player.hairDescript(); },
+	"haircolor": function () { return kGAMECLASS.player.hairColor; },
+	"hairorfur": function () { return kGAMECLASS.player.hairOrFur(); },
+	"he": function () { return kGAMECLASS.player.mf("he", "she"); },
+	"he2": function () { return kGAMECLASS.player2.mf("he", "she"); },
+	"him": function () { return kGAMECLASS.player.mf("him", "her"); },
+	"him2": function () { return kGAMECLASS.player2.mf("him", "her"); },
+	"himself": function () { return kGAMECLASS.player.mf("himself", "herself"); },
+	"herself": function () { return kGAMECLASS.player.mf("himself", "herself"); },
+	"hips": function () { return kGAMECLASS.player.hipDescript(); },
+	"his": function () { return kGAMECLASS.player.mf("his", "her"); },
+	"his2": function () { return kGAMECLASS.player2.mf("his", "her"); },
+	"horns": function () { return kGAMECLASS.player.hornDescript(); },
+	"leg": function () { return kGAMECLASS.player.leg(); },
+	"legs": function () { return kGAMECLASS.player.legs(); },
+	"lowergarment": function () { return kGAMECLASS.player.lowerGarmentName; },
+	"man": function () { return kGAMECLASS.player.mf("man", "woman"); },
+	"men": function () { return kGAMECLASS.player.mf("men", "women"); },
+	"malefemaleherm": function () { return kGAMECLASS.player.maleFemaleHerm(); },
+	"master": function () { return kGAMECLASS.player.mf("master", "mistress"); },
+	"misdirection": function () { return "[Misdirection]"; },
+	"multicock": function () { return kGAMECLASS.player.multiCockDescriptLight(); },
+	"multicockdescriptlight": function () { return kGAMECLASS.player.multiCockDescriptLight(); },
+	"name": function () { return kGAMECLASS.player.short; },
+	"nipple": function () { return kGAMECLASS.player.nippleDescript(0); },
+	"nipples": function () { return kGAMECLASS.player.nippleDescript(0) + "s"; },
+	"onecock": function () { return kGAMECLASS.player.oMultiCockDesc(); },
+	"pg": function () { return "\n\n"; },
+	"pussy": function () { return kGAMECLASS.player.vaginaDescript(); },
+	"race": function () { return kGAMECLASS.player.race(); },
+	"sack": function () { return kGAMECLASS.player.sackDescript(); },
+	"sheath": function () { return kGAMECLASS.player.sheathDescript(); },
+	"shield": function () { return kGAMECLASS.player.shieldName; },
+	"skin": function () { return kGAMECLASS.player.skin(); },
+	"skin.noadj": function () { return kGAMECLASS.player.skin(true); },
+	"skinfurscales": function () { return kGAMECLASS.player.skinFurScales(); },
+	"tallness": function () { return kGAMECLASS.measurements.footInchOrMetres(kGAMECLASS.player.tallness); },
+	"tits": function () { return kGAMECLASS.player.breastDescript(0); },
+	"tongue": function () { return kGAMECLASS.player.tongueDescript(); },
+	"uppergarment": function () { return kGAMECLASS.player.upperGarmentName; },
+	"vag": function () { return kGAMECLASS.player.vaginaDescript(); },
+	"vagina": function () { return kGAMECLASS.player.vaginaDescript(); },
+	"vagorass": function () { return (kGAMECLASS.player.hasVagina() ? kGAMECLASS.player.vaginaDescript() : kGAMECLASS.player.assholeDescript()); },
+	"weapon": function () { return kGAMECLASS.player.weaponName; },
+	"weaponname": function () { return kGAMECLASS.player.weaponName; },
+	"latexyname": function () { return kGAMECLASS.flags[kFLAGS.GOO_NAME]; },
+	"bathgirlname": function () { return kGAMECLASS.flags[kFLAGS.MILK_NAME]; },
+	"cockplural": function () { return (kGAMECLASS.player.cocks.length == 1) ? "cock" : "cocks"; },
+	"dickplural": function () { return (kGAMECLASS.player.cocks.length == 1) ? "dick" : "dicks"; },
+	"headplural": function () { return (kGAMECLASS.player.cocks.length == 1) ? "head" : "heads"; },
+	"prickplural": function () { return (kGAMECLASS.player.cocks.length == 1) ? "prick" : "pricks"; },
+	"boy": function () { return kGAMECLASS.player.mf("boy", "girl"); },
+	"guy": function () { return kGAMECLASS.player.mf("guy", "girl"); },
+	"wings": function () { return kGAMECLASS.player.wingsDescript(); },
+	"tail": function () { return kGAMECLASS.player.tailDescript(); },
+	"onetail": function () { return kGAMECLASS.player.oneTailDescript(); },
     //Prisoner
-    "captortitle": function () {
-        return kGAMECLASS.prison.prisonCaptor.captorTitle;
-    },
-    "captorname": function () {
-        return kGAMECLASS.prison.prisonCaptor.captorName;
-    },
-    "captorhe": function () {
-        return kGAMECLASS.prison.prisonCaptor.captorPronoun1;
-    },
-    "captorhim": function () {
-        return kGAMECLASS.prison.prisonCaptor.captorPronoun2;
-    },
-    "captorhis": function () {
-        return kGAMECLASS.prison.prisonCaptor.captorPronoun3;
-    }
+	"captortitle": function () { return kGAMECLASS.prison.prisonCaptor.captorTitle; },
+	"captorname": function () { return kGAMECLASS.prison.prisonCaptor.captorName; },
+	"captorhe": function () { return kGAMECLASS.prison.prisonCaptor.captorPronoun1; },
+	"captorhim": function () { return kGAMECLASS.prison.prisonCaptor.captorPronoun2; },
+	"captorhis": function () { return kGAMECLASS.prison.prisonCaptor.captorPronoun3; }
 };
 function tab2(target, group) {
     var j = $(target).parents(target.dataset.tabgroup);
@@ -9838,11 +9929,15 @@ function strmul(s, to) {
 function strlpad(x, to, pad) {
     if (pad === void 0) { pad = ' '; }
     var s = '' + x;
+	if (to <= 0)
+		return s;
     return strmul(pad, to - s.length) + s;
 }
 function strrpad(x, to, pad) {
     if (pad === void 0) { pad = ' '; }
     var s = '' + x;
+	if (to <= 0)
+		return s;
     return s + strmul(pad, to - s.length);
 }
 function tostr(s) {
@@ -9854,7 +9949,7 @@ function tostr(s) {
     }
 }
 function errstr(s) {
-    return "<span class='bg-danger text-white'>" + s + "</span>";
+	return spanwrap('badge badge-danger text-white', '' + s);
 }
 function spanwrap(clazz, s) {
     var s0, s1, s2;
@@ -9888,5 +9983,9 @@ function wrapgroup(depth, s) {
 }
 function isUpperCase(char) {
     return char != char.toLowerCase();
+}
+function argthrow(e, data) {
+	e["data"] = data;
+	return e;
 }
 //# sourceMappingURL=tsout.js.map

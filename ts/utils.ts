@@ -66,10 +66,12 @@ function strmul(s: string, to: number): string {
 }
 function strlpad(x: any, to: number, pad: string = ' '): string {
 	let s = '' + x;
+	if (to <= 0) return s;
 	return strmul(pad, to - s.length) + s;
 }
 function strrpad(x: any, to: number, pad: string = ' '): string {
 	let s = '' + x;
+	if (to <= 0) return s;
 	return s + strmul(pad, to - s.length);
 }
 function tostr(s: any): string {
@@ -81,7 +83,7 @@ function tostr(s: any): string {
 }
 
 function errstr(s: any): string {
-	return "<span class='bg-danger text-white'>" + s + "</span>";
+	return spanwrap('badge badge-danger text-white', '' + s);
 }
 
 function spanwrap(clazz: string, s: string): string {
@@ -116,4 +118,8 @@ function wrapgroup(depth: number, s: any): string {
 }
 function isUpperCase(char: string): boolean {
 	return char != char.toLowerCase();
+}
+function argthrow(e: Error, data: any): Error {
+	e["data"] = data;
+	return e;
 }

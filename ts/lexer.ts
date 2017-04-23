@@ -1,49 +1,68 @@
-namespace Lexer {
-	export enum TokenType {
-		TEXT,
-		SEPARATOR, // | in [if (expr) TEXT1 | TEXT2 ]
-		XMLOPEN, // <something>
-		XMLCLOSE, // </something>
-		XMLSINGLE, // <something/>
-		NUMBER, // decimal/hex, int/float
-		WORD, // identifier or other word
-		DOT, // .
-		STRING, // '...' "..."
-		OPERATOR, // js op
-		SBOPEN, // [
-		SBCLOSE, // ]
-		//CBOPEN, // {
-		//CBCLOSE, // }
-		PAROPEN, // (
-		PARCLOSE, // )
-		COMMENT // [# ... #]
-	}
-	export interface Token {
-		type: TokenType;
-		content: string;
-		from: number;
-		to: number;
-	}
-	export function tok2str(t: Token): string {
-		let c = t.content;
-		let s: string;
-		if (typeof c == "string") {
-			s = (c.length > 10) ? c.substr(0, 9) + "…" : strrpad(c, 10);
-		} else if (Array.isArray(c)) {
-			s = c[0] + (c[1] ? ' ' + c[1] : c[1]);
-		} else s = "" + c;
-		return strrpad(TokenType[t.type], 8) + s + "@" + t.from + ":" + t.to;
-	}
+enum TokenType {
+	TEXT,
+	SEPARATOR, // | in [if (expr) TEXT1 | TEXT2 ]
+	XMLOPEN, // <something>
+	XMLCLOSE, // </something>
+	XMLSINGLE, // <something/>
+	NUMBER, // decimal/hex, int/float
+	WORD, // identifier or other word
+	DOT, // .
+	COLON, // :
+	SEMICOLON, // ;
+	QUESTION, // ?
+	COMMA, // ,
+	STRING, // '...' "..."
+	OPERATOR, // js op
+	SBOPEN, // [
+	SBCLOSE, // ]
+	//CBOPEN, // {
+	//CBCLOSE, // }
+	PAROPEN, // (
+	PARCLOSE, // )
+	COMMENT // [# ... #]
+}
+interface Token {
+	type: TokenType;
+	content: string;
+	from: number;
+	to: number;
+}
+interface NumericToken extends Token {
+	type: TokenType.NUMBER;
+	value: number;
+}
+interface XmlToken extends Token {
+	type: TokenType.XMLOPEN | TokenType.XMLCLOSE | TokenType.XMLSINGLE;
+	tag: string;
+	attributes: string;
+}
+function isToken(t: any): boolean {
+	return typeof t === "object"
+		   && t !== null
+		   && 'type' in t
+		   && 'content' in t
+		   && 'from' in t
+		   && 'to' in t;
+}
 
-	export interface NumericToken extends Token {
-		type: TokenType.NUMBER;
-		value: number;
-	}
-	export interface XmlToken extends Token {
-		type: TokenType.XMLOPEN | TokenType.XMLCLOSE | TokenType.XMLSINGLE;
-		tag: string;
-		attributes: string;
-	}
+function tok2str(t: Token): string;
+function tok2str(t: Token, pad: boolean = false, limit: number = 20): string {
+	let c = t.content;
+	let s: string;
+	if (typeof c == "string") {
+		s = (c.length > limit) ? c.substr(0, limit - 1) + "…" : strrpad(c, pad ? limit : 0);
+	} else if (Array.isArray(c)) {
+		s = c[0] + (c[1] ? ' ' + c[1] : c[1]);
+	} else s = "" + c;
+	return strrpad(TokenType[t.type], pad ? 8 : 0) + ' ' + s + "@" + t.from + ":" + t.to;
+}
+interface LexerOptions {
+	allowNewlineEscape?: boolean;
+	convertNewlines?: boolean;
+	debugLexer?: boolean;
+	debugParser?: boolean;
+}
+namespace Lexer {
 	export const DecimalRex    = /^[+-]?(\d+\.\d*|\.\d+|\d+)(e[+-]?\d+)?/i;
 	export const HexRex        = /^[+-]?0x\d{1,8}/i;
 	export const IdentifierRex = /^[a-z_$][a-z_$0-9]*/i;
@@ -51,17 +70,10 @@ namespace Lexer {
 	export const XmlSingleRex  = /**/   /^<([a-z0-9_-]+) *([^[\]\n<>])*\/>/i;
 	export const XmlCloseRex   = /**/ /^<\/([a-z0-9_-]+) *([^[\]\n<>])*>/i;
 	export const TextRex       = /^[^<\\[|\]\n]+/;
-	export const Operators     = ['===', '!==', '==', '!=', '<=', '>=', '>', '<',
-		'++', '--', '**', '&&', '||',
-		'+', '-', '~', '*', '/', '%', '^', '&', '|', '=',
-		'?', ':', ';', ','];
-	export const XmlSingleTags = ["br", "hr", "input"];
+	export const Operators     = ['===', '>>>', '<<', '>>', '!==', '==', '!=', '<=', '>=', '>', '<', '++', '--', '**', '&&', '||', '+', '-', '~', '*', '/', '%', '^', '=', '!'];
 	export const ReservedWords = ["if", "screen", "button"];
 	export enum LexerStateType {
-		TEXT,
-		SUBTEXT,
-		EXPR,
-		EOF
+		TEXT, SUBTEXT, EXPR, EOF
 	}
 	export interface LexerStateFlags {
 		"(": number;
@@ -81,18 +93,10 @@ namespace Lexer {
 		tokens: Token[];
 		state: LexerData;
 	}
-	export interface LexerOptions {
-		allowNewlineEscape?: boolean;
-		convertNewlines?: boolean;
-		debugLexer?: boolean;
-		debugParser?: boolean;
-	}
-	export function lexstep(lexerState: LexerData,
-	                        {
-		                        allowNewlineEscape = true,
-		                        convertNewlines = true,
-		                        debugLexer = false,
-	                        }: LexerOptions): LexerResult {
+
+	export function lexstep(lexerState: LexerData, {
+		allowNewlineEscape = true, convertNewlines = true, debugLexer = false,
+	}: LexerOptions): LexerResult {
 		let {input, pos, stack} = lexerState;
 		let stack0              = stack;
 		let pos0                = pos;
@@ -116,7 +120,8 @@ namespace Lexer {
 							case '\n':
 								if (convertNewlines) {
 									l    = (c0 == '\r' && c1 == '\n') ? 2 : 1;
-									next = {type  : TokenType.XMLSINGLE,
+									next = {
+										type      : TokenType.XMLSINGLE,
 										content   : "<br/>",
 										tag       : "br",
 										attributes: "",
@@ -161,9 +166,10 @@ namespace Lexer {
 									break;
 								}
 								l    = x[0].length;
-								next = {type  : ttype,
+								next = {
+									type      : ttype,
 									content   : x[0],
-									tag       : x[1],
+									tag       : x[1].toLowerCase(),
 									attributes: x[2] || "",
 									from      : pos,
 									to        : pos + l
@@ -195,10 +201,7 @@ namespace Lexer {
 									l = s.indexOf('#]');
 									if (l >= 0) {
 										next = {
-											type   : TokenType.COMMENT,
-											content: s.slice(2, l),
-											from   : pos,
-											to     : pos + l + 2
+											type: TokenType.COMMENT, content: s.slice(2, l), from: pos, to: pos + l + 2
 										};
 										l += 2;
 									} else {
@@ -236,8 +239,7 @@ namespace Lexer {
 				} else if ((x = s.match(IdentifierRex))) {
 					l = (y = x[0]).length;
 					rslt.push({
-						type   : TokenType.WORD,
-						content: y, from: pos, to: pos + l
+						type: TokenType.WORD, content: y, from: pos, to: pos + l
 					});
 				} else if ((x = s.match(DecimalRex)) || (x = s.match(HexRex))) {
 					l = (y = x[0]).length;
@@ -256,7 +258,7 @@ namespace Lexer {
 							break;
 						case '(':
 							l = 1;
-							rslt.push({type: TokenType.PAROPEN, content: '(', from: pos, to: pos + l});
+							rslt.push({type: TokenType.PAROPEN, content: '(', from: pos, to: pos + 1});
 							flags['(']++;
 							break;
 						case ')':
@@ -267,9 +269,24 @@ namespace Lexer {
 								stack.push([LexerStateType.SUBTEXT, LexerStateFlags()]);
 							}
 							break;
-						case '.':
+						case ':':
 							l = 1;
-							rslt.push({type: TokenType.DOT, content: '.', from: pos, to: pos + l});
+							rslt.push({type: TokenType.COLON, content: ':', from: pos, to: pos + 1});
+							if (flags['('] == 0) {
+								stack.push([LexerStateType.SUBTEXT, LexerStateFlags()]);
+							}
+							break;
+						case '.':
+						case ';':
+						case '?':
+							l = 1;
+							rslt.push({
+								type          : {
+									'.': TokenType.DOT,
+									';': TokenType.SEMICOLON,
+									'?': TokenType.QUESTION
+								}[c0], content: c0, from: pos, to: pos + l
+							});
 							break;
 						case '"':
 						case "'":
@@ -305,13 +322,11 @@ namespace Lexer {
 			stack.push([LexerStateType.EOF, LexerStateFlags()]);
 		}
 		if (debugLexer) {
-			console.debug("Lexer @", strrpad(pos0, 5),
-				"[", ...stack0.map(i => LexerStateType[i[0]]),
-				"] => ", ...(rslt.map(tok2str)));
+			console.debug("Lexer @", strrpad(pos0, 5), "[", ...stack0.map(
+				i => LexerStateType[i[0]]), "] => ", ...(rslt.map(tok2str)));
 		}
 		return {
-			tokens: rslt,
-			state : {input, pos, stack, top: stack[stack.length - 1]}
+			tokens: rslt, state: {input, pos, stack, top: stack[stack.length - 1]}
 		};
 	}
 
